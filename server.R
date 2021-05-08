@@ -743,6 +743,42 @@ shinyServer(function(input, output) {
     }
   })
   
+  output$text404 <- renderPrint({
+    if(input$analysis == "Similarity_of_Variables_and_Categories1"){
+      if(input$Similarity_of_Variables_and_Categories == "Among_all_columns1"){
+        if(input$Among_all_columns == "Log_Linear1"){
+            
+          req(input$file1)
+          
+          if(input$sep2 == "Separator_Comma"){sep <- ","}
+          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+          Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+          if(input$DoNotUseFirst == 1){
+            Data[,1] <- NULL
+          }
+          
+          
+          
+          library(dplyr)
+          library(MASS)
+          library(ggplot2)
+          
+          
+          Data1 <- Data
+          nc <- ncol(Data1)
+          for (i in 1:nc) {
+            if (class(Data1[,i]) == "numeric") {
+              Data1[,i] <- droplevels(cut(Data1[,i], breaks = input$NumericalToCategorcalL, include.lowest = TRUE))
+            }
+          }
+          Data2 <- count(group_by(Data1,Data1[,1:nc],.drop=FALSE))
+          anova(step(glm(n~.^2, data=Data2,family=poisson)))
+        }
+      }
+    }
+  })
+  
   
   output$plot05 <- renderPlot({
     if(input$analysis == "Similarity_of_Variables_and_Categories1"){
@@ -1788,7 +1824,7 @@ shinyServer(function(input, output) {
   })
   output$text402 <- renderPrint({
     if(input$analysis == "Similarity_of_Names_in_Rows_and_Columns1"){
-      if(input$Similarity_of_Names_in_Rows_and_Columns == 'Loglinear_model1') {
+      if(input$Similarity_of_Names_in_Rows_and_Columns == 'Two_way_GLM1') {
       
         req(input$file1)
         
@@ -1800,9 +1836,14 @@ shinyServer(function(input, output) {
         
         library(tidyr)
         library(MASS)
+        library(lme4)
         RowName <- colnames(Data[1])
         Data1 <- tidyr::gather(Data, key="ColName", value = Val, -RowName)
-        anova(step(glm(Val~.^2, data=Data1,family=poisson))) 
+        if(input$family_link3 == "gaussian_identity"){
+          anova(step(glm(Val~., data=Data1,family=gaussian))) 
+        } else {
+          anova(step(glm(Val~.^2, data=Data1,family=poisson))) 
+        }
       }
     }
   })
@@ -1820,24 +1861,6 @@ shinyServer(function(input, output) {
         
         DataM <- as.matrix(Data)
         heatmap(DataM, scale="none")
-      }
-    }
-  })
-  output$text404 <- renderPrint({
-    if(input$analysis == "Similarity_of_Names_in_Rows_and_Columns1"){
-      if(input$Similarity_of_Names_in_Rows_and_Columns == 'Quantification_theory_type_I1') {
-      
-        req(input$file1)
-        
-        if(input$sep2 == "Separator_Comma"){sep <- ","}
-        if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
-        if(input$sep2 == "Separator_Tab"){sep <- "\t"}
-        Data <- read.csv(input$file1$datapath, header=T,sep = sep)
-        
-        library(tidyr)
-        RowName <- colnames(Data[1])
-        Data1 <- tidyr::gather(Data, key="ColName", value = Val, -RowName)
-        anova(step(lm(Val~., data=Data1)))
       }
     }
   })

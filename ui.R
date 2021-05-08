@@ -1,5 +1,6 @@
 library(shiny)
 
+
 fluidPage(
   
   titlePanel("R-EDA1 (R Exploratory Data Analysis)"),
@@ -119,7 +120,8 @@ fluidPage(
                                    Line_graph = "Line_graph1",
                                    Stratifeid_graph = "Stratifeid_graph1",
                                    Variable_Network = "Variable_Network1",
-                                   Using_MDS = "Using_MDS1")
+                                   Using_MDS = "Using_MDS1",
+                                   Log_Linear = "Log_Linear1")
           ),
           
           conditionalPanel(
@@ -396,18 +398,26 @@ fluidPage(
                      choices = c(Bipartite_graph = "Bipartite_graph1",
                                  Correspondence_MDS_Names = "Correspondence_MDS_Names1",
                                  Independence_Test = "Independence_Test1",
-                                 Loglinear_model = "Loglinear_model1",
-                                 Heat_map_Clustering = "Heat_map_Clustering1",
-                                 Quantification_theory_type_I  = "Quantification_theory_type_I1"),
-                     selected = "Quantification_theory_type_I1"),
+                                 Two_way_GLM = "Two_way_GLM1",
+                                 Heat_map_Clustering = "Heat_map_Clustering1"),
+                     selected = "Two_way_GLM1"),
         
         conditionalPanel(
-          condition = "input.Method == 'Bipartite_graph1'",
+          condition = "input.Similarity_of_Names_in_Rows_and_Columns == 'Bipartite_graph1'",
           radioButtons("Layout2", "Layout",
                        choices = c(layout_default = "layout_default1",
                                    layout_as_bipartite = "layout_as_bipartite1",
                                    layout_as_star = "layout_as_star1"),
                        selected = "layout_default1")
+        ),
+        conditionalPanel(
+          condition = "input.Similarity_of_Names_in_Rows_and_Columns == 'Two_way_GLM1'",
+          radioButtons("family_link3", "family_link",
+                       choices = c(gaussian_identity = "gaussian_identity",
+                                   poisson_log = "poisson_log"),
+                       selected = "gaussian_identity"),
+          p("'gaussian_identity' = Similar to 'two-way anova without interaction' and 'Quantification theory type I'"),
+          p("'poisson_log' = Log_Linear_model. Y is count data")
         ),
       ),
       
@@ -457,6 +467,16 @@ fluidPage(
                   And names of the ranges are used as categories."),
             
             numericInput('NumericalToCategorcalU', 'No of ranges', "5"),
+            
+          ),
+          conditionalPanel(
+            condition = "input.Among_all_columns == 'Log_Linear1'",
+            
+            p("If using methods for categorical variable, this tool changes numerical variable into categorical.
+                  For example, if '5 is the input, numerical variable is divided into 5 ranges.
+                  And names of the ranges are used as categories."),
+            
+            numericInput('NumericalToCategorcalL', 'No of ranges', "5"),
             
           ),
             
@@ -804,6 +824,20 @@ fluidPage(
               a("About the reason to use MDS after Correspondence analysis (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-4-2-4.html")
             ),
           ),
+            
+          conditionalPanel(
+            condition = "input.Among_all_columns == 'Log_Linear1'",
+            h3("Log Linear model"),
+            verbatimTextOutput("text404"),
+            
+            h4("Algorithm"),
+            p("1. All numerical variables are changed into categorical variables"),
+            p("2. Make contingency table. (= Make count data of categories)"),
+            p("3. GLM. Y is count data. Xs are categories"),
+            a("Code (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-2.html"),br(),
+            a("About similariy of categories (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-2.html"),br(),
+            a("About Log Linear model (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3-3-2.html")
+          ),
           
         ),  
         conditionalPanel(
@@ -1041,32 +1075,37 @@ fluidPage(
           
           verbatimTextOutput("text403"),
           
-          a("About Loglinear_model (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3-3-1.html")
+          a("About Two_way_GLM (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3-3-1.html")
         ),
         conditionalPanel(
-          condition = "input.Similarity_of_Names_in_Rows_and_Columns == 'Loglinear_model1'",
-          p("Analysis of count data (0, 1, 2, 3,,,,), Not use for negative values and categorical values"),
-          p("Count values are used as Label(Y) of the model.
-            Names are used as features(X)."),
+          condition = "input.Similarity_of_Names_in_Rows_and_Columns == 'Two_way_GLM1'",
           verbatimTextOutput("text402"),
           
+          
+          conditionalPanel(
+            condition = "input.family_likn3 == 'gaussian_identity'",
+            p("Values are used as Label(Y) of the model.
+            Names are used as features(X)."),
+            
+            a("About Quantification theory type I (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-6-1.html")
+          ),
+          conditionalPanel(
+            condition = "input.family_likn3 != 'gaussian_identity'",
+            p("Analysis of count data (0, 1, 2, 3,,,,), Not use for negative values and categorical values"),
+            p("Values are used as Label(Y) of the model.
+            Names are used as features(X)."),
+            p("Count values are used as Label(Y) of the model.
+            Names are used as features(X)."),
+            
+            a("About Loglinear_model (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3-3-2.html"),
+          ),
           a("Code (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-6.html"),br(),
-          a("About Loglinear_model (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3-3-2.html")
         ),
         conditionalPanel(
           condition = "input.Similarity_of_Names_in_Rows_and_Columns == 'Heat_map_Clustering1'",
           plotOutput("plot403"),
           
           a("Code (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-6.html")
-        ),
-        conditionalPanel(
-          condition = "input.Similarity_of_Names_in_Rows_and_Columns == 'Quantification_theory_type_I1'",
-          p("Values are used as Label(Y) of the model.
-            Names are used as features(X)."),
-          verbatimTextOutput("text404"),
-          
-          a("Code (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-6.html"),br(),
-          a("About Quantification theory type I (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-6-1.html")
         ),
         
       )
