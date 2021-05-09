@@ -189,15 +189,28 @@ shinyServer(function(input, output) {
             if(class(Data1[,input$Xcol]) == "numeric"){Data1[,input$Xcol] <- droplevels(cut(Data1[,input$Xcol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
             if(input$Scol != 0){
               if(class(Data1[,input$Scol]) == "numeric"){Data1[,input$Scol] <- droplevels(cut(Data1[,input$Scol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
-              
-              mean01 <- aggregate(Data1[,input$Ycol]~Data1[,input$Xcol]*Data1[,input$Scol],data=Data1,FUN=mean)
-              names(mean01) <- c(names(Data1[input$Xcol]),names(Data1[input$Scol]),paste("mean of",names(Data1[input$Ycol])))
-              output$text522 <- renderPrint(mean01)
-              output$text513 <- renderPrint(summary(aov(Data1[,input$Ycol]~Data1[,input$Xcol]*Data1[,input$Scol],data=Data)))
-              output$text514 <- renderPrint(paste("Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname))
-              output$text515 <- renderPrint(summary(aov(Data1[,input$Ycol]~Data1[,input$Xcol]+Data1[,input$Scol],data=Data)))
-              output$text516 <- renderPrint(paste("Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname))
-              ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Ycol])) + geom_boxplot() + facet_wrap(~Data1[,input$Scol],scales="free")+ labs(x=Xname,y=Yname,subtitle = Sname)
+              if(input$Scol2 == 0){
+                mean01 <- aggregate(Data1[,input$Ycol]~Data1[,input$Xcol]*Data1[,input$Scol],data=Data1,FUN=mean)
+                names(mean01) <- c(names(Data1[input$Xcol]),names(Data1[input$Scol]),paste("mean of",names(Data1[input$Ycol])))
+                output$text522 <- renderPrint(mean01)
+                output$text513 <- renderPrint(summary(aov(Data1[,input$Ycol]~Data1[,input$Xcol]*Data1[,input$Scol],data=Data)))
+                output$text514 <- renderPrint(paste("Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname))
+                output$text515 <- renderPrint(summary(aov(Data1[,input$Ycol]~Data1[,input$Xcol]+Data1[,input$Scol],data=Data)))
+                output$text516 <- renderPrint(paste("Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname))
+                ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Ycol])) + geom_boxplot() + facet_wrap(~Data1[,input$Scol],scales="free")+ labs(x=Xname,y=Yname,subtitle = Sname)
+              } else {
+                
+                mean01 <- aggregate(Data1[,input$Ycol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Scol2],data=Data1,FUN=mean)
+                names(mean01) <- c(names(Data1[input$Xcol]),names(Data1[input$Scol]),names(Data1[input$Scol2]),paste("mean of",names(Data1[input$Ycol])))
+                output$text541 <- renderPrint(mean01)
+                output$text542 <- renderPrint(summary(aov(Data1[,input$Ycol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Scol2],data=Data)))
+                output$text543 <- renderPrint(paste("Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname,"   Data1[,input$Scol2] =" ,Sname2))
+                output$text544 <- renderPrint(summary(aov(Data1[,input$Ycol]~Data1[,input$Xcol]+Data1[,input$Scol]+Data1[,input$Scol2],data=Data)))
+                output$text545 <- renderPrint(paste("Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname,"   Data1[,input$Scol2] =" ,Sname2))
+                ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Ycol])) + geom_boxplot() + facet_grid(Data1[,input$Scol]~Data1[,input$Scol2])+ labs(x=Xname,y=Yname,subtitle = paste("columns:",Sname," rows:",Sname2))
+                
+                
+              }    
             } else {
               mean01 <- aggregate(Data1[,input$Ycol]~Data1[,input$Xcol],data=Data1,FUN=mean)
               names(mean01) <- c(names(Data1[input$Xcol]),paste("mean of",names(Data1[input$Ycol])))
@@ -226,7 +239,7 @@ shinyServer(function(input, output) {
                   output$text510 <- renderPrint(paste("Data1[,input$Scol] =" ,Sname,"   Data1[,input$Scol2] =" ,Sname2))
                   output$text511 <- renderPrint(summary(aov(Data1[,input$Xcol]~Data1[,input$Scol]+Data1[,input$Scol2],data=Data)))
                   output$text512 <- renderPrint(paste("Data1[,input$Scol] =" ,Sname,"   Data1[,input$Scol2] =" ,Sname2))
-                  ggplot(Data1, aes(x=Data1[,input$Xcol])) + geom_histogram() + facet_grid(Data1[,input$Scol]~Data1[,input$Scol2])+ labs(x=Xname,subtitle = paste("rows:",Sname," columns:",Sname2))
+                  ggplot(Data1, aes(x=Data1[,input$Xcol])) + geom_histogram() + facet_grid(Data1[,input$Scol]~Data1[,input$Scol2])+ labs(x=Xname,subtitle = paste("columns:",Sname," rows:",Sname2))
                 } else {
                   
                   mean01 <- aggregate(Data1[,input$Xcol]~Data1[,input$Scol],data=Data1,FUN=mean)
@@ -250,14 +263,25 @@ shinyServer(function(input, output) {
             if(class(Data1[,input$Xcol]) == "numeric"){Data1[,input$Xcol] <- droplevels(cut(Data1[,input$Xcol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
             if(input$Scol != 0){
               if(class(Data1[,input$Scol]) == "numeric"){Data1[,input$Scol] <- droplevels(cut(Data1[,input$Scol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
-              Data2 <- cbind(Data1[input$Xcol],Data1[input$Scol])
-              Data3 <- count(group_by(Data2,Data2[,1:2],.drop=FALSE)) 
-              Data4 <- tidyr::spread(Data3, key=colnames(Data3[1]), value ="n")
-              Data4[1] <- NULL
-              Data4[is.na(Data4)] <- 0
-              output$text536 <- renderPrint(chisq.test(Data4))
-              ggplot(Data1, aes(x=Data1[,input$Xcol])) + geom_bar() + geom_text(stat='count', aes(label=..count..), vjust=-1) + facet_grid(.~Data1[,input$Scol])+ labs(x=Xname,subtitle = Sname)
-            } else {
+                if(input$Scol2 == 0){
+                  Data2 <- cbind(Data1[input$Xcol],Data1[input$Scol])
+                  Data3 <- count(group_by(Data2,Data2[,1:2],.drop=FALSE)) 
+                  output$text536 <- renderPrint(anova(step(glm(n~.^2, data=Data3,family=poisson))))
+                  Data4 <- tidyr::spread(Data3, key=colnames(Data3[1]), value ="n")
+                  Data4[1] <- NULL
+                  Data4[is.na(Data4)] <- 0
+                  output$text5362 <- renderPrint(chisq.test(Data4))
+                  ggplot(Data1, aes(x=Data1[,input$Xcol])) + geom_bar() + geom_text(stat='count', aes(label=..count..), vjust=-1) + facet_grid(.~Data1[,input$Scol])+ labs(x=Xname,subtitle = Sname)
+                } else {
+                  if(class(Data1[,input$Scol2]) == "numeric"){Data1[,input$Scol2] <- droplevels(cut(Data1[,input$Scol2], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
+                  Data2 <- cbind(Data1[input$Xcol],Data1[input$Scol],Data1[input$Scol2])
+                  
+                  Data3 <- count(group_by(Data2,Data2[,1:3],.drop=FALSE))
+                  output$text536 <- renderPrint(anova(step(glm(n~.^2, data=Data3,family=poisson))))
+                  
+                  ggplot(Data1, aes(x=Data1[,input$Xcol])) + geom_bar() + geom_text(stat='count', aes(label=..count..), vjust=-1) + facet_grid(Data1[,input$Scol2]~Data1[,input$Scol])+ labs(x=Xname,subtitle = paste("columns:",Sname," rows:",Sname2))
+                }
+              } else {
               ggplot(Data1, aes(x=Data1[,input$Xcol])) + geom_bar() + geom_text(stat='count', aes(label=..count..), vjust=-1) + labs(x=Xname)
             }
           }

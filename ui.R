@@ -36,8 +36,11 @@ fluidPage(
             ),
             numericInput('Scol', 'area separate 1 (if "0" not separate)', "0"),
             conditionalPanel(
-              condition = "input.Gtype == 'histgram'",
-              numericInput('Scol2', 'area separate 2 (if "0" not separate)', "0"),
+              condition = "input.Gtype != 'scatter'",
+              conditionalPanel(
+                condition = "input.Scol > 0",
+                numericInput('Scol2', 'area separate 2 (if "0" not separate)', "0"),
+              ),
             ),
             conditionalPanel(
               condition = "input.Gtype == 'scatter'",
@@ -554,6 +557,10 @@ fluidPage(
           conditionalPanel(
             condition = "input.Among_all_columns == 'Stratifeid_graph1'",
             h3("Stratifeid_graph"),
+            conditionalPanel(
+              condition = "input.Gtype == 'bar'",
+              p("n of categories"),
+            ),
             plotOutput("plot14"),
             
             conditionalPanel(
@@ -630,14 +637,28 @@ fluidPage(
               ),
               conditionalPanel(
                 condition = "input.Scol != 0",
-                h3("Check the diffence of center (mean)"),
-                verbatimTextOutput("text522"),
-                p("by two-way ANOVA with interaction"),
-                verbatimTextOutput("text513"),
-                verbatimTextOutput("text514"),
-                p("by two-way ANOVA without interaction"),
-                verbatimTextOutput("text515"),
-                verbatimTextOutput("text516"),
+                conditionalPanel(
+                  condition = "input.Scol2 == 0",
+                  h3("Check the diffence of center (mean)"),
+                  verbatimTextOutput("text522"),
+                  p("by two-way ANOVA with interaction"),
+                  verbatimTextOutput("text513"),
+                  verbatimTextOutput("text514"),
+                  p("by two-way ANOVA without interaction"),
+                  verbatimTextOutput("text515"),
+                  verbatimTextOutput("text516"),
+                ),
+                conditionalPanel(
+                  condition = "input.Scol2 != 0",
+                  h3("Check the diffence of center (mean)"),
+                  verbatimTextOutput("text541"),
+                  p("by three-way ANOVA with interaction"),
+                  verbatimTextOutput("text542"),
+                  verbatimTextOutput("text543"),
+                  p("by three-way ANOVA without interaction"),
+                  verbatimTextOutput("text544"),
+                  verbatimTextOutput("text545"),
+                ),
               ),
             ),
             conditionalPanel(
@@ -676,8 +697,13 @@ fluidPage(
               condition = "input.Gtype == 'bar'",
               conditionalPanel(
                 condition = "input.Scol != 0",
-                h3("Independence Test"),
-                p("Independence between two categorical varaiables"),
+                conditionalPanel(
+                  condition = "input.Scol2 == 0",
+                  h3("Independence Test"),
+                  p("Independence between two categorical varaiables"),
+                  verbatimTextOutput("text5362"),
+                ),
+                h3("Log linear model"),
                 verbatimTextOutput("text536"),
               ),
             ),
