@@ -8,7 +8,7 @@ fluidPage(
   HTML('<div id="fb-root"></div><script async defer crossorigin="anonymous" src="https://connect.facebook.net/ja_JP/sdk.js#xfbml=1&version=v10.0" nonce="Y3i7onlm"></script>'),
   #HTML('<a href="https://twitter.com/share" class="twitter-share-button")>Twitter</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>'),
   HTML('<a href="https://ecodata222.shinyapps.io/R-EDA1" class="twitter-share-button" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>'),
-  HTML('<div class="fb-like" data-href="https://ecodata222.shinyapps.io/R-EDA1" data-width="450" data-layout="button_count" data-action="like" data-size="small" data-share="true"></div>'),
+  HTML('<div class="fb-like" data-href="https://ecodata222.shinyapps.io/R-EDA1" data-width="" data-layout="button" data-action="like" data-size="small" data-share="true"></div>'),
   
   sidebarLayout(
     
@@ -26,14 +26,16 @@ fluidPage(
             condition = "input.Among_all_columns == 'Stratifeid_graph1'",
             
             selectInput("Gtype", "Graph type",  choices = c("scatter", "box_plot", "histgram", "bar")),
-            numericInput('Xcol', 'X axis', "1"),
+            numericInput('Lcol', 'Label', "1"),
             conditionalPanel(
               condition = "input.Gtype != 'histgram'",
               conditionalPanel(
                 condition = "input.Gtype != 'bar'",
-                numericInput('Ycol', 'Y axis', "2"),
+                numericInput('Xcol', 'X axis', "2"),
               ),
             ),
+            
+            
             numericInput('Scol', 'area separate 1 (if "0" not separate)', "0"),
             conditionalPanel(
               condition = "input.Gtype != 'scatter'",
