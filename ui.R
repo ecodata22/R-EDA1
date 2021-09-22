@@ -25,7 +25,7 @@ fluidPage(
           conditionalPanel(
             condition = "input.Among_all_columns == 'Stratifeid_graph1'",
             
-            selectInput("Gtype", "Graph type",  choices = c("scatter", "box_plot", "histgram", "bar")),
+            selectInput("Gtype", "Graph type",  choices = c("histgram", "scatter", "box_plot", "bar")),
             numericInput('Lcol', 'Label', "1"),
             conditionalPanel(
               condition = "input.Gtype != 'histgram'",
@@ -45,19 +45,48 @@ fluidPage(
               ),
             ),
             conditionalPanel(
+              condition = "input.Gtype == 'histgram'",
+              sliderInput("Prediction_Interval_Probability2",
+                          "Prediction interval probability",
+                          min = 0,  max = 1, value = 0.95, step = 0.01)
+            ),
+            conditionalPanel(
               condition = "input.Gtype == 'scatter'",
               numericInput('Ccol', 'Coloring (if "0" do not used colors)', "0"),
-              checkboxInput("NumericalToCategorcalSColor", "If Coloring is numerical, changing categorical", FALSE),
+              conditionalPanel(
+                condition = "input.Ccol > 0",
+                checkboxInput("NumericalToCategorcalSColor", "If Coloring is numerical, changing categorical", FALSE),
+              ),
               
-              radioButtons("family_link2", "family_link",
-                           choices = c(gaussian_identity = "gaussian_identity",
-                                       poisson_log = "poisson_log",
-                                       binomial_logit = "binomial_logit",
-                                       binomial_probit = "binomial_probit"),
-                           selected = "gaussian_identity"),
-              p("'gaussian_identity' = Simple mutli regression analysis"),
-              p("'poisson_log' = Regression analysis for count data of Y"),
-              p("'binomial_logit' = Logistic regression analysis")
+              conditionalPanel(
+                condition = "input.Ccol == 0 && input.Scol == 0",
+                checkboxInput("Using_Prediction_Interval", "Using prediction interval", FALSE),
+              ),
+              conditionalPanel(
+                condition = "input.Using_Prediction_Interval == 1",
+                sliderInput("Prediction_Interval_Probability",
+                            "Prediction interval probability",
+                            min = 0,  max = 1, value = 0.95, step = 0.01)
+              ),
+              
+              checkboxInput("Using_GLM", "Using GLM", FALSE),
+              conditionalPanel(
+                condition = "input.Using_GLM == 1",
+                radioButtons("family_link2", "family_link",
+                             choices = c(gaussian_identity = "gaussian_identity",
+                                         poisson_log = "poisson_log",
+                                         binomial_logit = "binomial_logit",
+                                         binomial_probit = "binomial_probit"),
+                             selected = "gaussian_identity"),
+                p("'gaussian_identity' = Simple mutli regression analysis"),
+                p("'poisson_log' = Regression analysis for count data of Y"),
+                p("'binomial_logit' = Logistic regression analysis")
+              ),
+              
+              conditionalPanel(
+                condition = "input.Ccol == 0 && input.Scol == 0",
+                checkboxInput("Check_difference_between_two_variablesl", "Check difference between two variables", FALSE),
+              ),
             )
           )
         )
@@ -199,6 +228,7 @@ fluidPage(
           radioButtons("Between_label_column_and_others", "Method",
                        choices = c(Scatter_plot = "Scatter_plot1",
                                    GLMM__Regression_analysis = "GLMM1",
+                                   PCRA__Regression_analysis = "PCRA1",
                                    Decision_Tree = "Decision_Tree1",
                                    One_class_classification = "One_class1",
                                    Hidden = "Hidden1")
@@ -513,7 +543,8 @@ fluidPage(
         p("first column (left side) of the CSV-data must be names,"),
         p("This analysis uses names of first rows and first columns.")
       ),
-      a("Guide (Japanese)   ",href="http://data-science.tokyo/R-J/about_R-EDA1.html"),
+      a("Guide (English)   ",href="http://data-science.tokyo/R-E/about_R-EDA1.html"),
+      a(" (Japanese)   ",href="http://data-science.tokyo/R-J/about_R-EDA1.html"),
       
       selectInput("sep2", "Separator of CSV",  choices = c("Separator_Comma", "Separator_Semicolon", "Separator_Tab")),
       
@@ -542,8 +573,10 @@ fluidPage(
             h3("Heat map"),
             p("Visualization of Data Table"),
             plotOutput("plot03"),
-            a("Code (Japanese)",href="http://data-science.tokyo/R-J/R-J1-1.html"),br(),
-            a("About Heat map(Japanese)",href="http://data-science.tokyo/ed/edj1-4-3-2.html"),
+            a("Code (English)",href="http://data-science.tokyo/R-E/R-E1-01.html"),
+            a(" (Japanese)",href="http://data-science.tokyo/R-J/R-J1-01.html"),br(),
+            a("About Heat map(English)",href="http://data-science.tokyo/ed-e/ede1-4-3-2.html"),
+            a("(Japanese)",href="http://data-science.tokyo/ed/edj1-4-3-2.html"),
             
           ),
           conditionalPanel(
@@ -552,7 +585,8 @@ fluidPage(
             h3("Line graph of all variables"),
             plotOutput("plot01"),
             p("Categorical variables are changed into dummy variables"),
-            a("Code (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-1.html")
+            a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-01.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-01.html")
             
           ),
           
@@ -574,12 +608,18 @@ fluidPage(
                   condition = "input.Ccol == 0",
                   h3("Check correlation"),
                   verbatimTextOutput("text518"),
-                  p("Generalized linear model (GLM)"),
-                  verbatimTextOutput("text519"),
-                  verbatimTextOutput("text520"),
-                  h3("Check difference between two variables"),
-                  plotOutput("plot537"),
-                  verbatimTextOutput("text537"),
+                  conditionalPanel(
+                    condition = "input.Using_GLM == 1",
+                    p("Generalized linear model (GLM)"),
+                    verbatimTextOutput("text519"),
+                    verbatimTextOutput("text520"),
+                  ),
+                  conditionalPanel(
+                    condition = "input.Check_difference_between_two_variablesl == 1",
+                    h3("Check difference between two variables"),
+                    plotOutput("plot537"),
+                    verbatimTextOutput("text537"),
+                  ),
                 ),
               
                 conditionalPanel(
@@ -587,11 +627,14 @@ fluidPage(
                   
                   conditionalPanel(
                     condition = "input.Scol == 0",
-                    p("Linear mixed model (LMM)"),
-                    verbatimTextOutput("text526"),
-                    p("Generalized linear mixed model (GLMM) (if 'gaussian is chossed, same to LMM)"),
-                    verbatimTextOutput("text527"),
-                    verbatimTextOutput("text528"),
+                    conditionalPanel(
+                      condition = "input.Using_GLM == 1",
+                      p("Linear mixed model (LMM)"),
+                      verbatimTextOutput("text526"),
+                      p("Generalized linear mixed model (GLMM) (if 'gaussian is chossed, same to LMM)"),
+                      verbatimTextOutput("text527"),
+                      verbatimTextOutput("text528"),
+                    )
                   ),
                 ),
               ),
@@ -599,11 +642,14 @@ fluidPage(
                 condition = "input.Scol != 0",
                 conditionalPanel(
                   condition = "input.Ccol == 0",
-                  p("Linear mixed model (LMM)"),
-                  verbatimTextOutput("text529"),
-                  p("Generalized linear mixed model (GLMM) (if 'gaussian is chossed, same to LMM)"),
-                  verbatimTextOutput("text530"),
-                  verbatimTextOutput("text531"),
+                  conditionalPanel(
+                    condition = "input.Using_GLM == 1",
+                    p("Linear mixed model (LMM)"),
+                    verbatimTextOutput("text529"),
+                    p("Generalized linear mixed model (GLMM) (if 'gaussian is chossed, same to LMM)"),
+                    verbatimTextOutput("text530"),
+                    verbatimTextOutput("text531"),
+                  )
                 ),
                 
                 conditionalPanel(
@@ -611,12 +657,15 @@ fluidPage(
                   
                   conditionalPanel(
                     condition = "input.Scol != 0",
-                    p("Linear mixed model (LMM)"),
-                    verbatimTextOutput("text532"),
-                    verbatimTextOutput("text535"),
-                    p("Generalized linear mixed model (GLMM) (if 'gaussian is chossed, same to LMM)"),
-                    verbatimTextOutput("text533"),
-                    verbatimTextOutput("text534"),
+                    conditionalPanel(
+                      condition = "input.Using_GLM == 1",
+                      p("Linear mixed model (LMM)"),
+                      verbatimTextOutput("text532"),
+                      verbatimTextOutput("text535"),
+                      p("Generalized linear mixed model (GLMM) (if 'gaussian is chossed, same to LMM)"),
+                      verbatimTextOutput("text533"),
+                      verbatimTextOutput("text534"),
+                    )
                   ),
                 ),
               ),
@@ -625,41 +674,44 @@ fluidPage(
               condition = "input.Gtype == 'box_plot'",
               
               conditionalPanel(
-                condition = "input.Scol == 0",
-                h3("Check the diffence of center (mean)"),
-                p("by one-way ANOVA"),
-                verbatimTextOutput("text517"),
-                verbatimTextOutput("text505"),
-                verbatimTextOutput("text506"),
-                h3("Check the diffence of variation (variance)"),
-                p("by Bartlett's test"),
-                verbatimTextOutput("text521"),
-                verbatimTextOutput("text507"),
-                verbatimTextOutput("text508"),
-              ),
-              conditionalPanel(
-                condition = "input.Scol != 0",
+                condition = "input.Xcol > 0",
                 conditionalPanel(
-                  condition = "input.Scol2 == 0",
+                  condition = "input.Scol == 0",
                   h3("Check the diffence of center (mean)"),
-                  verbatimTextOutput("text522"),
-                  p("by two-way ANOVA with interaction"),
-                  verbatimTextOutput("text513"),
-                  verbatimTextOutput("text514"),
-                  p("by two-way ANOVA without interaction"),
-                  verbatimTextOutput("text515"),
-                  verbatimTextOutput("text516"),
+                  p("by one-way ANOVA"),
+                  verbatimTextOutput("text517"),
+                  verbatimTextOutput("text505"),
+                  verbatimTextOutput("text506"),
+                  h3("Check the diffence of variation (variance)"),
+                  p("by Bartlett's test"),
+                  verbatimTextOutput("text521"),
+                  verbatimTextOutput("text507"),
+                  verbatimTextOutput("text508"),
                 ),
                 conditionalPanel(
-                  condition = "input.Scol2 != 0",
-                  h3("Check the diffence of center (mean)"),
-                  verbatimTextOutput("text541"),
-                  p("by three-way ANOVA with interaction"),
-                  verbatimTextOutput("text542"),
-                  verbatimTextOutput("text543"),
-                  p("by three-way ANOVA without interaction"),
-                  verbatimTextOutput("text544"),
-                  verbatimTextOutput("text545"),
+                  condition = "input.Scol != 0",
+                  conditionalPanel(
+                    condition = "input.Scol2 == 0",
+                    h3("Check the diffence of center (mean)"),
+                    verbatimTextOutput("text522"),
+                    p("by two-way ANOVA with interaction"),
+                    verbatimTextOutput("text513"),
+                    verbatimTextOutput("text514"),
+                    p("by two-way ANOVA without interaction"),
+                    verbatimTextOutput("text515"),
+                    verbatimTextOutput("text516"),
+                  ),
+                  conditionalPanel(
+                    condition = "input.Scol2 != 0",
+                    h3("Check the diffence of center (mean)"),
+                    verbatimTextOutput("text541"),
+                    p("by three-way ANOVA with interaction"),
+                    verbatimTextOutput("text542"),
+                    verbatimTextOutput("text543"),
+                    p("by three-way ANOVA without interaction"),
+                    verbatimTextOutput("text544"),
+                    verbatimTextOutput("text545"),
+                  ),
                 ),
               ),
             ),
@@ -693,6 +745,14 @@ fluidPage(
                   verbatimTextOutput("text512"),
                 ),
               ),
+              conditionalPanel(
+                condition = "input.Scol == 0",
+                conditionalPanel(
+                  condition = "input.Scol2 == 0",
+                  h3("Prediction interval"),
+                  verbatimTextOutput("text546"),
+                ),
+              ),
             ),
             
             conditionalPanel(
@@ -709,7 +769,8 @@ fluidPage(
                 verbatimTextOutput("text536"),
               ),
             ),
-            a("Code (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-1.html")
+            a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-01.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-01.html")
           ),
           
           conditionalPanel(
@@ -726,9 +787,12 @@ fluidPage(
               h4("Algorithm"),
               p("1. All categorical variables are changed into dummy variables"),
               p("2. Calculate correlation coefficient"),
-              a("Code (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-2.html"),br(),
-              a("About Correlation of variables (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3.html"),br(),
-              a("About Correlation Coefficient Network graph (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3-1.html")
+              a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-02.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-02.html"),br(),
+              a("About Correlation of variables (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-3.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3.html"),br(),
+              a("About Correlation Coefficient Network graph (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-3-1.html"),
+              a("(Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3-1.html")
             ),
             
             conditionalPanel(
@@ -740,9 +804,12 @@ fluidPage(
               h4("Algorithm"),
               p("1. All categorical variables are changed into dummy variables"),
               p("2. Graphical lasso"),
-              a("Code (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-2.html"),br(),
-              a("About Correlation of variables (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3.html"),br(),
-              a("About Correlation Coefficient Network graph (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3-1-1.html")
+              a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-02.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-02.html"),br(),
+              a("About Correlation of variables (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-3.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3.html"),br(),
+              a("About Correlation Coefficient Network graph (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-3-1-1.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3-1-1.html")
             ),
             
             conditionalPanel(
@@ -756,15 +823,18 @@ fluidPage(
               h4("Algorithm"),
               p("1. All numerical variables are changed into categorical variables"),
               p("2. Calculate Cramer's coefficient of association of all sets"),
-              a("Code (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-2.html"),br(),
-              a("About Correlation of categorical variables (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3.html")
+              a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-02.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-02.html"),br(),
+              a("About Correlation of categorical variables (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-3.html"),
+              a("(Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3.html")
             ),
             conditionalPanel(
               condition = "input.Variable_Network == 'Bayesian_Network1'",
               h3("Bayesian Network"),
               plotOutput("plot16"),
               
-              a("About Structure Analysis by Bayesian Network (Japanese)   ",href="http://data-science.tokyo/ed/edj1-8-3-2.html")
+              a("About Structure Analysis by Bayesian Network (English)   ",href="http://data-science.tokyo/ed-e/ede1-8-3-2.html"),
+              a("(Japanese)   ",href="http://data-science.tokyo/ed/edj1-8-3-2.html")
               
               
             ),
@@ -782,7 +852,8 @@ fluidPage(
               p("3. Absolute values of coefficients are calculated"),
               p("4. Draw network graph"),
               p("In this method, we cannot use categorical variables"),
-              a("Code (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3-1-2.html")
+              a("Code (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-3-1-2.html"),
+              a("(Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3-1-2.html")
             ),
             
             conditionalPanel(
@@ -811,9 +882,12 @@ fluidPage(
               p("1. All numerical variables are changed into categorical variables"),
               p("2. All categorical variables are changed into dummy variables"),
               p("3. Association analysis."),
-              a("Code (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-4.html"),br(),
-              a("About similariy of categories (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-2.html"),br(),
-              a("About association analysis (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-2-1.html")
+              a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-04.html"),
+              a("(Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-04.html"),br(),
+              a("About similariy of categories (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-2.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-2.html"),br(),
+              a("About association analysis (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-2-1.html"),
+              a("(Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-2-1.html")
             ),
           ),
           
@@ -827,9 +901,12 @@ fluidPage(
               p("1. All categorical variables are changed into dummy variables"),
               p("2. PCA to calculate factor loading. Output is multi-dimensional data"),
               p("3. MDS(sammon) as dimension reduction. Output is 2-dimension data"),
-              a("Code (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-2.html"),br(),
-              a("About similariy of categories (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-2.html"),br(),
-              a("About the reason to use MDS after PCA (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3-2.html")
+              a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-02.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-02.html"),br(),
+              a("About similariy of categories (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-2.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-2.html"),br(),
+              a("About the reason to use MDS after PCA (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-3-2.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3-2.html")
             ),
             
             conditionalPanel(
@@ -847,9 +924,12 @@ fluidPage(
               p("2. All categorical variables are changed into dummy variables"),
               p("3. Correspondence analysis. Output is multi-dimensional data"),
               p("4. MDS(sammon) as dimension reduction. Output is 2-dimension data"),
-              a("Code (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-4.html"),br(),
-              a("About similariy of categories (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-2.html"),br(),
-              a("About the reason to use MDS after Correspondence analysis (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-4-2-4.html")
+              a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-04.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-04.html"),br(),
+              a("About similariy of categories (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-2.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-2.html"),br(),
+              a("About the reason to use MDS after Correspondence analysis (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-4-2-4.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-4-2-4.html")
             ),
           ),
             
@@ -862,9 +942,12 @@ fluidPage(
             p("1. All numerical variables are changed into categorical variables"),
             p("2. Make contingency table. (= Make count data of categories)"),
             p("3. GLM. Y is count data. Xs are categories"),
-            a("Code (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-2.html"),br(),
-            a("About similariy of categories (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-2.html"),br(),
-            a("About Log Linear model (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3-3-2.html")
+            a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-02.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-02.html"),br(),
+            a("About similariy of categories (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-2.html"),br(),
+            a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-2.html"),br(),
+            a("About Log Linear model (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-3-3-2.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3-3-2.html")
           ),
           
         ),  
@@ -879,7 +962,8 @@ fluidPage(
             p("If label column is numerical, 2 dimension scatter plot. 
               If label column is categorical, 1 dimension scatter plot stratidied by categories."),
             p("Categorical variables except label column are changed into dummy variables"),
-            a("Code (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-2.html")
+            a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-02.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-02.html")
           ),
           conditionalPanel(
             condition = "input.Between_label_column_and_others == 'GLMM1'",
@@ -888,15 +972,26 @@ fluidPage(
               So this method could be Linear Mixed Effect model (LME) when categorical variables are included."),
             p("Features in the model are automatically choosed using AIC."),
             verbatimTextOutput("text113"),
-            a("About GLMM (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-1-4.html")
+            a("About GLMM (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-1-4.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-1-4.html")
           ),
           
+          conditionalPanel(
+            condition = "input.Between_label_column_and_others == 'PCRA1'",
+            h3("Principal Component Regression Analysis"),
+            
+            verbatimTextOutput("text114"),
+            plotOutput("plot18"),
+            a("About PCRA (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-1-2-1-1..html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-1-2-1-1..html")
+          ),
           
           conditionalPanel(
             condition = "input.Between_label_column_and_others == 'Decision_Tree1'",
             h3("Decision Tree"),
             plotOutput("plot15"),
-            a("About Decision_Tree (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-1.html")
+            a("About Decision_Tree (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-1.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-1.html")
           ),
           
           
@@ -943,8 +1038,10 @@ fluidPage(
               condition = "input.One_class == 'MT_All_Varaiables1'",
               p("If there is multicollinearity among variables, MT does not work.")
             ),
-            a("Code (Japanese)   ",href="http://data-science.tokyo/R-J/R-J3-1.html"),br(),
-            a("About one-class model (Japanese)   ",href="http://data-science.tokyo/ed/edj1-6-4-2.html"),
+            a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E3-01.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J3-01.html"),br(),
+            a("About one-class model (English)   ",href="http://data-science.tokyo/ed-e/ede1-6-4-2.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-6-4-2.html"),
             
             conditionalPanel(
               condition = "input.One_class != 'Minimum_Distance_All_Varaiables1'",
@@ -957,10 +1054,12 @@ fluidPage(
                   p("1. All categorical variables are changed into dummy variables (except MT)"),
                   p("2. Make model with the samples of label = 0 in the label column"),
                   p("3. Calculate distance from the average of label = 0 samples"),
-                  a("About MT method (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-2-4.html"),br(),
+                  a("About MT method (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-2-4.html"),
+                  a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-2-4.html"),br(),
                   conditionalPanel(
                     condition = "input.One_class != 'PCA_MT1'",
-                    a("About the reason to use PCA before MT method (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-2-4-3-2.html"),br(),
+                    a("About the reason to use PCA before MT method (English)   ",href="http://data-science.tokyo/ed/edj1-2-2-4-3-2.html"),
+                    a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-2-4-3-2.html"),br(),
                   ),
                 ),
               ),
@@ -971,7 +1070,8 @@ fluidPage(
               p("1. All categorical variables are changed into dummy variables (except MT)"),
               p("2. PCA for dimension reduction"),
               p("3. Calculate distance from the nearest sample of label = 0 samples"),
-              a("About Minimum Distance method (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-5-3.html"),
+              a("About Minimum Distance method (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-5-3.html"),
+              a("(Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-5-3.html"),
             ),
           ),
           
@@ -990,8 +1090,10 @@ fluidPage(
               br(),
               p("If label column is numerical, 2 dimension scatter plot. 
                 If label column is categorical, 1 dimension scatter plot stratidied by categories."),
-              a("Code (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-5.html"),br(),
-              a("Abput hidden variable (Japanese)   ",href="http://data-science.tokyo/ed/edj1-9-1-2-1-1.html")
+              a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-05.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-05.html"),br(),
+              a("About hidden variable (English)   ",href="http://data-science.tokyo/ed-e/ede1-9-1-2-1-1.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-9-1-2-1-1.html")
             ),
             conditionalPanel(
               condition = "input.finder == 'Hidden_ICA1'",
@@ -1004,9 +1106,12 @@ fluidPage(
               br(),
               p("If label column is numerical, 2 dimension scatter plot. 
                 If label column is categorical, 1 dimension scatter plot stratidied by categories."),
-              a("Code (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-5.html"),br(),
-              a("Abput hidden variable (Japanese)   ",href="http://data-science.tokyo/ed/edj1-9-1-2-1-1.html"),br(),
-              a("Abput ICA (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-4-2.html")
+              a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-05.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-05.html"),br(),
+              a("Abput hidden variable (English)   ",href="http://data-science.tokyo/ed-e/ede1-9-1-2-1-1.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-9-1-2-1-1.html"),br(),
+              a("Abput ICA (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-4-2.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-4-2.html")
             ),
           ),
         ),
@@ -1036,15 +1141,18 @@ fluidPage(
               we can analyze with the function 'Similarity_of_Variables_and_Categories'"),
               downloadButton("downloadData", "Download analyzed data")
             ),
-            a("Code (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-3.html"),br(),
-            a("About dimension reduction(Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-3-1.html"),br(),
+            a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-03.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-03.html"),br(),
+            a("About dimension reduction(English)   ",href="http://data-science.tokyo/ed-e/ede1-3-3-1.html"),
+            a("(Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-3-1.html"),br(),
             
           ),
           conditionalPanel(
             condition = "input.Dimension_Reduction == 'nMDS1'",
             p("Change from High dimension data into 2 dimension data using network graph algrithm. "),
             
-            a("About nMDS (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-3-1-1-1.html"),br(),
+            a("About nMDS (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-3-1-1-1.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-3-1-1-1.html"),br(),
           )
         )
       ),
@@ -1065,8 +1173,10 @@ fluidPage(
           
         ),
         
-        a("About similariy of samples (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-3-1.html"),br(),
-        a("About clustering (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-3-2.html"),
+        a("About similariy of samples (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-3-1.html"),
+        a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-3-1.html"),br(),
+        a("About clustering (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-3-2.html"),
+        a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-3-2.html"),
       ),
       
       
@@ -1080,7 +1190,8 @@ fluidPage(
           p("Values are used as thickness of lines. Small values are not used as lines."),
           plotOutput("plot401"),
           
-          a("Code (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-6.html")
+          a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-06.html"),
+          a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-06.html")
         ),
         conditionalPanel(
           condition = "input.Similarity_of_Names_in_Rows_and_Columns == 'Correspondence_MDS_Names1'",
@@ -1094,8 +1205,10 @@ fluidPage(
           h4("Algorithm"),
           p("1. Correspondence analysis. Output is multi-dimensional data."),
           p("2. MDS(sammon) to change from high dimension into 2 dimension"),
-          a("Code (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-6.html"),br(),
-          a("About the reason to use MDS after Correspondence analysis (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-4-2-4.html")
+          a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-06.html"),
+          a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-06.html"),br(),
+          a("About the reason to use MDS after Correspondence analysis (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-4-2-4.html"),
+          a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-4-2-4.html")
         ),
         conditionalPanel(
           condition = "input.Similarity_of_Names_in_Rows_and_Columns == 'Independence_Test1'",
@@ -1103,7 +1216,8 @@ fluidPage(
           
           verbatimTextOutput("text403"),
           
-          a("About Two_way_GLM (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3-3-1.html")
+          a("About Two_way_GLM (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-3-3-1.html"),
+          a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3-3-1.html")
         ),
         conditionalPanel(
           condition = "input.Similarity_of_Names_in_Rows_and_Columns == 'Two_way_GLM1'",
@@ -1115,7 +1229,8 @@ fluidPage(
             p("Values are used as Label(Y) of the model.
             Names are used as features(X)."),
             
-            a("About Quantification theory type I (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-6-1.html")
+            a("About Quantification theory type I (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-6-1.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-6-1.html")
           ),
           conditionalPanel(
             condition = "input.family_likn3 != 'gaussian_identity'",
@@ -1125,15 +1240,18 @@ fluidPage(
             p("Count values are used as Label(Y) of the model.
             Names are used as features(X)."),
             
-            a("About Loglinear_model (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3-3-2.html"),
+            a("About Loglinear_model (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-3-3-2.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3-3-2.html")
           ),
-          a("Code (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-6.html"),br(),
+          a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-06.html"),
+          a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-06.html")
         ),
         conditionalPanel(
           condition = "input.Similarity_of_Names_in_Rows_and_Columns == 'Heat_map_Clustering1'",
           plotOutput("plot403"),
           
-          a("Code (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-6.html")
+          a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-06.html"),
+          a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-06.html")
         ),
         
       )

@@ -124,106 +124,133 @@ shinyServer(function(input, output) {
             if(input$Scol != 0 && input$Ccol != 0){
               if(class(Data1[,input$Scol]) == "numeric"){Data1[,input$Scol] <- droplevels(cut(Data1[,input$Scol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
               if(input$NumericalToCategorcalSColor == 1){Data1[,input$Ccol] <- as.factor(Data1[,input$Ccol])}
-              output$text532 <- renderPrint(anova(step(lm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Ccol], data=Data1))))
-              output$text535 <- renderPrint(paste("Data1[,input$Lcol] =" ,Lname,"   Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname,"   Data1[,input$Ccol] =" ,Cname))
-              if(input$family_link2 == "gaussian_identity"){
-                output$text533 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Ccol], data=Data1, family= gaussian(link = "identity")))))
-              } else if(input$family_link2 == "poisson_log"){
-                output$text533 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Ccol], data=Data1, family= poisson(link = "log")))))
-              } else if(input$family_link2 == "binomial_logit"){
-                output$text533 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Ccol], data=Data1, family= binomial(link = "logit")))))
-              } else if(input$family_link2 == "binomial_probit"){
-                output$text533 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Ccol], data=Data1, family= binomial(link = "probit")))))
-              } 
-              #output$text533 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Ccol], data=Data1, family= input$family2))))
-              output$text534 <- renderPrint(paste("Data1[,input$Lcol] =" ,Lname,"   Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname,"   Data1[,input$Ccol] =" ,Cname))
+              
+              if(input$Using_GLM == 1){
+                output$text532 <- renderPrint(anova(step(lm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Ccol], data=Data1))))
+                output$text535 <- renderPrint(paste("Data1[,input$Lcol] =" ,Lname,"   Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname,"   Data1[,input$Ccol] =" ,Cname))
+                if(input$family_link2 == "gaussian_identity"){
+                  output$text533 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Ccol], data=Data1, family= gaussian(link = "identity")))))
+                } else if(input$family_link2 == "poisson_log"){
+                  output$text533 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Ccol], data=Data1, family= poisson(link = "log")))))
+                } else if(input$family_link2 == "binomial_logit"){
+                  output$text533 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Ccol], data=Data1, family= binomial(link = "logit")))))
+                } else if(input$family_link2 == "binomial_probit"){
+                  output$text533 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Ccol], data=Data1, family= binomial(link = "probit")))))
+                } 
+                #output$text533 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Ccol], data=Data1, family= input$family2))))
+                output$text534 <- renderPrint(paste("Data1[,input$Lcol] =" ,Lname,"   Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname,"   Data1[,input$Ccol] =" ,Cname))
+              }  
               ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_point(aes(colour=Data1[,input$Ccol])) + facet_wrap(~Data1[,input$Scol],scales="free")+ labs(x=Xname,y=Lname,color=Cname,subtitle = Sname)
             } else if(input$Scol == 0 && input$Ccol != 0){
               if(input$NumericalToCategorcalSColor == 1){Data1[,input$Ccol] <- as.factor(Data1[,input$Ccol])}
-              output$text526 <- renderPrint(anova(step(lm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Ccol], data=Data1))))
-              if(input$family_link2 == "gaussian_identity"){
-                output$text527 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Ccol], data=Data1, family= gaussian(link = "identity")))))
-              } else if(input$family_link2 == "poisson_log"){
-                output$text527 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Ccol], data=Data1, family= poisson(link = "log")))))
-              } else if(input$family_link2 == "binomial_logit"){
-                output$text527 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Ccol], data=Data1, family= binomial(link = "logit")))))
-              } else if(input$family_link2 == "binomial_probit"){
-                output$text527 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Ccol], data=Data1, family= binomial(link = "probit")))))
-              } 
-              #output$text527 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Ccol], data=Data1, family= input$family2))))
-              output$text528 <- renderPrint(paste("Data1[,input$Lcol] =" ,Lname,"   Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Ccol] =" ,Cname))
+              
+              if(input$Using_GLM == 1){
+                output$text526 <- renderPrint(anova(step(lm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Ccol], data=Data1))))
+                if(input$family_link2 == "gaussian_identity"){
+                  output$text527 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Ccol], data=Data1, family= gaussian(link = "identity")))))
+                } else if(input$family_link2 == "poisson_log"){
+                  output$text527 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Ccol], data=Data1, family= poisson(link = "log")))))
+                } else if(input$family_link2 == "binomial_logit"){
+                  output$text527 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Ccol], data=Data1, family= binomial(link = "logit")))))
+                } else if(input$family_link2 == "binomial_probit"){
+                  output$text527 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Ccol], data=Data1, family= binomial(link = "probit")))))
+                } 
+                #output$text527 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Ccol], data=Data1, family= input$family2))))
+                output$text528 <- renderPrint(paste("Data1[,input$Lcol] =" ,Lname,"   Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Ccol] =" ,Cname))
+              }
               ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_point(aes(colour=Data1[,input$Ccol])) + labs(x=Xname,y=Lname,color=Cname)
             } else if(input$Scol != 0 && input$Ccol == 0){
               if(class(Data1[,input$Scol]) == "numeric"){Data1[,input$Scol] <- droplevels(cut(Data1[,input$Scol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
-              output$text529 <- renderPrint(anova(step(lm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol], data=Data1))))
-              if(input$family_link2 == "gaussian_identity"){
-                output$text530 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol], data=Data1, family= gaussian(link = "identity")))))
-              } else if(input$family_link2 == "poisson_log"){
-                output$text530 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol], data=Data1, family= poisson(link = "log")))))
-              } else if(input$family_link2 == "binomial_logit"){
-                output$text530 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol], data=Data1, family= binomial(link = "logit")))))
-              } else if(input$family_link2 == "binomial_probit"){
-                output$text530 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol], data=Data1, family= binomial(link = "probit")))))
-              } 
-              #output$text530 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol], data=Data1, family= input$family2))))
-              output$text531 <- renderPrint(paste("Data1[,input$Lcol] =" ,Lname,"   Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname))
+              
+              if(input$Using_GLM == 1){
+                output$text529 <- renderPrint(anova(step(lm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol], data=Data1))))
+                if(input$family_link2 == "gaussian_identity"){
+                  output$text530 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol], data=Data1, family= gaussian(link = "identity")))))
+                } else if(input$family_link2 == "poisson_log"){
+                  output$text530 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol], data=Data1, family= poisson(link = "log")))))
+                } else if(input$family_link2 == "binomial_logit"){
+                  output$text530 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol], data=Data1, family= binomial(link = "logit")))))
+                } else if(input$family_link2 == "binomial_probit"){
+                  output$text530 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol], data=Data1, family= binomial(link = "probit")))))
+                } 
+                #output$text530 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol], data=Data1, family= input$family2))))
+                output$text531 <- renderPrint(paste("Data1[,input$Lcol] =" ,Lname,"   Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname))
+              }
               ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_point() + facet_wrap(~Data1[,input$Scol],scales="free")+ labs(x=Xname,y=Lname,subtitle = Sname)
             } else {
               output$text518 <- renderPrint(paste("Correlation coefficient =" ,cor(Data1[,input$Xcol],Data1[,input$Lcol])))
-              if(input$family_link2 == "gaussian_identity"){
-                output$text519 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol], data=Data1, family= gaussian(link = "identity")))))
-              } else if(input$family_link2 == "poisson_log"){
-                output$text519 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol], data=Data1, family= poisson(link = "log")))))
-              } else if(input$family_link2 == "binomial_logit"){
-                output$text519 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol], data=Data1, family= binomial(link = "logit")))))
-              } else if(input$family_link2 == "binomial_probit"){
-                output$text519 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol], data=Data1, family= binomial(link = "probit")))))
-              } 
-              #output$text519 <- renderPrint(summary(glm(Data1[,input$Lcol]~Data1[,input$Xcol], data=Data1, family= input$family2)))
-              output$text520 <- renderPrint(paste("Data1[,input$Lcol] =" ,Lname,"   Data1[,input$Xcol] =" ,Xname,"   input$family2 =" ,input$family2))
-              output$text537 <- renderPrint(t.test(x=Data1[,input$Xcol],y=Data1[,input$Lcol],paired=T))
-              output$plot537 <- renderPlot(ggplot(Data1, aes(x=(Data1[,input$Lcol] - Data1[,input$Xcol]))) + geom_histogram() + labs(x=paste("Difference between",Lname,"and",Xname)))
-              ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_point() + labs(x=Xname,y=Lname)
+              if(input$Using_GLM == 1){
+                if(input$family_link2 == "gaussian_identity"){
+                  output$text519 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol], data=Data1, family= gaussian(link = "identity")))))
+                } else if(input$family_link2 == "poisson_log"){
+                  output$text519 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol], data=Data1, family= poisson(link = "log")))))
+                } else if(input$family_link2 == "binomial_logit"){
+                  output$text519 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol], data=Data1, family= binomial(link = "logit")))))
+                } else if(input$family_link2 == "binomial_probit"){
+                  output$text519 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol], data=Data1, family= binomial(link = "probit")))))
+                } 
+                #output$text519 <- renderPrint(summary(glm(Data1[,input$Lcol]~Data1[,input$Xcol], data=Data1, family= input$family2)))
+                output$text520 <- renderPrint(paste("Data1[,input$Lcol] =" ,Lname,"   Data1[,input$Xcol] =" ,Xname,"   input$family2 =" ,input$family2))
+              }
+              if(input$Check_difference_between_two_variablesl == 1){
+                output$text537 <- renderPrint(t.test(x=Data1[,input$Xcol],y=Data1[,input$Lcol],paired=T))
+                output$plot537 <- renderPlot(ggplot(Data1, aes(x=(Data1[,input$Lcol] - Data1[,input$Xcol]))) + geom_histogram() + labs(x=paste("Difference between",Lname,"and",Xname)))
+              }
+              if(input$Using_Prediction_Interval == 1){
+                lm <- lm(Data1[,input$Lcol] ~ Data1[,input$Xcol], data=Data1)
+                Data0 <- predict(lm, Data1, interval="prediction", level = input$Prediction_Interval_Probability)
+                Data2 <- cbind(Data, Data0)
+                ggplot(data = Data2, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) +geom_point()+geom_line(aes(y=lwr), color = "red")+geom_line(aes(y=upr), color = "red")+geom_line(aes(y= fit), color = "blue")
+              } else {
+                ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_point() + labs(x=Xname,y=Lname)
+              }
+              
             }  
+            
           } else if(input$Gtype == "box_plot"){
             if(class(Data1[,input$Xcol]) == "numeric" || class(Data1[,input$Xcol]) == "integer"){Data1[,input$Xcol] <- droplevels(cut(Data1[,input$Xcol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
-            if(input$Scol != 0){
-              if(class(Data1[,input$Scol]) == "numeric"){Data1[,input$Scol] <- droplevels(cut(Data1[,input$Scol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
-              if(input$Scol2 == 0){
-                mean01 <- aggregate(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol],data=Data1,FUN=mean)
-                names(mean01) <- c(names(Data1[input$Xcol]),names(Data1[input$Scol]),paste("mean of",names(Data1[input$Lcol])))
-                output$text522 <- renderPrint(mean01)
-                output$text513 <- renderPrint(summary(aov(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol],data=Data)))
-                output$text514 <- renderPrint(paste("Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname))
-                output$text515 <- renderPrint(summary(aov(Data1[,input$Lcol]~Data1[,input$Xcol]+Data1[,input$Scol],data=Data)))
-                output$text516 <- renderPrint(paste("Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname))
-                ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_boxplot() + facet_wrap(~Data1[,input$Scol],scales="free")+ labs(x=Xname,y=Lname,subtitle = Sname)
+            
+            if(input$Xcol != 0){
+              if(input$Scol != 0){
+                if(class(Data1[,input$Scol]) == "numeric"){Data1[,input$Scol] <- droplevels(cut(Data1[,input$Scol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
+                if(input$Scol2 == 0){
+                  mean01 <- aggregate(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol],data=Data1,FUN=mean)
+                  names(mean01) <- c(names(Data1[input$Xcol]),names(Data1[input$Scol]),paste("mean of",names(Data1[input$Lcol])))
+                  output$text522 <- renderPrint(mean01)
+                  output$text513 <- renderPrint(summary(aov(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol],data=Data)))
+                  output$text514 <- renderPrint(paste("Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname))
+                  output$text515 <- renderPrint(summary(aov(Data1[,input$Lcol]~Data1[,input$Xcol]+Data1[,input$Scol],data=Data)))
+                  output$text516 <- renderPrint(paste("Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname))
+                  ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_boxplot() + facet_wrap(~Data1[,input$Scol],scales="free")+ labs(x=Xname,y=Lname,subtitle = Sname)
+                } else {
+                  
+                  mean01 <- aggregate(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Scol2],data=Data1,FUN=mean)
+                  names(mean01) <- c(names(Data1[input$Xcol]),names(Data1[input$Scol]),names(Data1[input$Scol2]),paste("mean of",names(Data1[input$Lcol])))
+                  output$text541 <- renderPrint(mean01)
+                  output$text542 <- renderPrint(summary(aov(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Scol2],data=Data)))
+                  output$text543 <- renderPrint(paste("Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname,"   Data1[,input$Scol2] =" ,Sname2))
+                  output$text544 <- renderPrint(summary(aov(Data1[,input$Lcol]~Data1[,input$Xcol]+Data1[,input$Scol]+Data1[,input$Scol2],data=Data)))
+                  output$text545 <- renderPrint(paste("Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname,"   Data1[,input$Scol2] =" ,Sname2))
+                  ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_boxplot() + facet_grid(Data1[,input$Scol]~Data1[,input$Scol2])+ labs(x=Xname,y=Lname,subtitle = paste("columns:",Sname," rows:",Sname2))
+                  
+                  
+                }    
               } else {
+                mean01 <- aggregate(Data1[,input$Lcol]~Data1[,input$Xcol],data=Data1,FUN=mean)
+                names(mean01) <- c(names(Data1[input$Xcol]),paste("mean of",names(Data1[input$Lcol])))
+                output$text517 <- renderPrint(mean01)
+                output$text505 <- renderPrint(summary(aov(Data1[,input$Lcol]~Data1[,input$Xcol],data=Data)))
+                output$text506 <- renderPrint(paste("Data1[,input$Xcol] =" ,Xname))
                 
-                mean01 <- aggregate(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Scol2],data=Data1,FUN=mean)
-                names(mean01) <- c(names(Data1[input$Xcol]),names(Data1[input$Scol]),names(Data1[input$Scol2]),paste("mean of",names(Data1[input$Lcol])))
-                output$text541 <- renderPrint(mean01)
-                output$text542 <- renderPrint(summary(aov(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Scol2],data=Data)))
-                output$text543 <- renderPrint(paste("Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname,"   Data1[,input$Scol2] =" ,Sname2))
-                output$text544 <- renderPrint(summary(aov(Data1[,input$Lcol]~Data1[,input$Xcol]+Data1[,input$Scol]+Data1[,input$Scol2],data=Data)))
-                output$text545 <- renderPrint(paste("Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname,"   Data1[,input$Scol2] =" ,Sname2))
-                ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_boxplot() + facet_grid(Data1[,input$Scol]~Data1[,input$Scol2])+ labs(x=Xname,y=Lname,subtitle = paste("columns:",Sname," rows:",Sname2))
-                
-                
-              }    
+                sd01 <- aggregate(Data1[,input$Lcol]~Data1[,input$Xcol],data=Data1,FUN=sd)
+                names(sd01) <- c(names(Data1[input$Xcol]),paste("sd of",names(Data1[input$Lcol])))
+                output$text521 <- renderPrint(sd01)
+                output$text507 <- renderPrint(bartlett.test(formula=Data1[,input$Lcol]~Data1[,input$Xcol]))
+                output$text508 <- renderPrint(paste("Data1[,input$Lcol] =" ,Lname,"   Data1[,input$Xcol] =" ,Xname))
+                ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_boxplot() + labs(x=Xname,y=Lname)
+              }
             } else {
-              mean01 <- aggregate(Data1[,input$Lcol]~Data1[,input$Xcol],data=Data1,FUN=mean)
-              names(mean01) <- c(names(Data1[input$Xcol]),paste("mean of",names(Data1[input$Lcol])))
-              output$text517 <- renderPrint(mean01)
-              output$text505 <- renderPrint(summary(aov(Data1[,input$Lcol]~Data1[,input$Xcol],data=Data)))
-              output$text506 <- renderPrint(paste("Data1[,input$Xcol] =" ,Xname))
-              
-              sd01 <- aggregate(Data1[,input$Lcol]~Data1[,input$Xcol],data=Data1,FUN=sd)
-              names(sd01) <- c(names(Data1[input$Xcol]),paste("sd of",names(Data1[input$Lcol])))
-              output$text521 <- renderPrint(sd01)
-              output$text507 <- renderPrint(bartlett.test(formula=Data1[,input$Lcol]~Data1[,input$Xcol]))
-              output$text508 <- renderPrint(paste("Data1[,input$Lcol] =" ,Lname,"   Data1[,input$Xcol] =" ,Xname))
-              ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_boxplot() + labs(x=Xname,y=Lname)
+              ggplot(Data1, aes(y=Data1[,input$Lcol])) + geom_boxplot() + labs(y=Lname)
             }
           } else if(input$Gtype == "histgram"){
             if(input$Scol != 0){
@@ -256,6 +283,13 @@ shinyServer(function(input, output) {
                   ggplot(Data1, aes(x=Data1[,input$Lcol])) + geom_histogram() + facet_grid(Data1[,input$Scol]~.)+ labs(x=Lname,subtitle = Sname)
                 }
             } else {
+              M <- mean(Data1[,input$Lcol])
+              n <- nrow(Data1)
+              t <- -qt((1-input$Prediction_Interval_Probability2)/2, n-1)
+              V <- var(Data1[,input$Lcol])
+              Upper <- M + t * sqrt(V * (1 + 1/n))
+              Lower <- M - t * sqrt(V * (1 + 1/n))
+              output$text546<- renderPrint(cbind(Upper,Lower))
               ggplot(Data1, aes(x=Data1[,input$Lcol])) + geom_histogram() + labs(x=Lname)
             }
               
@@ -876,6 +910,54 @@ shinyServer(function(input, output) {
   })
   
   
+  output$text114 <- renderPrint({
+    if(input$analysis == "Similarity_of_Variables_and_Categories1"){
+      if(input$Similarity_of_Variables_and_Categories == "Between_label_column_and_others1"){
+        if(input$Between_label_column_and_others == "PCRA1"){
+          
+          req(input$file1)
+          
+          if(input$sep2 == "Separator_Comma"){sep <- ","}
+          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+          Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+          if(input$DoNotUseFirst == 1){
+            Data[,1] <- NULL
+          }
+          
+          Data1 <- Data
+          Ydata <- Data[,input$Label_column]
+          Data1[,input$Label_column]<-NULL
+          pc <- prcomp(Data1, scale=TRUE, tol=0.01)
+          pcd <- as.data.frame(pc$x)
+          pcr <- lm(Ydata ~ . ,pcd)
+          
+          library(MASS)
+          pc2 <- sweep(pc$rotation, MARGIN=2, pc$sdev, FUN="*") 
+          
+          Data11 <- pc2
+          Data11_dist <- dist(Data11)
+          library(igraph) 
+          library(sigmoid) 
+          Data1p = Data11
+          colnames(Data1p) = paste(colnames(Data1p),"+",sep="")
+          DM.matp = apply(Data1p,c(1,2),relu)
+          Data1m = -Data11
+          colnames(Data1m) = paste(colnames(Data1m),"-",sep="")
+          DM.matm = apply(Data1m,c(1,2),relu)
+          DM.mat =cbind(DM.matp,DM.matm)
+          DM.mat <- DM.mat / max(DM.mat) * 3
+          DM.mat[DM.mat < 1] <- 0 
+          DM.g<-graph_from_incidence_matrix(DM.mat,weighted=T) 
+          V(DM.g)$color <- c("steel blue", "orange")[V(DM.g)$type+1] 
+          V(DM.g)$shape <- c("square", "circle")[V(DM.g)$type+1] 
+          output$plot18<-renderPlot(plot(DM.g, edge.width=E(DM.g)$weight))
+          
+          summary(pcr) 
+        }
+      }
+    }
+  })
   
   output$plot15 <- renderPlot({
     if(input$analysis == "Similarity_of_Variables_and_Categories1"){
