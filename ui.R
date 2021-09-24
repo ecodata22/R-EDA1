@@ -155,6 +155,7 @@ fluidPage(
                                    Stratifeid_graph = "Stratifeid_graph1",
                                    Variable_Network = "Variable_Network1",
                                    Using_MDS = "Using_MDS1",
+                                   Factor_Analysis = "Factor_Analysis1",
                                    Log_Linear = "Log_Linear1")
           ),
           
@@ -220,6 +221,20 @@ fluidPage(
                           min = 0,  max = 100, value = 20, step = 1)
             )
           ),
+          
+          conditionalPanel(
+            condition = "input.Among_all_columns == 'Factor_Analysis1'",
+            numericInput('Factors', 'Number of factors', "2"),
+            radioButtons("Factor_Rotation", "Rotation_Type",
+                         choices = c(varimax = "varimax",
+                                     quartimax = "quartimax",
+                                     geominT = "geominT",
+                                     promax = "promax",
+                                     cluster = "cluster",
+                                     oblimin = "oblimin",
+                                     geominQ = "geominQ"))
+          ),
+          
         ),
         
         conditionalPanel(
@@ -932,6 +947,19 @@ fluidPage(
               a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-4-2-4.html")
             ),
           ),
+          
+          conditionalPanel(
+            condition = "input.Among_all_columns == 'Factor_Analysis1'",
+            h3("Factor analysis"),
+            verbatimTextOutput("text406"),
+            plotOutput("plot406"),
+            
+            
+            a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E4-09.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J4-09.html"),br(),
+            a("About Factor analysis (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-4.html"),br(),
+            a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-4.html"),br(),
+          ),
             
           conditionalPanel(
             condition = "input.Among_all_columns == 'Log_Linear1'",
@@ -982,8 +1010,8 @@ fluidPage(
             
             verbatimTextOutput("text114"),
             plotOutput("plot18"),
-            a("About PCRA (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-1-2-1-1..html"),
-            a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-1-2-1-1..html")
+            a("About PCRA (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-1-2-1-1.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-1-2-1-1.html")
           ),
           
           conditionalPanel(

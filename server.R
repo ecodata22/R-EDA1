@@ -801,6 +801,37 @@ shinyServer(function(input, output) {
     }
   })
   
+  
+  output$text406 <- renderPrint({
+    if(input$analysis == "Similarity_of_Variables_and_Categories1"){
+      if(input$Similarity_of_Variables_and_Categories == "Among_all_columns1"){
+        if(input$Among_all_columns == "Factor_Analysis1"){
+          
+          req(input$file1)
+          
+          if(input$sep2 == "Separator_Comma"){sep <- ","}
+          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+          Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+          if(input$DoNotUseFirst == 1){
+            Data[,1] <- NULL
+          }
+          
+          
+          library(dummies)
+          library(psych)
+          library(GPArotation)
+          Data1 <- dummy.data.frame(Data)
+          
+          
+          fa_result <- fa(Data1, nfactors = input$Factors, fm = "ml", rotate = input$Factor_Rotation)
+          output$plot406 <- renderPlot(heatmap(fa_result$loadings, scale="none"))
+          fa_result$loadings
+        }
+      }
+    }
+  })
+  
   output$text404 <- renderPrint({
     if(input$analysis == "Similarity_of_Variables_and_Categories1"){
       if(input$Similarity_of_Variables_and_Categories == "Among_all_columns1"){
