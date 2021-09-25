@@ -25,13 +25,16 @@ fluidPage(
           conditionalPanel(
             condition = "input.Among_all_columns == 'Stratifeid_graph1'",
             
-            selectInput("Gtype", "Graph type",  choices = c("histgram", "scatter", "box_plot", "bar")),
+            selectInput("Gtype", "Graph type",  choices = c("histgram", "scatter", "box_plot", "line_graph", "bar")),
             numericInput('Lcol', 'Label', "1"),
             conditionalPanel(
               condition = "input.Gtype != 'histgram'",
               conditionalPanel(
                 condition = "input.Gtype != 'bar'",
-                numericInput('Xcol', 'X axis', "2"),
+                conditionalPanel(
+                  condition = "input.Gtype != 'line_graph'",
+                  numericInput('Xcol', 'X axis', "1"),
+                ),
               ),
             ),
             
@@ -39,54 +42,77 @@ fluidPage(
             numericInput('Scol', 'area separate 1 (if "0" not separate)', "0"),
             conditionalPanel(
               condition = "input.Gtype != 'scatter'",
+              
               conditionalPanel(
-                condition = "input.Scol > 0",
-                numericInput('Scol2', 'area separate 2 (if "0" not separate)', "0"),
+                condition = "input.Gtype != 'line_graph'",
+                conditionalPanel(
+                  condition = "input.Scol > 0",
+                  numericInput('Scol2', 'area separate 2 (if "0" not separate)', "0"),
+                ),
               ),
             ),
             conditionalPanel(
               condition = "input.Gtype == 'histgram'",
-              sliderInput("Prediction_Interval_Probability2",
-                          "Prediction interval probability",
-                          min = 0,  max = 1, value = 0.95, step = 0.01)
-            ),
-            conditionalPanel(
-              condition = "input.Gtype == 'scatter'",
-              numericInput('Ccol', 'Coloring (if "0" do not used colors)', "0"),
               conditionalPanel(
-                condition = "input.Ccol > 0",
-                checkboxInput("NumericalToCategorcalSColor", "If Coloring is numerical, changing categorical", FALSE),
-              ),
-              
-              conditionalPanel(
-                condition = "input.Ccol == 0 && input.Scol == 0",
-                checkboxInput("Using_Prediction_Interval", "Using prediction interval", FALSE),
-              ),
-              conditionalPanel(
-                condition = "input.Using_Prediction_Interval == 1",
-                sliderInput("Prediction_Interval_Probability",
+                condition = "input.Scol == 0",
+                sliderInput("Prediction_Interval_Probability2",
                             "Prediction interval probability",
                             min = 0,  max = 1, value = 0.95, step = 0.01)
               ),
-              
-              checkboxInput("Using_GLM", "Using GLM", FALSE),
               conditionalPanel(
-                condition = "input.Using_GLM == 1",
-                radioButtons("family_link2", "family_link",
-                             choices = c(gaussian_identity = "gaussian_identity",
-                                         poisson_log = "poisson_log",
-                                         binomial_logit = "binomial_logit",
-                                         binomial_probit = "binomial_probit"),
-                             selected = "gaussian_identity"),
-                p("'gaussian_identity' = Simple mutli regression analysis"),
-                p("'poisson_log' = Regression analysis for count data of Y"),
-                p("'binomial_logit' = Logistic regression analysis")
+                condition = "input.Scol != 0",
+                checkboxInput("Using_hypothesis_testing1", "Using hypothesis testing", FALSE),
               ),
+            ),
+            conditionalPanel(
+              condition = "input.Gtype == 'box_plot'",
               
               conditionalPanel(
-                condition = "input.Ccol == 0 && input.Scol == 0",
-                checkboxInput("Check_difference_between_two_variablesl", "Check difference between two variables", FALSE),
+                condition = "input.Xcol != 0",
+                checkboxInput("Using_hypothesis_testing2", "Using hypothesis testing", FALSE),
               ),
+            ),
+            conditionalPanel(
+              condition = "input.Gtype == 'scatter' || input.Gtype == 'line_graph'",
+              numericInput('Ccol', 'Coloring (if "0" do not used colors)', "0"),
+              conditionalPanel(
+                condition = "input.Ccol > 0",
+                checkboxInput("NumericalToCategorcalSColor2", "If coloring varaiable is numerical, changing categorical varaiable", TRUE),
+                checkboxInput("NumericalToCategorcalSColor1", "If coloring is numerical, changing categorical coloring", FALSE),
+              ),
+              conditionalPanel(
+                condition = "input.Gtype == 'scatter'",
+                conditionalPanel(
+                  condition = "input.Ccol == 0 && input.Scol == 0",
+                  checkboxInput("Using_Prediction_Interval", "Using prediction interval", FALSE),
+                ),
+                conditionalPanel(
+                  condition = "input.Using_Prediction_Interval == 1",
+                  sliderInput("Prediction_Interval_Probability",
+                              "Prediction interval probability",
+                              min = 0,  max = 1, value = 0.95, step = 0.01)
+                ),
+                
+                checkboxInput("Using_GLM", "Using GLM", FALSE),
+                conditionalPanel(
+                  condition = "input.Using_GLM == 1",
+                  radioButtons("family_link2", "family_link",
+                               choices = c(gaussian_identity = "gaussian_identity",
+                                           poisson_log = "poisson_log",
+                                           binomial_logit = "binomial_logit",
+                                           binomial_probit = "binomial_probit"),
+                               selected = "gaussian_identity"),
+                  p("'gaussian_identity' = Simple mutli regression analysis"),
+                  p("'poisson_log' = Regression analysis for count data of Y"),
+                  p("'binomial_logit' = Logistic regression analysis")
+                ),
+                
+                conditionalPanel(
+                  condition = "input.Ccol == 0 && input.Scol == 0",
+                  checkboxInput("Check_difference_between_two_variablesl", "Check difference between two variables", FALSE),
+                ),
+              ),
+              
             )
           )
         )
@@ -505,7 +531,7 @@ fluidPage(
                   For example, if '5 is the input, numerical variable is divided into 5 ranges.
                   And names of the ranges are used as categories."),
             
-            numericInput('NumericalToCategorcalS', 'No of ranges', "5"),
+            numericInput('NumericalToCategorcalS', 'No of ranges', "3"),
             
           ),
           
@@ -693,15 +719,21 @@ fluidPage(
                 conditionalPanel(
                   condition = "input.Scol == 0",
                   h3("Check the diffence of center (mean)"),
-                  p("by one-way ANOVA"),
                   verbatimTextOutput("text517"),
-                  verbatimTextOutput("text505"),
-                  verbatimTextOutput("text506"),
+                  conditionalPanel(
+                    condition = "input.Using_hypothesis_testing2 == 1",
+                    p("by one-way ANOVA"),
+                    verbatimTextOutput("text505"),
+                    verbatimTextOutput("text506"),
+                  ),
                   h3("Check the diffence of variation (variance)"),
-                  p("by Bartlett's test"),
                   verbatimTextOutput("text521"),
-                  verbatimTextOutput("text507"),
-                  verbatimTextOutput("text508"),
+                  conditionalPanel(
+                    condition = "input.Using_hypothesis_testing2 == 1",
+                    p("by Bartlett's test"),
+                    verbatimTextOutput("text507"),
+                    verbatimTextOutput("text508"),
+                  ),
                 ),
                 conditionalPanel(
                   condition = "input.Scol != 0",
@@ -709,23 +741,29 @@ fluidPage(
                     condition = "input.Scol2 == 0",
                     h3("Check the diffence of center (mean)"),
                     verbatimTextOutput("text522"),
-                    p("by two-way ANOVA with interaction"),
-                    verbatimTextOutput("text513"),
-                    verbatimTextOutput("text514"),
-                    p("by two-way ANOVA without interaction"),
-                    verbatimTextOutput("text515"),
-                    verbatimTextOutput("text516"),
+                    conditionalPanel(
+                      condition = "input.Using_hypothesis_testing2 == 1",
+                      p("by two-way ANOVA with interaction"),
+                      verbatimTextOutput("text513"),
+                      verbatimTextOutput("text514"),
+                      p("by two-way ANOVA without interaction"),
+                      verbatimTextOutput("text515"),
+                      verbatimTextOutput("text516"),
+                    ),
                   ),
                   conditionalPanel(
                     condition = "input.Scol2 != 0",
                     h3("Check the diffence of center (mean)"),
                     verbatimTextOutput("text541"),
-                    p("by three-way ANOVA with interaction"),
-                    verbatimTextOutput("text542"),
-                    verbatimTextOutput("text543"),
-                    p("by three-way ANOVA without interaction"),
-                    verbatimTextOutput("text544"),
-                    verbatimTextOutput("text545"),
+                    conditionalPanel(
+                      condition = "input.Using_hypothesis_testing2 == 1",
+                      p("by three-way ANOVA with interaction"),
+                      verbatimTextOutput("text542"),
+                      verbatimTextOutput("text543"),
+                      p("by three-way ANOVA without interaction"),
+                      verbatimTextOutput("text544"),
+                      verbatimTextOutput("text545"),
+                    ),
                   ),
                 ),
               ),
@@ -738,26 +776,35 @@ fluidPage(
                 conditionalPanel(
                   condition = "input.Scol2 == 0",
                   h3("Check the diffence of center (mean)"),
-                  p("by one-way ANOVA"),
                   verbatimTextOutput("text523"),
-                  verbatimTextOutput("text501"),
-                  verbatimTextOutput("text502"),
+                  conditionalPanel(
+                    condition = "input.Using_hypothesis_testing1 == 1",
+                    p("by one-way ANOVA"),
+                    verbatimTextOutput("text501"),
+                    verbatimTextOutput("text502"),
+                  ),
                   h3("Check the diffence of variation (variance)"),
-                  p("by Bartlett's test"),
                   verbatimTextOutput("text524"),
-                  verbatimTextOutput("text503"),
-                  verbatimTextOutput("text504"),
+                  conditionalPanel(
+                    condition = "input.Using_hypothesis_testing1 == 1",
+                    p("by Bartlett's test"),
+                    verbatimTextOutput("text503"),
+                    verbatimTextOutput("text504"),
+                  ),
                 ),
                 conditionalPanel(
                   condition = "input.Scol2 != 0",
                   h3("Check the diffence of center (mean)"),
                   verbatimTextOutput("text525"),
-                  p("by two-way ANOVA with interaction"),
-                  verbatimTextOutput("text509"),
-                  verbatimTextOutput("text510"),
-                  p("by two-way ANOVA without interaction"),
-                  verbatimTextOutput("text511"),
-                  verbatimTextOutput("text512"),
+                  conditionalPanel(
+                    condition = "input.Using_hypothesis_testing1 == 1",
+                    p("by two-way ANOVA with interaction"),
+                    verbatimTextOutput("text509"),
+                    verbatimTextOutput("text510"),
+                    p("by two-way ANOVA without interaction"),
+                    verbatimTextOutput("text511"),
+                    verbatimTextOutput("text512"),
+                  ),
                 ),
               ),
               conditionalPanel(

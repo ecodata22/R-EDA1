@@ -123,7 +123,10 @@ shinyServer(function(input, output) {
           if(input$Gtype == "scatter"){
             if(input$Scol != 0 && input$Ccol != 0){
               if(class(Data1[,input$Scol]) == "numeric"){Data1[,input$Scol] <- droplevels(cut(Data1[,input$Scol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
-              if(input$NumericalToCategorcalSColor == 1){Data1[,input$Ccol] <- as.factor(Data1[,input$Ccol])}
+              if(input$NumericalToCategorcalSColor2 == 1){
+                if(class(Data1[,input$Ccol]) == "numeric"){Data1[,input$Ccol] <- droplevels(cut(Data1[,input$Ccol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
+              }
+              if(input$NumericalToCategorcalSColor1 == 1){Data1[,input$Ccol] <- as.factor(Data1[,input$Ccol])}
               
               if(input$Using_GLM == 1){
                 output$text532 <- renderPrint(anova(step(lm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Ccol], data=Data1))))
@@ -142,7 +145,10 @@ shinyServer(function(input, output) {
               }  
               ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_point(aes(colour=Data1[,input$Ccol])) + facet_wrap(~Data1[,input$Scol],scales="free")+ labs(x=Xname,y=Lname,color=Cname,subtitle = Sname)
             } else if(input$Scol == 0 && input$Ccol != 0){
-              if(input$NumericalToCategorcalSColor == 1){Data1[,input$Ccol] <- as.factor(Data1[,input$Ccol])}
+              if(input$NumericalToCategorcalSColor2 == 1){
+                if(class(Data1[,input$Ccol]) == "numeric"){Data1[,input$Ccol] <- droplevels(cut(Data1[,input$Ccol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
+              }
+              if(input$NumericalToCategorcalSColor1 == 1){Data1[,input$Ccol] <- as.factor(Data1[,input$Ccol])}
               
               if(input$Using_GLM == 1){
                 output$text526 <- renderPrint(anova(step(lm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Ccol], data=Data1))))
@@ -207,6 +213,33 @@ shinyServer(function(input, output) {
               
             }  
             
+          } else if(input$Gtype == "line_graph"){
+            Data1$No <-as.numeric(row.names(Data1)) 
+            
+            if(input$Scol != 0 && input$Ccol != 0){
+              if(class(Data1[,input$Scol]) == "numeric"){Data1[,input$Scol] <- droplevels(cut(Data1[,input$Scol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
+              if(input$NumericalToCategorcalSColor2 == 1){
+                if(class(Data1[,input$Ccol]) == "numeric"){Data1[,input$Ccol] <- droplevels(cut(Data1[,input$Ccol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
+              }
+              if(input$NumericalToCategorcalSColor1 == 1){Data1[,input$Ccol] <- as.factor(Data1[,input$Ccol])}
+              
+              ggplot(Data1, aes(x=Data1$No,y=Data1[,input$Lcol])) + geom_line(aes(colour=Data1[,input$Ccol])) + facet_wrap(~Data1[,input$Scol],scales="free")+ labs(x="Index",y=Lname,color=Cname,subtitle = Sname)
+            } else if(input$Scol == 0 && input$Ccol != 0){
+              if(input$NumericalToCategorcalSColor2 == 1){
+                if(class(Data1[,input$Ccol]) == "numeric"){Data1[,input$Ccol] <- droplevels(cut(Data1[,input$Ccol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
+              }
+              if(input$NumericalToCategorcalSColor1 == 1){Data1[,input$Ccol] <- as.factor(Data1[,input$Ccol])}
+  
+              ggplot(Data1, aes(x=Data1$No,y=Data1[,input$Lcol])) + geom_line(aes(colour=Data1[,input$Ccol])) + labs(x="Index",y=Lname,color=Cname)
+            } else if(input$Scol != 0 && input$Ccol == 0){
+              if(class(Data1[,input$Scol]) == "numeric"){Data1[,input$Scol] <- droplevels(cut(Data1[,input$Scol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
+              
+              ggplot(Data1, aes(x=Data1$No,y=Data1[,input$Lcol])) + geom_line() + facet_wrap(~Data1[,input$Scol],scales="free")+ labs(x="Index",y=Lname,subtitle = Sname)
+            } else {
+              
+              ggplot(Data1, aes(x=Data1$No,y=Data1[,input$Lcol])) + geom_line() + labs(x="Index",y=Lname)
+            }
+            
           } else if(input$Gtype == "box_plot"){
             if(class(Data1[,input$Xcol]) == "numeric" || class(Data1[,input$Xcol]) == "integer"){Data1[,input$Xcol] <- droplevels(cut(Data1[,input$Xcol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
             
@@ -217,20 +250,24 @@ shinyServer(function(input, output) {
                   mean01 <- aggregate(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol],data=Data1,FUN=mean)
                   names(mean01) <- c(names(Data1[input$Xcol]),names(Data1[input$Scol]),paste("mean of",names(Data1[input$Lcol])))
                   output$text522 <- renderPrint(mean01)
-                  output$text513 <- renderPrint(summary(aov(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol],data=Data)))
-                  output$text514 <- renderPrint(paste("Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname))
-                  output$text515 <- renderPrint(summary(aov(Data1[,input$Lcol]~Data1[,input$Xcol]+Data1[,input$Scol],data=Data)))
-                  output$text516 <- renderPrint(paste("Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname))
+                  if(input$Using_hypothesis_testing2 ==1){
+                    output$text513 <- renderPrint(summary(aov(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol],data=Data)))
+                    output$text514 <- renderPrint(paste("Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname))
+                    output$text515 <- renderPrint(summary(aov(Data1[,input$Lcol]~Data1[,input$Xcol]+Data1[,input$Scol],data=Data)))
+                    output$text516 <- renderPrint(paste("Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname))
+                  }
                   ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_boxplot() + facet_wrap(~Data1[,input$Scol],scales="free")+ labs(x=Xname,y=Lname,subtitle = Sname)
                 } else {
                   
                   mean01 <- aggregate(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Scol2],data=Data1,FUN=mean)
                   names(mean01) <- c(names(Data1[input$Xcol]),names(Data1[input$Scol]),names(Data1[input$Scol2]),paste("mean of",names(Data1[input$Lcol])))
                   output$text541 <- renderPrint(mean01)
-                  output$text542 <- renderPrint(summary(aov(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Scol2],data=Data)))
-                  output$text543 <- renderPrint(paste("Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname,"   Data1[,input$Scol2] =" ,Sname2))
-                  output$text544 <- renderPrint(summary(aov(Data1[,input$Lcol]~Data1[,input$Xcol]+Data1[,input$Scol]+Data1[,input$Scol2],data=Data)))
-                  output$text545 <- renderPrint(paste("Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname,"   Data1[,input$Scol2] =" ,Sname2))
+                  if(input$Using_hypothesis_testing2 ==1){
+                    output$text542 <- renderPrint(summary(aov(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Scol2],data=Data)))
+                    output$text543 <- renderPrint(paste("Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname,"   Data1[,input$Scol2] =" ,Sname2))
+                    output$text544 <- renderPrint(summary(aov(Data1[,input$Lcol]~Data1[,input$Xcol]+Data1[,input$Scol]+Data1[,input$Scol2],data=Data)))
+                    output$text545 <- renderPrint(paste("Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname,"   Data1[,input$Scol2] =" ,Sname2))
+                  }
                   ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_boxplot() + facet_grid(Data1[,input$Scol]~Data1[,input$Scol2])+ labs(x=Xname,y=Lname,subtitle = paste("columns:",Sname," rows:",Sname2))
                   
                   
@@ -239,14 +276,17 @@ shinyServer(function(input, output) {
                 mean01 <- aggregate(Data1[,input$Lcol]~Data1[,input$Xcol],data=Data1,FUN=mean)
                 names(mean01) <- c(names(Data1[input$Xcol]),paste("mean of",names(Data1[input$Lcol])))
                 output$text517 <- renderPrint(mean01)
-                output$text505 <- renderPrint(summary(aov(Data1[,input$Lcol]~Data1[,input$Xcol],data=Data)))
-                output$text506 <- renderPrint(paste("Data1[,input$Xcol] =" ,Xname))
-                
                 sd01 <- aggregate(Data1[,input$Lcol]~Data1[,input$Xcol],data=Data1,FUN=sd)
                 names(sd01) <- c(names(Data1[input$Xcol]),paste("sd of",names(Data1[input$Lcol])))
                 output$text521 <- renderPrint(sd01)
-                output$text507 <- renderPrint(bartlett.test(formula=Data1[,input$Lcol]~Data1[,input$Xcol]))
-                output$text508 <- renderPrint(paste("Data1[,input$Lcol] =" ,Lname,"   Data1[,input$Xcol] =" ,Xname))
+                
+                if(input$Using_hypothesis_testing2 ==1){
+                  output$text505 <- renderPrint(summary(aov(Data1[,input$Lcol]~Data1[,input$Xcol],data=Data)))
+                  output$text506 <- renderPrint(paste("Data1[,input$Xcol] =" ,Xname))
+                  
+                  output$text507 <- renderPrint(bartlett.test(formula=Data1[,input$Lcol]~Data1[,input$Xcol]))
+                  output$text508 <- renderPrint(paste("Data1[,input$Lcol] =" ,Lname,"   Data1[,input$Xcol] =" ,Xname))
+                }
                 ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_boxplot() + labs(x=Xname,y=Lname)
               }
             } else {
@@ -262,24 +302,30 @@ shinyServer(function(input, output) {
                   mean01 <- aggregate(Data1[,input$Lcol]~Data1[,input$Scol]*Data1[,input$Scol2],data=Data1,FUN=mean)
                   names(mean01) <- c(names(Data1[input$Scol]),names(Data1[input$Scol2]),paste("mean of",names(Data1[input$Lcol])))
                   output$text525 <- renderPrint(mean01)
-                  output$text509 <- renderPrint(summary(aov(Data1[,input$Lcol]~Data1[,input$Scol]*Data1[,input$Scol2],data=Data)))
-                  output$text510 <- renderPrint(paste("Data1[,input$Scol] =" ,Sname,"   Data1[,input$Scol2] =" ,Sname2))
-                  output$text511 <- renderPrint(summary(aov(Data1[,input$Lcol]~Data1[,input$Scol]+Data1[,input$Scol2],data=Data)))
-                  output$text512 <- renderPrint(paste("Data1[,input$Scol] =" ,Sname,"   Data1[,input$Scol2] =" ,Sname2))
+                  
+                  if(input$Using_hypothesis_testing1 ==1){
+                    output$text509 <- renderPrint(summary(aov(Data1[,input$Lcol]~Data1[,input$Scol]*Data1[,input$Scol2],data=Data)))
+                    output$text510 <- renderPrint(paste("Data1[,input$Scol] =" ,Sname,"   Data1[,input$Scol2] =" ,Sname2))
+                    output$text511 <- renderPrint(summary(aov(Data1[,input$Lcol]~Data1[,input$Scol]+Data1[,input$Scol2],data=Data)))
+                    output$text512 <- renderPrint(paste("Data1[,input$Scol] =" ,Sname,"   Data1[,input$Scol2] =" ,Sname2))
+                  }
                   ggplot(Data1, aes(x=Data1[,input$Lcol])) + geom_histogram() + facet_grid(Data1[,input$Scol]~Data1[,input$Scol2])+ labs(x=Lname,subtitle = paste("columns:",Sname," rows:",Sname2))
                 } else {
                   
                   mean01 <- aggregate(Data1[,input$Lcol]~Data1[,input$Scol],data=Data1,FUN=mean)
                   names(mean01) <- c(names(Data1[input$Scol]),paste("mean of",names(Data1[input$Lcol])))
                   output$text523 <- renderPrint(mean01)
-                  output$text501 <- renderPrint(summary(aov(Data1[,input$Lcol]~Data1[,input$Scol],data=Data)))
-                  output$text502 <- renderPrint(paste("Data1[,input$Scol] =" ,Sname))
-                  
                   sd01 <- aggregate(Data1[,input$Lcol]~Data1[,input$Scol],data=Data1,FUN=sd)
                   names(sd01) <- c(names(Data1[input$Scol]),paste("sd of",names(Data1[input$Lcol])))
                   output$text524 <- renderPrint(sd01)
-                  output$text503 <- renderPrint(bartlett.test(formula=Data1[,input$Lcol]~Data1[,input$Scol]))
-                  output$text504 <- renderPrint(paste("Data1[,input$Lcol] =" ,Lname,"   Data1[,input$Scol] =" ,Sname))
+                  
+                  if(input$Using_hypothesis_testing1 ==1){
+                    output$text501 <- renderPrint(summary(aov(Data1[,input$Lcol]~Data1[,input$Scol],data=Data)))
+                    output$text502 <- renderPrint(paste("Data1[,input$Scol] =" ,Sname))
+                    
+                    output$text503 <- renderPrint(bartlett.test(formula=Data1[,input$Lcol]~Data1[,input$Scol]))
+                    output$text504 <- renderPrint(paste("Data1[,input$Lcol] =" ,Lname,"   Data1[,input$Scol] =" ,Sname))
+                  }
                   ggplot(Data1, aes(x=Data1[,input$Lcol])) + geom_histogram() + facet_grid(Data1[,input$Scol]~.)+ labs(x=Lname,subtitle = Sname)
                 }
             } else {
