@@ -1850,7 +1850,7 @@ shinyServer(function(input, output) {
   output$plot201 <- renderPlotly({
     if(input$analysis == "Similarity_of_Samples1"){
       if(input$Dimension_for_clustering == "Dimension_2"){
-        if(input$Dimension_Reduction != "None1") {
+        if(input$Dimension_Reduction == "MDS1" || input$Dimension_Reduction == "MDS2" || input$Dimension_Reduction == "nMDS1") {
         
       
           req(input$file1)
@@ -1861,9 +1861,9 @@ shinyServer(function(input, output) {
           
           
           Data <- read.csv(input$file1$datapath, header=T,sep = sep)
-          if(input$DoNotUseFirst == 1){
-            Data[,1] <- NULL
-          }
+          #if(input$DoNotUseFirst == 1){
+          #  Data[,1] <- NULL
+          #}
           
         
           library(dummies)
@@ -2002,9 +2002,9 @@ shinyServer(function(input, output) {
           
           
           Data <- read.csv(input$file1$datapath, header=T,sep = sep)
-          if(input$DoNotUseFirst == 1){
-            Data[,1] <- NULL
-          }
+          #if(input$DoNotUseFirst == 1){
+          #  Data[,1] <- NULL
+          #}
           
           
           library(dummies)
@@ -2060,6 +2060,69 @@ shinyServer(function(input, output) {
     }
   })
     
+  output$plot205 <- renderPlotly({
+    if(input$analysis == "Similarity_of_Samples1"){
+      if(input$Dimension_for_clustering == "Dimension_2"){
+        if(input$Dimension_Reduction == "Factor1") {
+          
+          
+          req(input$file1)
+          
+          if(input$sep2 == "Separator_Comma"){sep <- ","}
+          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+          
+          
+          Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+          #if(input$DoNotUseFirst == 1){
+          #  Data[,1] <- NULL
+          #}
+          
+          Data1 <- dummy.data.frame(Data)
+          
+          library(dummies)
+          library(psych)
+          library(GPArotation)
+          library(heatmaply)
+          library(ggplot2)
+          Data11 <- Data
+          Y <- names(Data11[1])
+          Ydata <- Data11[,1]
+          Data11[,1] <- NULL
+          
+          fa_result <- fa(Data11, nfactors = input$Factors2, fm = "ml", rotate = input$Factor_Rotation2)
+          output$plot407 <- renderPlotly(heatmaply(fa_result$loadings, scale="none"))
+          output$text407 <- renderPrint(fa_result$loadings)
+          
+          Data1 <- fa_result$scores
+          Data1 <- as.data.frame(Data1)
+          Data1$Index = row.names(Data1)
+          
+          if(input$Xcol13 > 0){Xname <- names(Data1[input$Xcol13])} else {Xname <- "None"}
+          if(input$Ycol13 > 0){Lname <- names(Data1[input$Ycol13])} else {Lname <- "None"}
+          
+          
+          if(input$plot_type2 == "G11") {
+            gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol13],y=Data1[,input$Ycol13],label=Ydata)) + geom_text()  + labs(x=Xname,y=Lname)
+          } else if(input$plot_type2 == "G12") {
+            gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol13],y=Data1[,input$Ycol13],label=Index)) + geom_text() + labs(x=Xname,y=Lname)
+          } else if(input$plot_type2 == "G13") {
+            Data1$Index <- as.numeric(Data1$Index)
+            gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol13],y=Data1[,input$Ycol13])) + geom_point(aes(colour=Ydata)) + labs(x=Xname,y=Lname)
+          } else if(input$plot_type2 == "G14") {
+            Data1$Index <- as.numeric(Data1$Index)
+            gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol13],y=Data1[,input$Ycol13])) + geom_point(aes(colour=Index))  + scale_color_viridis_c(option = "D")+ labs(x=Xname,y=Lname)
+          } else {
+            gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol13],y=Data1[,input$Ycol13])) + geom_point() + labs(x=Xname,y=Lname)
+          }
+          
+          ggplotly(gplot)
+          
+        }
+      }
+    }
+  })
+    
   output$plot202 <- renderPlotly({
     if(input$analysis == "Similarity_of_Samples1"){
       if(input$Dimension_for_clustering == "Dimension_All"){
@@ -2070,38 +2133,49 @@ shinyServer(function(input, output) {
         if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
         if(input$sep2 == "Separator_Tab"){sep <- "\t"}
         
-        
-        Data <- read.csv(input$file1$datapath, header=T,sep = sep)
-        if(input$DoNotUseFirst == 1){
-          Data[,1] <- NULL
-        }
-          
         library(dummies)
         library(ggplot2)
-        library(dbscan)
         
-        Data2 <- dummy.data.frame(Data)
-        Data3 <- Data2
-        for (i in 1:ncol(Data2)) {
-          Data3[,i] <- (Data2[,i]-min(Data2[,i]))/(max(Data2[,i])-min(Data2[,i]))
-        }
-        dbs <- dbscan(Data3, eps = input$eps_value2)
-        Data7 <- transform(clust = dbs$cluster, Data)
+        Data <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=1)
         
         
-        output$downloadData5 <- downloadHandler(
-          filename = function() {
-            paste("cluster_data", ".csv", sep = "")
-          },
-          content = function(file) {
-            write.csv(Data7, file, row.names = FALSE)
-          }
-        )
-        
-        Data7$clust <- as.factor(Data7$clust)
-        ggplotly(ggplot(Data7, aes(x=clust, y=clust)) + geom_bar(stat = "identity") +labs(x="Cluster name", y="Frequency"))
+        if(input$Method_Dimension_All == "hclust1"){
           
-        
+          library(ggdendro)
+          
+          Data10 <- Data
+          Data11 <- Data10
+          for (i in 1:ncol(Data10)) {
+            Data11[,i] <- (Data10[,i] - min(Data10[,i]))/(max(Data10[,i]) - min(Data10[,i]))
+          } 
+          Data11_dist <- dist(Data11)
+          hc <- hclust(Data11_dist, "ward.D2")
+          ggplotly(ggdendrogram(hc, segments = TRUE, labels = TRUE, leaf_labels = TRUE, rotate = FALSE, theme_dendro = TRUE))
+          
+        } else{
+          library(dbscan)
+          
+          Data2 <- dummy.data.frame(Data)
+          Data3 <- Data2
+          for (i in 1:ncol(Data2)) {
+            Data3[,i] <- (Data2[,i]-min(Data2[,i]))/(max(Data2[,i])-min(Data2[,i]))
+          }
+          dbs <- dbscan(Data3, eps = input$eps_value2)
+          Data7 <- transform(clust = dbs$cluster, Data)
+          
+          
+          output$downloadData5 <- downloadHandler(
+            filename = function() {
+              paste("cluster_data", ".csv", sep = "")
+            },
+            content = function(file) {
+              write.csv(Data7, file, row.names = TRUE)
+            }
+          )
+          
+          Data7$clust <- as.factor(Data7$clust)
+          ggplotly(ggplot(Data7, aes(x=clust, y=clust)) + geom_bar(stat = "identity") +labs(x="Cluster name", y="Frequency"))
+        }
       }
     }
   })

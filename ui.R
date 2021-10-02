@@ -390,6 +390,7 @@ fluidPage(
           condition = "input.Dimension_for_clustering == 'Dimension_2'",   
           radioButtons("Dimension_Reduction", "Dimension Reduction",
                        choices = c(None = "None1",
+                                   Factor = "Factor1",
                                     MDS = "MDS1",
                                    tSNE = "MDS2",
                                    nMDS = "nMDS1"),
@@ -409,6 +410,21 @@ fluidPage(
               numericInput('NumericalToCategorcalS11', 'No of ranges', "3"),
             ),
           ),
+          conditionalPanel(
+            condition = "input.Dimension_Reduction ==  'Factor1'",
+            numericInput('Xcol13', 'X axis', "1"),
+            numericInput('Ycol13', 'Y axis', "2"),
+            numericInput('Factors2', 'Number of factors', "2"),
+            radioButtons("Factor_Rotation2", "Rotation_Type",
+                         choices = c(varimax = "varimax",
+                                     quartimax = "quartimax",
+                                     geominT = "geominT",
+                                     promax = "promax",
+                                     cluster = "cluster",
+                                     oblimin = "oblimin",
+                                     geominQ = "geominQ"))
+          ),
+          
           
           conditionalPanel(
             condition = "input.Dimension_Reduction == 'MDS2'",
@@ -431,7 +447,7 @@ fluidPage(
                            selected = "G15")
             ),
             conditionalPanel(
-              condition = "input.Dimension_Reduction != 'None1'",
+              condition = "input.Dimension_Reduction != 'None1' && input.Dimension_Reduction != 'Facotr1'",
               checkboxInput("AddClustering", "Add clustering methods", FALSE),
               
             
@@ -495,11 +511,20 @@ fluidPage(
         
         conditionalPanel(
           condition = "input.Dimension_for_clustering == 'Dimension_All'",
-          
-          sliderInput("eps_value2",
-                      "eps of DBSCAN",
-                      min = 0,  max = 1, value = 0.1, step = 0.01)
-          
+           
+          radioButtons("Method_Dimension_All", "Method",
+                       choices = c(hclust = "hclust1",
+                                   DBSCAN = "DBSCAN1"),
+                       selected = "hclust1"),
+        
+        
+        
+          conditionalPanel(
+            condition = "input.Method_Dimension_All == 'DBSCAN1'",  
+            sliderInput("eps_value2",
+                        "eps of DBSCAN",
+                        min = 0,  max = 1, value = 0.1, step = 0.01)
+          ),
         ),
       ),
       
@@ -626,7 +651,10 @@ fluidPage(
       
       selectInput("sep2", "Separator of CSV",  choices = c("Separator_Comma", "Separator_Semicolon", "Separator_Tab")),
       
-      checkboxInput("DoNotUseFirst", "Do not use the first column of CSV", FALSE),
+      conditionalPanel(
+        condition = "input.analysis != 'Similarity_of_Samples1'",
+        checkboxInput("DoNotUseFirst", "Do not use the first column of CSV", FALSE),
+      ),
       
     ),
     
@@ -1315,6 +1343,17 @@ fluidPage(
             plotlyOutput("plot204"),
           ),
           conditionalPanel(
+            condition = "input.Dimension_Reduction == 'Factor1'",
+            h3("Factor analysis"),
+            verbatimTextOutput("text407"),
+            plotlyOutput("plot407"),
+            plotlyOutput("plot205"),
+            a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E4-09.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J4-09.html"),br(),
+            a("About Factor analysis(English)   ",href="http://data-science.tokyo/ed-e/ede1-2-4.html"),
+            a("(Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-4.html"),br(),
+          ),
+          conditionalPanel(
             condition = "input.Dimension_Reduction != 'nMDS1'",
             conditionalPanel(
               condition = "input.Dimension_Reduction != 'None1'",
@@ -1379,12 +1418,18 @@ fluidPage(
           h3("Similarity of samples"),
           plotlyOutput("plot202"),   
           p("Categorical variables are changed into dummy variables"),
+          p("Numerical variables are normalized after dummy changed"),
           p("Clust name 0 is the samples judged as outliers"),
-          p("Download analyzed data for the next step.
-              For example, if clust column is put on the first (left side) column,
-              we can analyze with the function 'Similarity_of_Variables_and_Categories'"),
-          downloadButton("downloadData5", "Download analyzed data")
+          conditionalPanel(
+            condition = "input.Method_Dimension_All == 'dbscan1'", 
+            p("Download analyzed data for the next step.
+                For example, if clust column is put on the first (left side) column,
+                we can analyze with the function 'Similarity_of_Variables_and_Categories'"),
+            downloadButton("downloadData5", "Download analyzed data")
+          ),
           
+          a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E4-03.html"),
+          a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J4-03.html"),br(),
         ),
         
         a("About similariy of samples (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-3-1.html"),
