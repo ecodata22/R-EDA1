@@ -1,4 +1,8 @@
 library(shiny)
+library(heatmaply)
+library(plotly)
+library(networkD3)
+library(visNetwork)
 
 shinyServer(function(input, output) {
   output$text00 <- renderDataTable({
@@ -20,7 +24,8 @@ shinyServer(function(input, output) {
       summary(Data)
     }
   })
-  output$plot03 <- renderPlot({
+  #output$plot03 <- renderPlot({
+  output$plot03 <- renderPlotly({
     if(input$analysis == "Similarity_of_Variables_and_Categories1"){
       if(input$Similarity_of_Variables_and_Categories == "Among_all_columns1"){
         if(input$Among_all_columns == "Heat_map1"){
@@ -36,6 +41,7 @@ shinyServer(function(input, output) {
           }
           
           library(dummies)
+          library(heatmaply)
           
           if(input$Change_categorical_data_into == "Dummy_Varaiables1"){
             Data2 <- dummy.data.frame(Data)
@@ -57,13 +63,14 @@ shinyServer(function(input, output) {
             }
           }
           Data4 <- as.matrix(Data3)
-          heatmap(Data4, Colv = NA, Rowv = NA, scale="none")
+          #heatmap(Data4, Colv = NA, Rowv = NA, scale="none")
+          heatmaply(Data4, Colv = NA, Rowv = NA)
         }
       }
     }
   })
   
-  output$plot01 <- renderPlot({
+  output$plot01 <- renderPlotly({
     if(input$analysis == "Similarity_of_Variables_and_Categories1"){
       if(input$Similarity_of_Variables_and_Categories == "Among_all_columns1"){
         if(input$Among_all_columns == "Line_graph1"){
@@ -85,17 +92,18 @@ shinyServer(function(input, output) {
           Data_long <- tidyr::gather(Data2, key="Yno", value = Ys, -No)
           
           if(input$Line_graph == "Box_Integrated1"){
-            ggplot(Data_long, aes(x=No,y=Ys, colour=Yno)) + geom_line()
+            gplot <- ggplot(Data_long, aes(x=No,y=Ys, colour=Yno)) + geom_line()
           } else {
-            ggplot(Data_long, aes(x=No,y=Ys)) + geom_line() + facet_wrap(~Yno,scales="free")
+            gplot <- ggplot(Data_long, aes(x=No,y=Ys)) + geom_line() + facet_wrap(~Yno,scales="free")
           }
+          ggplotly(gplot)
         }
       }  
     }
   })
   
   
-  output$plot14 <- renderPlot({
+  output$plot14 <- renderPlotly({
     if(input$analysis == "Similarity_of_Variables_and_Categories1"){
       if(input$Similarity_of_Variables_and_Categories == "Among_all_columns1"){
         if(input$Among_all_columns == "Stratifeid_graph1"){
@@ -103,6 +111,7 @@ shinyServer(function(input, output) {
           req(input$file1)
           library(lme4)
           library(dplyr)
+          library(plotly)
           
           if(input$sep2 == "Separator_Comma"){sep <- ","}
           if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
@@ -119,6 +128,8 @@ shinyServer(function(input, output) {
           if(input$Ccol > 0){Cname<-names(Data1[input$Ccol])} else {Cname<-"None"}
           if(input$Scol > 0){Sname<-names(Data1[input$Scol])} else {Sname<-"None"}
           if(input$Scol2 > 0){Sname2<-names(Data1[input$Scol2])} else {Sname2<-"None"}
+          
+          
           
           if(input$Gtype == "scatter"){
             if(input$Scol != 0 && input$Ccol != 0){
@@ -143,7 +154,7 @@ shinyServer(function(input, output) {
                 #output$text533 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Ccol], data=Data1, family= input$family2))))
                 output$text534 <- renderPrint(paste("Data1[,input$Lcol] =" ,Lname,"   Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname,"   Data1[,input$Ccol] =" ,Cname))
               }  
-              ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_point(aes(colour=Data1[,input$Ccol])) + facet_wrap(~Data1[,input$Scol],scales="free")+ labs(x=Xname,y=Lname,color=Cname,subtitle = Sname)
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_point(aes(colour=Data1[,input$Ccol])) + facet_wrap(~Data1[,input$Scol],scales="free")+ labs(x=Xname,y=Lname,color=Cname,subtitle = Sname)
             } else if(input$Scol == 0 && input$Ccol != 0){
               if(input$NumericalToCategorcalSColor2 == 1){
                 if(class(Data1[,input$Ccol]) == "numeric"){Data1[,input$Ccol] <- droplevels(cut(Data1[,input$Ccol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
@@ -164,7 +175,7 @@ shinyServer(function(input, output) {
                 #output$text527 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Ccol], data=Data1, family= input$family2))))
                 output$text528 <- renderPrint(paste("Data1[,input$Lcol] =" ,Lname,"   Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Ccol] =" ,Cname))
               }
-              ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_point(aes(colour=Data1[,input$Ccol])) + labs(x=Xname,y=Lname,color=Cname)
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_point(aes(colour=Data1[,input$Ccol])) + labs(x=Xname,y=Lname,color=Cname)
             } else if(input$Scol != 0 && input$Ccol == 0){
               if(class(Data1[,input$Scol]) == "numeric"){Data1[,input$Scol] <- droplevels(cut(Data1[,input$Scol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
               
@@ -182,7 +193,7 @@ shinyServer(function(input, output) {
                 #output$text530 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol], data=Data1, family= input$family2))))
                 output$text531 <- renderPrint(paste("Data1[,input$Lcol] =" ,Lname,"   Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname))
               }
-              ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_point() + facet_wrap(~Data1[,input$Scol],scales="free")+ labs(x=Xname,y=Lname,subtitle = Sname)
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_point() + facet_wrap(~Data1[,input$Scol],scales="free")+ labs(x=Xname,y=Lname,subtitle = Sname)
             } else {
               output$text518 <- renderPrint(paste("Correlation coefficient =" ,cor(Data1[,input$Xcol],Data1[,input$Lcol])))
               if(input$Using_GLM == 1){
@@ -208,10 +219,16 @@ shinyServer(function(input, output) {
                 Data2 <- cbind(Data, Data0)
                 ggplot(data = Data2, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) +geom_point()+geom_line(aes(y=lwr), color = "red")+geom_line(aes(y=upr), color = "red")+geom_line(aes(y= fit), color = "blue")
               } else {
-                ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_point() + labs(x=Xname,y=Lname)
+                #if(input$Using_interactive_graph1 == 1){
+                #  #output$plot538 <- renderPlotly(plot_ly(Data1, x=~Data1[,input$Xcol], y=~Data1[,input$Lcol], type = 'scatter'))
+                #  output$plot538 <- renderPlotly(ggplotly(ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_point() + labs(x=Xname,y=Lname)))
+                #}
+                gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_point() + labs(x=Xname,y=Lname)
+
               }
               
-            }  
+            } 
+            ggplotly(gplot)
             
           } else if(input$Gtype == "line_graph"){
             Data1$No <-as.numeric(row.names(Data1)) 
@@ -223,22 +240,23 @@ shinyServer(function(input, output) {
               }
               if(input$NumericalToCategorcalSColor1 == 1){Data1[,input$Ccol] <- as.factor(Data1[,input$Ccol])}
               
-              ggplot(Data1, aes(x=Data1$No,y=Data1[,input$Lcol])) + geom_line(aes(colour=Data1[,input$Ccol])) + facet_wrap(~Data1[,input$Scol],scales="free")+ labs(x="Index",y=Lname,color=Cname,subtitle = Sname)
+              gplot <- ggplot(Data1, aes(x=Data1$No,y=Data1[,input$Lcol])) + geom_line(aes(colour=Data1[,input$Ccol])) + facet_wrap(~Data1[,input$Scol],scales="free")+ labs(x="Index",y=Lname,color=Cname,subtitle = Sname)
             } else if(input$Scol == 0 && input$Ccol != 0){
               if(input$NumericalToCategorcalSColor2 == 1){
                 if(class(Data1[,input$Ccol]) == "numeric"){Data1[,input$Ccol] <- droplevels(cut(Data1[,input$Ccol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
               }
               if(input$NumericalToCategorcalSColor1 == 1){Data1[,input$Ccol] <- as.factor(Data1[,input$Ccol])}
   
-              ggplot(Data1, aes(x=Data1$No,y=Data1[,input$Lcol])) + geom_line(aes(colour=Data1[,input$Ccol])) + labs(x="Index",y=Lname,color=Cname)
+              gplot <- ggplot(Data1, aes(x=Data1$No,y=Data1[,input$Lcol])) + geom_line(aes(colour=Data1[,input$Ccol])) + labs(x="Index",y=Lname,color=Cname)
             } else if(input$Scol != 0 && input$Ccol == 0){
               if(class(Data1[,input$Scol]) == "numeric"){Data1[,input$Scol] <- droplevels(cut(Data1[,input$Scol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
               
-              ggplot(Data1, aes(x=Data1$No,y=Data1[,input$Lcol])) + geom_line() + facet_wrap(~Data1[,input$Scol],scales="free")+ labs(x="Index",y=Lname,subtitle = Sname)
+              gplot <- ggplot(Data1, aes(x=Data1$No,y=Data1[,input$Lcol])) + geom_line() + facet_wrap(~Data1[,input$Scol],scales="free")+ labs(x="Index",y=Lname,subtitle = Sname)
             } else {
               
-              ggplot(Data1, aes(x=Data1$No,y=Data1[,input$Lcol])) + geom_line() + labs(x="Index",y=Lname)
+              gplot <- ggplot(Data1, aes(x=Data1$No,y=Data1[,input$Lcol])) + geom_line() + labs(x="Index",y=Lname)
             }
+            ggplotly(gplot)
             
           } else if(input$Gtype == "box_plot"){
             if(class(Data1[,input$Xcol]) == "numeric" || class(Data1[,input$Xcol]) == "integer"){Data1[,input$Xcol] <- droplevels(cut(Data1[,input$Xcol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
@@ -256,7 +274,7 @@ shinyServer(function(input, output) {
                     output$text515 <- renderPrint(summary(aov(Data1[,input$Lcol]~Data1[,input$Xcol]+Data1[,input$Scol],data=Data)))
                     output$text516 <- renderPrint(paste("Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname))
                   }
-                  ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_boxplot() + facet_wrap(~Data1[,input$Scol],scales="free")+ labs(x=Xname,y=Lname,subtitle = Sname)
+                  gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_boxplot() + facet_wrap(~Data1[,input$Scol],scales="free")+ labs(x=Xname,y=Lname,subtitle = Sname)
                 } else {
                   
                   mean01 <- aggregate(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Scol2],data=Data1,FUN=mean)
@@ -268,7 +286,7 @@ shinyServer(function(input, output) {
                     output$text544 <- renderPrint(summary(aov(Data1[,input$Lcol]~Data1[,input$Xcol]+Data1[,input$Scol]+Data1[,input$Scol2],data=Data)))
                     output$text545 <- renderPrint(paste("Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname,"   Data1[,input$Scol2] =" ,Sname2))
                   }
-                  ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_boxplot() + facet_grid(Data1[,input$Scol]~Data1[,input$Scol2])+ labs(x=Xname,y=Lname,subtitle = paste("columns:",Sname," rows:",Sname2))
+                  gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_boxplot() + facet_grid(Data1[,input$Scol]~Data1[,input$Scol2])+ labs(x=Xname,y=Lname,subtitle = paste("columns:",Sname," rows:",Sname2))
                   
                   
                 }    
@@ -287,11 +305,13 @@ shinyServer(function(input, output) {
                   output$text507 <- renderPrint(bartlett.test(formula=Data1[,input$Lcol]~Data1[,input$Xcol]))
                   output$text508 <- renderPrint(paste("Data1[,input$Lcol] =" ,Lname,"   Data1[,input$Xcol] =" ,Xname))
                 }
-                ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_boxplot() + labs(x=Xname,y=Lname)
+                gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_boxplot() + labs(x=Xname,y=Lname)
               }
             } else {
-              ggplot(Data1, aes(y=Data1[,input$Lcol])) + geom_boxplot() + labs(y=Lname)
+              gplot <- ggplot(Data1, aes(y=Data1[,input$Lcol])) + geom_boxplot() + labs(y=Lname)
             }
+            ggplotly(gplot)
+            
           } else if(input$Gtype == "histgram"){
             if(input$Scol != 0){
               if(class(Data1[,input$Scol]) == "numeric"){Data1[,input$Scol] <- droplevels(cut(Data1[,input$Scol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
@@ -309,7 +329,7 @@ shinyServer(function(input, output) {
                     output$text511 <- renderPrint(summary(aov(Data1[,input$Lcol]~Data1[,input$Scol]+Data1[,input$Scol2],data=Data)))
                     output$text512 <- renderPrint(paste("Data1[,input$Scol] =" ,Sname,"   Data1[,input$Scol2] =" ,Sname2))
                   }
-                  ggplot(Data1, aes(x=Data1[,input$Lcol])) + geom_histogram() + facet_grid(Data1[,input$Scol]~Data1[,input$Scol2])+ labs(x=Lname,subtitle = paste("columns:",Sname," rows:",Sname2))
+                  gplot <- ggplot(Data1, aes(x=Data1[,input$Lcol])) + geom_histogram() + facet_grid(Data1[,input$Scol]~Data1[,input$Scol2])+ labs(x=Lname,subtitle = paste("columns:",Sname," rows:",Sname2))
                 } else {
                   
                   mean01 <- aggregate(Data1[,input$Lcol]~Data1[,input$Scol],data=Data1,FUN=mean)
@@ -326,7 +346,7 @@ shinyServer(function(input, output) {
                     output$text503 <- renderPrint(bartlett.test(formula=Data1[,input$Lcol]~Data1[,input$Scol]))
                     output$text504 <- renderPrint(paste("Data1[,input$Lcol] =" ,Lname,"   Data1[,input$Scol] =" ,Sname))
                   }
-                  ggplot(Data1, aes(x=Data1[,input$Lcol])) + geom_histogram() + facet_grid(Data1[,input$Scol]~.)+ labs(x=Lname,subtitle = Sname)
+                  gplot <- ggplot(Data1, aes(x=Data1[,input$Lcol])) + geom_histogram() + facet_grid(Data1[,input$Scol]~.)+ labs(x=Lname,subtitle = Sname)
                 }
             } else {
               M <- mean(Data1[,input$Lcol])
@@ -336,8 +356,9 @@ shinyServer(function(input, output) {
               Upper <- M + t * sqrt(V * (1 + 1/n))
               Lower <- M - t * sqrt(V * (1 + 1/n))
               output$text546<- renderPrint(cbind(Upper,Lower))
-              ggplot(Data1, aes(x=Data1[,input$Lcol])) + geom_histogram() + labs(x=Lname)
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Lcol])) + geom_histogram() + labs(x=Lname)
             }
+            ggplotly(gplot)
               
           } else if(input$Gtype == "bar"){
             if(class(Data1[,input$Lcol]) == "numeric"){Data1[,input$Lcol] <- droplevels(cut(Data1[,input$Lcol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
@@ -351,7 +372,7 @@ shinyServer(function(input, output) {
                   Data4[1] <- NULL
                   Data4[is.na(Data4)] <- 0
                   output$text5362 <- renderPrint(chisq.test(Data4))
-                  ggplot(Data1, aes(x=Data1[,input$Lcol])) + geom_bar() + geom_text(stat='count', aes(label=..count..), vjust=-1) + facet_grid(.~Data1[,input$Scol])+ labs(x=Lname,subtitle = Sname)
+                  gplot <- ggplot(Data1, aes(x=Data1[,input$Lcol])) + geom_bar() + geom_text(stat='count', aes(label=..count..), vjust=-1) + facet_grid(.~Data1[,input$Scol])+ labs(x=Lname,subtitle = Sname)
                 } else {
                   if(class(Data1[,input$Scol2]) == "numeric"){Data1[,input$Scol2] <- droplevels(cut(Data1[,input$Scol2], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
                   Data2 <- cbind(Data1[input$Lcol],Data1[input$Scol],Data1[input$Scol2])
@@ -359,11 +380,28 @@ shinyServer(function(input, output) {
                   Data3 <- count(group_by(Data2,Data2[,1:3],.drop=FALSE))
                   output$text536 <- renderPrint(anova(step(glm(n~.^2, data=Data3,family=poisson))))
                   
-                  ggplot(Data1, aes(x=Data1[,input$Lcol])) + geom_bar() + geom_text(stat='count', aes(label=..count..), vjust=-1) + facet_grid(Data1[,input$Scol2]~Data1[,input$Scol])+ labs(x=Lname,subtitle = paste("columns:",Sname," rows:",Sname2))
+                  gplot <- ggplot(Data1, aes(x=Data1[,input$Lcol])) + geom_bar() + geom_text(stat='count', aes(label=..count..), vjust=-1) + facet_grid(Data1[,input$Scol2]~Data1[,input$Scol])+ labs(x=Lname,subtitle = paste("columns:",Sname," rows:",Sname2))
                 }
               } else {
-              ggplot(Data1, aes(x=Data1[,input$Lcol])) + geom_bar() + geom_text(stat='count', aes(label=..count..), vjust=-1) + labs(x=Lname)
+                gplot <- ggplot(Data1, aes(x=Data1[,input$Lcol])) + geom_bar() + geom_text(stat='count', aes(label=..count..), vjust=-1) + labs(x=Lname)
+              }
+            ggplotly(gplot)
+          }else if(input$Gtype == "3D-scatter"){
+            if(input$Xcol12 > 0){Xname12 <- names(Data1[input$Xcol12])} else {Xname12 <- "None"}
+            
+            if(input$Ycol12 > 0){Yname12<-names(Data1[input$Ycol12])} else {Yname12<-"None"}
+            if(input$Zcol12 > 0){Zname12<-names(Data1[input$Zcol12])} else {Zname12<-"None"}
+            if(input$Ccol12 > 0){Cnameas<-names(Data1[input$Ccol12])} else {Cname12<-"None"}
+            if(input$Ccol12 != 0){
+              fig <- plot_ly(Data, x=~Data1[,input$Xcol12], y=~Data1[,input$Ycol12], z=~Data1[,input$Zcol12], type = 'scatter3d', color=~Data1[,input$Ccol12], marker = list(size = 3))
+              
+            } else {
+              fig <- plot_ly(Data, x=~Data1[,input$Xcol12], y=~Data1[,input$Ycol12], z=~Data1[,input$Zcol12], type = 'scatter3d', marker = list(size = 3))
             }
+            fig <- fig %>% layout(scene = list(xaxis = list(title = Xname12),
+                                               yaxis = list(title = Yname12),
+                                               zaxis = list(title = Zname12)))
+            fig
           }
         }
       }  
@@ -371,7 +409,7 @@ shinyServer(function(input, output) {
   })
   
   
-  output$plot06 <- renderPlot({
+  output$Data_Output2 <- renderDataTable({
     if(input$analysis == "Similarity_of_Variables_and_Categories1"){
       if(input$Similarity_of_Variables_and_Categories == "Among_all_columns1"){
         if(input$Among_all_columns == "Variable_Network1"){
@@ -389,6 +427,7 @@ shinyServer(function(input, output) {
             
             library(dummies)
             library(igraph)
+            library(networkD3)
             library(tidyr)
             Data1 <- dummy.data.frame(Data)
             DataM <- as.matrix(Data1)
@@ -407,7 +446,6 @@ shinyServer(function(input, output) {
             ABS_corr <- abs(Data_Output1[,3])
             Data_Output1 <- cbind(Data_Output1, ABS_corr)
             Data_Output1 <- Data_Output1[order(Data_Output1$ABS_corr, decreasing=T),]
-            output$Data_Output2 <- renderDataTable(Data_Output1)
             output$downloadData2 <- downloadHandler(
               filename = function() {
                 paste("Correlation_Network_data", ".csv", sep = "")
@@ -416,8 +454,13 @@ shinyServer(function(input, output) {
                 write.csv(Data_Output1, file, row.names = FALSE)
               }
             )
-            
-            plot(GM4, edge.width=E(GM4)$weight)
+            if(input$network_library1 == 'igraph'){
+              output$plot06 <- renderPlot(plot(GM4, edge.width=E(GM4)$weight))
+            }else{
+              DM.g2 <- data.frame(as_edgelist(GM4))
+              output$plot06b <- renderSimpleNetwork(simpleNetwork(DM.g2, fontSize = 14, nodeColour = "0000A2", opacity = 1, fontFamily = "Meiryo UI") )
+            }
+            Data_Output1
             
           }
         }
@@ -425,8 +468,7 @@ shinyServer(function(input, output) {
     }
   })
   
-  
-  output$plot07 <- renderPlot({
+  output$Data_Output3 <- renderDataTable({
     if(input$analysis == "Similarity_of_Variables_and_Categories1"){
       if(input$Similarity_of_Variables_and_Categories == "Among_all_columns1"){
         if(input$Among_all_columns == "Variable_Network1"){
@@ -465,7 +507,7 @@ shinyServer(function(input, output) {
             ABS_wi <- abs(Data_Output1[,3])
             Data_Output1 <- cbind(Data_Output1, ABS_wi)
             Data_Output1 <- Data_Output1[order(Data_Output1$ABS_wi, decreasing=T),]
-            output$Data_Output3 <- renderDataTable(Data_Output1)
+            
             output$downloadData3 <- downloadHandler(
               filename = function() {
                 paste("Graphical_Lasso_data", ".csv", sep = "")
@@ -476,7 +518,15 @@ shinyServer(function(input, output) {
             )
             
             
-            plot(GM4, edge.width=E(GM4)$weight)
+            
+            
+            if(input$network_library2 == 'igraph'){
+              output$plot07 <- renderPlot(plot(GM4, edge.width=E(GM4)$weight))
+            }else{
+              DM.g2 <- data.frame(as_edgelist(GM4))
+              output$plot07b <- renderSimpleNetwork(simpleNetwork(DM.g2, fontSize = 14, nodeColour = "0000A2", opacity = 1, fontFamily = "Meiryo UI") )
+            }
+            Data_Output1
           }
         }
       }
@@ -484,7 +534,7 @@ shinyServer(function(input, output) {
   })
   
   
-  output$plot09 <- renderPlot({
+  output$Data_Output4 <- renderDataTable({
     if(input$analysis == "Similarity_of_Variables_and_Categories1"){
       if(input$Similarity_of_Variables_and_Categories == "Among_all_columns1"){
         if(input$Among_all_columns == "Variable_Network1"){
@@ -537,7 +587,6 @@ shinyServer(function(input, output) {
             Data_Output1 <- tidyr::gather(GM1_DF2, key="Name2", value = cramer_v, -Name)
             
             Data_Output1 <- Data_Output1[order(Data_Output1$cramer_v, decreasing=T),]
-            output$Data_Output4 <- renderDataTable(Data_Output1)
             output$downloadData4 <- downloadHandler(
               filename = function() {
                 paste("Cramer_Network_data", ".csv", sep = "")
@@ -546,8 +595,14 @@ shinyServer(function(input, output) {
                 write.csv(Data_Output1, file, row.names = FALSE)
               }
             )
+            if(input$network_library3 == 'igraph'){
+              output$plot09 <- renderPlot(plot(GM4, edge.width=E(GM4)$weight))
+            }else{
+              DM.g2 <- data.frame(as_edgelist(GM4))
+              output$plot09b <- renderSimpleNetwork(simpleNetwork(DM.g2, fontSize = 14, nodeColour = "0000A2", opacity = 1, fontFamily = "Meiryo UI") )
+            }
+            Data_Output1
             
-            plot(GM4, edge.width=E(GM4)$weight)
           }
         }
       }
@@ -680,7 +735,7 @@ shinyServer(function(input, output) {
   #  }
   #})
   
-  output$plot12 <- renderPlot({
+  output$ap231 <- renderDataTable({
     if(input$analysis == "Similarity_of_Variables_and_Categories1"){
       if(input$Similarity_of_Variables_and_Categories == "Among_all_columns1"){
         if(input$Among_all_columns == "Variable_Network1"){
@@ -745,15 +800,62 @@ shinyServer(function(input, output) {
             )
             
             
-            ap32<- graph.data.frame(ap22[,c(1,3)])
+            #ap32<- graph.data.frame(ap22[,c(1,3)])
             
             ap31<- graph.data.frame(ap21[,c(1,3)], directed = F)
-            output$plotap31 <- renderPlot(plot(ap31))
             ap32<- graph.data.frame(ap22[,c(1,3)])
-            output$plotap32 <- renderPlot(plot(ap32))
             ap33<- graph.data.frame(ap23[,c(1,3)])
-            output$plotap33 <- renderPlot(plot(ap33))
-            plot(ap32)
+            output$plotap31a <- renderPlot(plot(ap31))
+            output$plotap32a <- renderPlot(plot(ap32))
+            output$plotap33a <- renderPlot(plot(ap33))
+            #plot(ap32)
+            
+            
+            
+            
+            if(input$network_library4 == 'igraph'){
+              output$plotap31a <- renderPlot(plot(ap31))
+              output$plotap32a <- renderPlot(plot(ap32))
+              output$plotap33a <- renderPlot(plot(ap33))
+            }else{
+              
+              #DM.g21 <- data.frame(as_edgelist(ap31))
+              DM.g21 <- igraph_to_networkD3(ap31)
+              Linksap <- DM.g21$links
+              Linksap$from <- Linksap$source
+              Linksap$to <- Linksap$target
+              #Linksap$arrows <- 'from'
+              Linksap$value <- 1
+              Nodesap <- DM.g21$nodes
+              Nodesap$label <- Nodesap$name
+              Nodesap$id <- as.numeric(row.names(Nodesap))-1
+              output$plotap31b <- renderVisNetwork(visNetwork(Nodesap,Linksap))
+              #output$plotap31b <- renderSimpleNetwork(simpleNetwork(DM.g21, fontSize = 14, nodeColour = "0000A2", opacity = 1, fontFamily = "Meiryo UI") )
+              
+              DM.g22 <- igraph_to_networkD3(ap32)
+              Linksap <- DM.g22$links
+              Linksap$from <- Linksap$source
+              Linksap$to <- Linksap$target
+              Linksap$arrows <- 'to'
+              Linksap$value <- 1
+              Nodesap <- DM.g22$nodes
+              Nodesap$label <- Nodesap$name
+              Nodesap$id <- as.numeric(row.names(Nodesap))-1
+              output$plotap32b <- renderVisNetwork(visNetwork(Nodesap,Linksap))
+              
+              DM.g23 <- igraph_to_networkD3(ap33)
+              Linksap <- DM.g22$links
+              Linksap$from <- Linksap$source
+              Linksap$to <- Linksap$target
+              Linksap$arrows <- 'to'
+              Linksap$value <- 1
+              Nodesap <- DM.g22$nodes
+              Nodesap$label <- Nodesap$name
+              Nodesap$id <- as.numeric(row.names(Nodesap))-1
+              output$plotap33b <- renderVisNetwork(visNetwork(Nodesap,Linksap))
+            }
+            
+            ap23[,1:8]
           }
         }
       }
@@ -762,7 +864,7 @@ shinyServer(function(input, output) {
   
   
   
-  output$plot08 <- renderPlot({
+  output$plot08 <- renderPlotly({
     if(input$analysis == "Similarity_of_Variables_and_Categories1"){
       if(input$Similarity_of_Variables_and_Categories == "Among_all_columns1"){
         if(input$Among_all_columns == "Using_MDS1"){
@@ -790,7 +892,7 @@ shinyServer(function(input, output) {
             Data2 <- sn$points
             name1 <-  row.names(Data11)
             Data2 <- cbind.data.frame(Data2 ,name1)
-            ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=name1)) + geom_text()+ labs(y="axis2",x="axis1")
+            ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=name1)) + geom_text()+ labs(y="axis2",x="axis1"))
           }
         }
       }
@@ -798,7 +900,7 @@ shinyServer(function(input, output) {
   })
   
   
-  output$plot13 <- renderPlot({
+  output$plot13 <- renderPlotly({
     if(input$analysis == "Similarity_of_Variables_and_Categories1"){
       if(input$Similarity_of_Variables_and_Categories == "Among_all_columns1"){
         if(input$Among_all_columns == "Using_MDS1"){
@@ -840,7 +942,7 @@ shinyServer(function(input, output) {
             sn <- sammon(Data11_dist)
             output <- sn$points
             Data2 <- cbind(output, pc1)
-            ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=name1)) + geom_text()
+            ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=name1)) + geom_text())
           }
         }
       }
@@ -867,11 +969,12 @@ shinyServer(function(input, output) {
           library(dummies)
           library(psych)
           library(GPArotation)
+          library(heatmaply)
           Data1 <- dummy.data.frame(Data)
           
           
           fa_result <- fa(Data1, nfactors = input$Factors, fm = "ml", rotate = input$Factor_Rotation)
-          output$plot406 <- renderPlot(heatmap(fa_result$loadings, scale="none"))
+          output$plot406 <- renderPlotly(heatmaply(fa_result$loadings, scale="none"))
           fa_result$loadings
         }
       }
@@ -915,7 +1018,7 @@ shinyServer(function(input, output) {
   })
   
   
-  output$plot05 <- renderPlot({
+  output$plot05 <- renderPlotly({
     if(input$analysis == "Similarity_of_Variables_and_Categories1"){
       if(input$Similarity_of_Variables_and_Categories == "Between_label_column_and_others1"){
         if(input$Between_label_column_and_others == "Scatter_plot1"){
@@ -941,10 +1044,11 @@ shinyServer(function(input, output) {
           Data4 <- cbind(Ydata, Data2)
           Data_long <- tidyr::gather(Data4, key="X", value = Xs, -Ydata)
           if(class(Ydata) == "numeric") {
-            ggplot(Data_long, aes(x=Xs,y=Data_long[,1])) + geom_point() + facet_wrap(~X,scales="free")+ labs(y=Y)
+            gplot <- ggplot(Data_long, aes(x=Xs,y=Data_long[,1])) + geom_point() + facet_wrap(~X,scales="free")+ labs(y=Y)
           } else {
-            ggplot(Data_long, aes(x=Data_long[,1],y=Xs)) + geom_jitter(size=1, position=position_jitter(0.1)) + facet_wrap(~X,scales="free")+ labs(x=Y)
+            gplot <- ggplot(Data_long, aes(x=Data_long[,1],y=Xs)) + geom_jitter(size=1, position=position_jitter(0.1)) + facet_wrap(~X,scales="free")+ labs(x=Y)
           }
+          ggplotly(gplot)
         }
       }
     }
@@ -1083,7 +1187,7 @@ shinyServer(function(input, output) {
   })
   
   
-  output$plot301 <- renderPlot({
+  output$plot301 <- renderPlotly({
     if(input$analysis == "Similarity_of_Variables_and_Categories1"){
       if(input$Similarity_of_Variables_and_Categories == "Between_label_column_and_others1"){
         if(input$Between_label_column_and_others == "One_class1"){
@@ -1142,7 +1246,7 @@ shinyServer(function(input, output) {
             
             RowName <- colnames(Data[input$Label_column])
             Data_long <- tidyr::gather(Data, key="Variable", value = val, -RowName)
-            ggplot(Data_long, aes(x=as.factor(Data_long[,1]),y=Data_long[,3])) + geom_boxplot() + facet_wrap(~Data_long[,2],scales="free")+ labs(x="Label",y="Value",subtitle = "Variables")
+            ggplotly(ggplot(Data_long, aes(x=as.factor(Data_long[,1]),y=Data_long[,3])) + geom_boxplot() + facet_wrap(~Data_long[,2],scales="free")+ labs(x="Label",y="Value",subtitle = "Variables"))
             
             
           } else if (input$One_class == "MT_All_Varaiables1"){
@@ -1163,7 +1267,7 @@ shinyServer(function(input, output) {
             Data5 <- cbind(Data, MD)
             
             Data5[,input$Label_column] <- factor(Data5[,input$Label_column])
-            ggplot(Data5, aes(x=Data5[,input$Label_column], y=MD)) + geom_jitter(size=3, position=position_jitter(0.1))+labs(x="Label column", y="Distance from average of label='0' samples")
+            ggplotly(ggplot(Data5, aes(x=Data5[,input$Label_column], y=MD)) + geom_jitter(size=3, position=position_jitter(0.1))+labs(x="Label column", y="Distance from average of label='0' samples"))
             
           } else if (input$One_class == "MT_Selected_Varaiables1"){
             k2 <- ncol(Data2)
@@ -1251,7 +1355,7 @@ shinyServer(function(input, output) {
             output$Data_OutputMTselected <- renderDataTable(Error_Analysis)
             Error_Analysis2 <- head(Error_Analysis,30)
             Error_Analysis2[,2]<- as.numeric(Error_Analysis2[,2])
-            ggplot(Error_Analysis2, aes(x=Error_Analysis2[,2], y=reorder(Error_Analysis2[,1],-Error_Analysis2[,2]))) + geom_bar(stat = "identity") +labs(x="Error_Number (Samples of label='1' that distances are shorter than maximum of label='0')", y="Features (Set of variables used in the model)")
+            ggplotly(ggplot(Error_Analysis2, aes(x=Error_Analysis2[,2], y=reorder(Error_Analysis2[,1],-Error_Analysis2[,2]))) + geom_bar(stat = "identity") +labs(x="Error_Number (Samples of label='1' that distances are shorter than maximum of label='0')", y="Features (Set of variables used in the model)"))
             
           } else if (input$One_class == "PCA_MT_All_Varaiables1"){
             n <- nrow(Data2)
@@ -1292,10 +1396,10 @@ shinyServer(function(input, output) {
             
             RowName <- colnames(Data7[1])
             Data8 <- tidyr::gather(Data7, key="PC", value = Val, -RowName)
-            output$plotPCAMT <- renderPlot(ggplot(Data8, aes(x=PC, y=Val)) + geom_jitter(size=3, position=position_jitter(0.1),aes(colour=as.factor(Data8[,1])))+labs(x="PC", y="Value",color=RowName))
+            output$plotPCAMT <- renderPlotly(ggplotly(ggplot(Data8, aes(x=PC, y=Val)) + geom_jitter(size=3, position=position_jitter(0.1),aes(colour=as.factor(Data8[,1])))+labs(x="PC", y="Value",color=RowName)))
             
             Data5[,input$Label_column] <- factor(Data5[,input$Label_column])
-            ggplot(Data5, aes(x=Data5[,input$Label_column], y=MD)) + geom_jitter(size=3, position=position_jitter(0.1))+labs(x="Label column", y="Distance from average of label='0' samples")
+            ggplotly(ggplot(Data5, aes(x=Data5[,input$Label_column], y=MD)) + geom_jitter(size=3, position=position_jitter(0.1))+labs(x="Label column", y="Distance from average of label='0' samples"))
             
           } else if (input$One_class == "PCA_MT_Selected_Varaiables1"){
             k2 <- ncol(Data2)
@@ -1381,7 +1485,7 @@ shinyServer(function(input, output) {
             output$Data_OutputPCAMTselected <- renderDataTable(Error_Analysis)
             Error_Analysis2 <- head(Error_Analysis,30)
             Error_Analysis2[,2]<- as.numeric(Error_Analysis2[,2])
-            ggplot(Error_Analysis2, aes(x=Error_Analysis2[,2], y=reorder(Error_Analysis2[,1],-Error_Analysis2[,2]))) + geom_bar(stat = "identity") +labs(x="Error_Number (Samples of label='1' that distances are shorter than maximum of label='0')", y="Features (Set of variables used in the model)")
+            ggplotly(ggplot(Error_Analysis2, aes(x=Error_Analysis2[,2], y=reorder(Error_Analysis2[,1],-Error_Analysis2[,2]))) + geom_bar(stat = "identity") +labs(x="Error_Number (Samples of label='1' that distances are shorter than maximum of label='0')", y="Features (Set of variables used in the model)"))
             
           } else if (input$One_class == "Kernel_PCA_MT1"){
             n <- nrow(Data2)
@@ -1409,7 +1513,7 @@ shinyServer(function(input, output) {
             Data5 <- cbind(Data, MD,Data3)
             
             Data5[,input$Label_column] <- factor(Data5[,input$Label_column])
-            ggplot(Data5, aes(x=Data5[,input$Label_column], y=MD)) + geom_jitter(size=3, position=position_jitter(0.1))+labs(x="First column", y="Distance from average of label='0' samples")
+            ggplotly(ggplot(Data5, aes(x=Data5[,input$Label_column], y=MD)) + geom_jitter(size=3, position=position_jitter(0.1))+labs(x="First column", y="Distance from average of label='0' samples"))
             
           } else if (input$One_class == "One_Class_SVM_All_Varaiables1"){
             k2 <- ncol(Data2)
@@ -1423,7 +1527,7 @@ shinyServer(function(input, output) {
             OC <- ksvm(type~.,data=Data4,type='one-svc', kernel=input$Kernel4, nu = input$nu4)
             clust <- predict(OC,Data3)
             Data5 <- cbind(Data, clust)
-            ggplot(Data5, aes(x=clust)) + geom_bar() + geom_text(stat='count', aes(label=..count..), vjust=-1) + facet_grid(. ~ as.factor(Data5[,input$Label_column]))+labs(x="Label column", y="Frequency")
+            ggplotly(ggplot(Data5, aes(x=clust)) + geom_bar() + geom_text(stat='count', aes(label=..count..), vjust=-1) + facet_grid(. ~ as.factor(Data5[,input$Label_column]))+labs(x="Label column", y="Frequency"))
             
           } else if (input$One_class == "One_Class_SVM_Selected_Varaiables1"){
             k2 <- ncol(Data2)
@@ -1507,7 +1611,7 @@ shinyServer(function(input, output) {
             output$Data_OutputOneClassSVMselected <- renderDataTable(Error_Analysis)
             Error_Analysis2 <- head(Error_Analysis,30)
             Error_Analysis2[,2]<- as.numeric(Error_Analysis2[,2])
-            ggplot(Error_Analysis2, aes(x=Error_Analysis2[,2], y=reorder(Error_Analysis2[,1],-Error_Analysis2[,2]))) + geom_bar(stat = "identity") +labs(x="Error_Number (Samples of label='1' that distances are shorter than maximum of label='0')", y="Features (Set of variables used in the model)")
+            ggplotly(ggplot(Error_Analysis2, aes(x=Error_Analysis2[,2], y=reorder(Error_Analysis2[,1],-Error_Analysis2[,2]))) + geom_bar(stat = "identity") +labs(x="Error_Number (Samples of label='1' that distances are shorter than maximum of label='0')", y="Features (Set of variables used in the model)"))
             
           
           } else if (input$One_class == "Minimum_Distance_All_Varaiables1"){
@@ -1530,7 +1634,7 @@ shinyServer(function(input, output) {
             min0 <- apply(Data7, 1,min)
             Data8 <- as.data.frame(cbind(Data[,input$Label_column],min0))
             Data8[,1] <- factor(Data8[,1])
-            ggplot(Data8, aes(x=Data8[,1], y=min0)) + geom_jitter(size=3, position=position_jitter(0.1))+labs(x="Label column", y="Distance from nearest label='0' sample")
+            ggplotly(ggplot(Data8, aes(x=Data8[,1], y=min0)) + geom_jitter(size=3, position=position_jitter(0.1))+labs(x="Label column", y="Distance from nearest label='0' sample"))
             
           } else {
             
@@ -1652,7 +1756,7 @@ shinyServer(function(input, output) {
             output$Data_OutputMDselected <- renderDataTable(Error_Analysis)
             Error_Analysis2 <- head(Error_Analysis,30)
             Error_Analysis2[,2]<- as.numeric(Error_Analysis2[,2])
-            ggplot(Error_Analysis2, aes(x=Error_Analysis2[,2], y=reorder(Error_Analysis2[,1],-Error_Analysis2[,2]))) + geom_bar(stat = "identity") +labs(x="Error_Number (Samples of label='1' that distances are shorter than maximum of label='0')", y="Features (Set of variables used in the model)")
+            ggplotly(ggplot(Error_Analysis2, aes(x=Error_Analysis2[,2], y=reorder(Error_Analysis2[,1],-Error_Analysis2[,2]))) + geom_bar(stat = "identity") +labs(x="Error_Number (Samples of label='1' that distances are shorter than maximum of label='0')", y="Features (Set of variables used in the model)"))
             
           }
           
@@ -1662,7 +1766,7 @@ shinyServer(function(input, output) {
   })
   
   
-  output$plot10 <- renderPlot({
+  output$plot10 <- renderPlotly({
     if(input$analysis == "Similarity_of_Variables_and_Categories1"){
       if(input$Similarity_of_Variables_and_Categories == "Between_label_column_and_others1"){
         if(input$Between_label_column_and_others == "Hidden1"){
@@ -1690,9 +1794,9 @@ shinyServer(function(input, output) {
             Data4 <- cbind(Ydata, pc$x, Data2)
             Data_long <- tidyr::gather(Data4, key="X", value = Xs, -Ydata)
             if(class(Ydata) == "numeric") {
-              ggplot(Data_long, aes(x=Xs,y=Data_long[,1])) + geom_point() + facet_wrap(~X,scales="free")+ labs(y=Y)
+              ggplotly(ggplot(Data_long, aes(x=Xs,y=Data_long[,1])) + geom_point() + facet_wrap(~X,scales="free")+ labs(y=Y))
             } else {
-              ggplot(Data_long, aes(x=Data_long[,1],y=Xs)) + geom_jitter(size=1, position=position_jitter(0.1)) + facet_wrap(~X,scales="free")+ labs(x=Y)
+              ggplotly(ggplot(Data_long, aes(x=Data_long[,1],y=Xs)) + geom_jitter(size=1, position=position_jitter(0.1)) + facet_wrap(~X,scales="free")+ labs(x=Y))
             }
           }
         }
@@ -1700,7 +1804,7 @@ shinyServer(function(input, output) {
     }
   })
   
-  output$plot11 <- renderPlot({
+  output$plot11 <- renderPlotly({
     if(input$analysis == "Similarity_of_Variables_and_Categories1"){
       if(input$Similarity_of_Variables_and_Categories == "Between_label_column_and_others1"){
         if(input$Between_label_column_and_others == "Hidden1"){
@@ -1730,9 +1834,9 @@ shinyServer(function(input, output) {
             Data4 <- cbind(Ydata, ic, Data2)
             Data_long <- tidyr::gather(Data4, key="X", value = Xs, -Ydata)
             if(class(Ydata) == "numeric") {
-              ggplot(Data_long, aes(x=Xs,y=Data_long[,1])) + geom_point() + facet_wrap(~X,scales="free")+ labs(y=Y)
+              ggplotly(ggplot(Data_long, aes(x=Xs,y=Data_long[,1])) + geom_point() + facet_wrap(~X,scales="free")+ labs(y=Y))
             } else {
-              ggplot(Data_long, aes(x=Data_long[,1],y=Xs)) + geom_jitter(size=1, position=position_jitter(0.1)) + facet_wrap(~X,scales="free")+ labs(x=Y)
+              ggplotly(ggplot(Data_long, aes(x=Data_long[,1],y=Xs)) + geom_jitter(size=1, position=position_jitter(0.1)) + facet_wrap(~X,scales="free")+ labs(x=Y))
             }
           }
         }
@@ -1743,141 +1847,220 @@ shinyServer(function(input, output) {
   
   
     
-  output$plot201 <- renderPlot({
+  output$plot201 <- renderPlotly({
     if(input$analysis == "Similarity_of_Samples1"){
       if(input$Dimension_for_clustering == "Dimension_2"){
-      
-        req(input$file1)
-        
-        if(input$sep2 == "Separator_Comma"){sep <- ","}
-        if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
-        if(input$sep2 == "Separator_Tab"){sep <- "\t"}
-        
-        
-        Data <- read.csv(input$file1$datapath, header=T,sep = sep)
-        if(input$DoNotUseFirst == 1){
-          Data[,1] <- NULL
-        }
+        if(input$Dimension_Reduction != "None1") {
         
       
-        library(dummies)
-        library(ggplot2)
-        library(som)
-        library(MASS)
-        library(Rtsne)
-        library(mclust)
-        library(dbscan)
-        library(e1071)
-        library(kernlab)
-        Data1 <- Data
-        Y <- names(Data1[1])
-        Ydata <- Data1[,1]
-        Data1[,1] <- NULL
-        Data2 <- dummy.data.frame(Data1)
-        Data3 <- Data2
-        n <- ncol(Data2)
-        for (i in 1:n) {
-          Data3[,i] <- (Data2[,i]-min(Data2[,i]))/(max(Data2[,i])-min(Data2[,i]))
-        }
-        
-        
-        if(input$Dimension_Reduction != "nMDS1") {
-          if(input$Dimension_Reduction == "MDS1") {
-            Data4 <- dist(Data3)
-            sn <- sammon(Data4)
-            Data5 <- sn$points
-          }else{
-            ts <- Rtsne(Data3, perplexity = input$perplexity_value)
-            Data5 <- ts$Y
-          }
-          Data51 <- Data5
-          for (i in 1:ncol(Data5)) {
-            Data51[,i] <- (Data5[,i] - min(Data5[,i]))/(max(Data5[,i]) - min(Data5[,i]))
-          }
-          Data6 <- cbind(Data51,Data,Index = row.names(Data))
+          req(input$file1)
+          
+          if(input$sep2 == "Separator_Comma"){sep <- ","}
+          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
           
           
-          if(input$AddClustering == 0){
-            if(input$plot_type2 == "G11") {
-              ggplot(Data6, aes(x=Data6[,1], y=Data6[,2],label=Ydata)) + geom_text() + labs(y="axis2",x="axis1")
-            } else if(input$plot_type2 == "G12") {
-              ggplot(Data6, aes(x=Data6[,1], y=Data6[,2],label=Index)) + geom_text() + labs(y="axis2",x="axis1")
-            } else if(input$plot_type2 == "G13") {
-              Data6$Index <- as.numeric(Data6$Index)
-              ggplot(Data6, aes(x=Data6[,1], y=Data6[,2])) + geom_point(aes(colour=Ydata)) + labs(y="axis2",x="axis1")
-            } else if(input$plot_type2 == "G14") {
-              Data6$Index <- as.numeric(Data6$Index)
-              ggplot(Data6, aes(x=Data6[,1], y=Data6[,2])) + geom_point(aes(colour=Index)) + scale_color_viridis_c(option = "D")+ labs(y="axis2",x="axis1")
+          Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+          if(input$DoNotUseFirst == 1){
+            Data[,1] <- NULL
+          }
+          
+        
+          library(dummies)
+          library(ggplot2)
+          library(som)
+          library(MASS)
+          library(Rtsne)
+          library(mclust)
+          library(dbscan)
+          library(e1071)
+          library(kernlab)
+          Data1 <- Data
+          Y <- names(Data1[1])
+          Ydata <- Data1[,1]
+          Data1[,1] <- NULL
+          Data2 <- dummy.data.frame(Data1)
+          Data3 <- Data2
+          n <- ncol(Data2)
+          for (i in 1:n) {
+            Data3[,i] <- (Data2[,i]-min(Data2[,i]))/(max(Data2[,i])-min(Data2[,i]))
+          }
+          
+          
+          if(input$Dimension_Reduction != "nMDS1") {
+            if(input$Dimension_Reduction == "MDS1") {
+              Data4 <- dist(Data3)
+              sn <- sammon(Data4)
+              Data5 <- sn$points
+            }else{
+              ts <- Rtsne(Data3, perplexity = input$perplexity_value)
+              Data5 <- ts$Y
+            }
+            Data51 <- Data5
+            for (i in 1:ncol(Data5)) {
+              Data51[,i] <- (Data5[,i] - min(Data5[,i]))/(max(Data5[,i]) - min(Data5[,i]))
+            }
+            Data6 <- cbind(Data51,Data,Index = row.names(Data))
+            
+            
+            if(input$AddClustering == 0){
+              if(input$plot_type2 == "G11") {
+                ggplotly(ggplot(Data6, aes(x=Data6[,1], y=Data6[,2],label=Ydata)) + geom_text() + labs(y="axis2",x="axis1"))
+              } else if(input$plot_type2 == "G12") {
+                ggplotly(ggplot(Data6, aes(x=Data6[,1], y=Data6[,2],label=Index)) + geom_text() + labs(y="axis2",x="axis1"))
+              } else if(input$plot_type2 == "G13") {
+                Data6$Index <- as.numeric(Data6$Index)
+                ggplotly(ggplot(Data6, aes(x=Data6[,1], y=Data6[,2])) + geom_point(aes(colour=Ydata)) + labs(y="axis2",x="axis1"))
+              } else if(input$plot_type2 == "G14") {
+                Data6$Index <- as.numeric(Data6$Index)
+                ggplotly(ggplot(Data6, aes(x=Data6[,1], y=Data6[,2])) + geom_point(aes(colour=Index)) + scale_color_viridis_c(option = "D")+ labs(y="axis2",x="axis1"))
+              } else {
+                ggplotly(ggplot(Data6, aes(x=Data6[,1], y=Data6[,2])) + geom_point()+ labs(y="axis2",x="axis1"))
+              }
             } else {
-              ggplot(Data6, aes(x=Data6[,1], y=Data6[,2])) + geom_point()+ labs(y="axis2",x="axis1")
+            
+              if(input$Clustering == "clust1") {
+                mc <- Mclust(Data6[,1:2],input$k)
+                Data7 <- transform(Data6 ,clust = mc$classification)
+              }else if(input$Clustering == "clust2"){
+                dbs <- dbscan(Data6[,1:2], eps = input$eps_value)
+                Data7 <- transform(Data6 ,clust = dbs$cluster)
+              }else if(input$Clustering == "clust3"){
+                km <- kmeans(Data6[,1:2],input$k)
+                Data7 <- transform(Data6 ,clust = km$cluster)
+              }else if(input$Clustering == "One_class_SVM_Clustering1"){
+                if(input$Kernel_library == "anovadot" || input$Kernel_library == "rbfdot" || input$Kernel_library == "polydot" || input$Kernel_library == "vanilladot" || 
+                   input$Kernel_library == "tanhdot" || input$Kernel_library == "laplacedot" || input$Kernel_library == "besseldot" || input$Kernel_library == "splinedot"){
+                  Data8 <- transform(Data6[,1:2], type=1)
+                  
+                  OC <- ksvm(type~.,data=Data8,type='one-svc', kernel=input$Kernel_library, nu = input$nu1)
+                  clust <- predict(OC,Data8)
+                  Data7 <- cbind(clust, Data6)
+                }else {
+                  Data8 <- transform(Data6[,1:2])
+                  OC <- svm(x=Data8, y=NULL, type='one-classification', kernel=input$Kernel_library, nu = input$nu1)
+                  clust <- predict(OC,Data8)
+                  Data7 <- cbind(clust, Data6)
+                }
+              }
+              Data7$clust <- as.factor(Data7$clust)
+              
+              output$downloadData <- downloadHandler(
+                filename = function() {
+                  paste("cluster_data", ".csv", sep = "")
+                },
+                content = function(file) {
+                  write.csv(Data7, file, row.names = FALSE)
+                }
+              )
+              
+              if(input$plot_type == "G1") {
+                ggplotly(ggplot(Data7, aes(x=Data7[,1], y=Data7[,2],label=Ydata)) + geom_text() + geom_point(aes(colour=clust))+ labs(y="axis2",x="axis1"))
+              } else if(input$plot_type == "G2") {
+                ggplotly(ggplot(Data7, aes(x=Data7[,1], y=Data7[,2],label=Index)) + geom_text() + geom_point(aes(colour=clust))+ labs(y="axis2",x="axis1"))
+              } else if(input$plot_type == "G3") {
+                Data7$Index <- as.numeric(Data7$Index)
+                ggplotly(ggplot(Data7, aes(x=Data7[,1], y=Data7[,2],label=clust)) + geom_point(aes(colour=Index)) + scale_color_viridis_c(option = "D")+ geom_text()+ labs(y="axis2",x="axis1"))
+              } else {
+                ggplotly(ggplot(Data7, aes(x=Data7[,1], y=Data7[,2])) + geom_point(aes(colour=clust))+ labs(y="axis2",x="axis1"))
+              }
+            }
+          
+          } else {
+            library(igraph)
+            library(networkD3)
+            rownames(Data3) <- Ydata
+            Data12 <- as.matrix(dist(Data3))
+            Data12 <- (max(Data12) - Data12)
+            diag(Data12) <- 0
+            Data12 <- Data12 / max(Data12) * 10
+            Data12[Data12< input$Distance_to_use] <- 0
+            GM4 <- graph.adjacency(Data12,weighted=T, mode = "undirected")
+            if(input$network_library5 == 'igraph'){
+              output$plot203 <- renderPlot(plot(GM4, edge.width=E(GM4)$weight))
+            }else{
+              DM.g2 <- data.frame(as_edgelist(GM4))
+              output$plot203b <- renderSimpleNetwork(simpleNetwork(DM.g2, fontSize = 14, nodeColour = "0000A2", opacity = 1, fontFamily = "Meiryo UI") )
+            }
+          }
+        }
+      }
+    }
+  })
+  
+  output$plot204 <- renderPlotly({
+    if(input$analysis == "Similarity_of_Samples1"){
+      if(input$Dimension_for_clustering == "Dimension_2"){
+        if(input$Dimension_Reduction == "None1") {
+          
+          
+          req(input$file1)
+          
+          if(input$sep2 == "Separator_Comma"){sep <- ","}
+          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+          
+          
+          Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+          if(input$DoNotUseFirst == 1){
+            Data[,1] <- NULL
+          }
+          
+          
+          library(dummies)
+          library(ggplot2)
+          Data1 <- Data
+          Y <- names(Data1[1])
+          Ydata <- Data1[,1]
+          Data1[,1] <- NULL
+          Data1$Index = row.names(Data1)
+          
+          if(input$Xcol11 > 0){Xname <- names(Data1[input$Xcol11])} else {Xname <- "None"}
+          if(input$Ycol11 > 0){Lname <- names(Data1[input$Ycol11])} else {Lname <- "None"}
+          if(input$Scol11 > 0){Sname <- names(Data1[input$Scol11])} else {Sname <- "None"}
+          
+          if(input$Scol11 != 0 ){
+            if(class(Data1[,input$Scol11]) == "numeric"){Data1[,input$Scol11] <- droplevels(cut(Data1[,input$Scol11], breaks = input$NumericalToCategorcalS11, include.lowest = TRUE))}
+            #gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point() + facet_wrap(~Data1[,input$Scol11],scales="free")+ labs(x=Xname,y=Lname,subtitle = Sname)
+            
+            if(input$plot_type2 == "G11") {
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11],label=Ydata)) + geom_text() + facet_wrap(~Data1[,input$Scol11],scales="free") + labs(x=Xname,y=Lname,subtitle = Sname)
+            } else if(input$plot_type2 == "G12") {
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11],label=Index)) + geom_text() + facet_wrap(~Data1[,input$Scol11],scales="free") + labs(x=Xname,y=Lname,subtitle = Sname)
+            } else if(input$plot_type2 == "G13") {
+              Data1$Index <- as.numeric(Data1$Index)
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point(aes(colour=Ydata)) + facet_wrap(~Data1[,input$Scol11],scales="free") + labs(x=Xname,y=Lname,subtitle = Sname)
+            } else if(input$plot_type2 == "G14") {
+              Data1$Index <- as.numeric(Data1$Index)
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point(aes(colour=Index)) + facet_wrap(~Data1[,input$Scol11],scales="free") + scale_color_viridis_c(option = "D")+ labs(x=Xname,y=Lname,subtitle = Sname)
+            } else {
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point() + facet_wrap(~Data1[,input$Scol11],scales="free")+ labs(x=Xname,y=Lname,subtitle = Sname)
             }
           } else {
-          
-            if(input$Clustering == "clust1") {
-              mc <- Mclust(Data6[,1:2],input$k)
-              Data7 <- transform(Data6 ,clust = mc$classification)
-            }else if(input$Clustering == "clust2"){
-              dbs <- dbscan(Data6[,1:2], eps = input$eps_value)
-              Data7 <- transform(Data6 ,clust = dbs$cluster)
-            }else if(input$Clustering == "clust3"){
-              km <- kmeans(Data6[,1:2],input$k)
-              Data7 <- transform(Data6 ,clust = km$cluster)
-            }else if(input$Clustering == "One_class_SVM_Clustering1"){
-              if(input$Kernel_library == "anovadot" || input$Kernel_library == "rbfdot" || input$Kernel_library == "polydot" || input$Kernel_library == "vanilladot" || 
-                 input$Kernel_library == "tanhdot" || input$Kernel_library == "laplacedot" || input$Kernel_library == "besseldot" || input$Kernel_library == "splinedot"){
-                Data8 <- transform(Data6[,1:2], type=1)
-                
-                OC <- ksvm(type~.,data=Data8,type='one-svc', kernel=input$Kernel_library, nu = input$nu1)
-                clust <- predict(OC,Data8)
-                Data7 <- cbind(clust, Data6)
-              }else {
-                Data8 <- transform(Data6[,1:2])
-                OC <- svm(x=Data8, y=NULL, type='one-classification', kernel=input$Kernel_library, nu = input$nu1)
-                clust <- predict(OC,Data8)
-                Data7 <- cbind(clust, Data6)
-              }
-            }
-            Data7$clust <- as.factor(Data7$clust)
-            
-            output$downloadData <- downloadHandler(
-              filename = function() {
-                paste("cluster_data", ".csv", sep = "")
-              },
-              content = function(file) {
-                write.csv(Data7, file, row.names = FALSE)
-              }
-            )
-            
-            if(input$plot_type == "G1") {
-              ggplot(Data7, aes(x=Data7[,1], y=Data7[,2],label=Ydata)) + geom_text() + geom_point(aes(colour=clust))+ labs(y="axis2",x="axis1")
-            } else if(input$plot_type == "G2") {
-              ggplot(Data7, aes(x=Data7[,1], y=Data7[,2],label=Index)) + geom_text() + geom_point(aes(colour=clust))+ labs(y="axis2",x="axis1")
-            } else if(input$plot_type == "G3") {
-              Data7$Index <- as.numeric(Data7$Index)
-              ggplot(Data7, aes(x=Data7[,1], y=Data7[,2],label=clust)) + geom_point(aes(colour=Index)) + scale_color_viridis_c(option = "D")+ geom_text()+ labs(y="axis2",x="axis1")
+            #gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point() + labs(x=Xname,y=Lname)
+            if(input$plot_type2 == "G11") {
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11],label=Ydata)) + geom_text()  + labs(x=Xname,y=Lname)
+            } else if(input$plot_type2 == "G12") {
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11],label=Index)) + geom_text() + labs(x=Xname,y=Lname)
+            } else if(input$plot_type2 == "G13") {
+              Data1$Index <- as.numeric(Data1$Index)
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point(aes(colour=Ydata)) + labs(x=Xname,y=Lname)
+            } else if(input$plot_type2 == "G14") {
+              Data1$Index <- as.numeric(Data1$Index)
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point(aes(colour=Index))  + scale_color_viridis_c(option = "D")+ labs(x=Xname,y=Lname)
             } else {
-              ggplot(Data7, aes(x=Data7[,1], y=Data7[,2])) + geom_point(aes(colour=clust))+ labs(y="axis2",x="axis1")
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point() + labs(x=Xname,y=Lname)
             }
-          }
-        
-        } else {
-          library(igraph)
-          rownames(Data3) <- Ydata
-          Data12 <- as.matrix(dist(Data3))
-          Data12 <- (max(Data12) - Data12)
-          diag(Data12) <- 0
-          Data12 <- Data12 / max(Data12) * 10
-          Data12[Data12< input$Distance_to_use] <- 0
-          GM4 <- graph.adjacency(Data12,weighted=T, mode = "undirected")
-          plot(GM4, edge.width=E(GM4)$weight)
+          } 
+          #gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point()
+          ggplotly(gplot)
+          
         }
-        
-        
       }
     }
   })
     
-  output$plot202 <- renderPlot({
+  output$plot202 <- renderPlotly({
     if(input$analysis == "Similarity_of_Samples1"){
       if(input$Dimension_for_clustering == "Dimension_All"){
         
@@ -1916,7 +2099,7 @@ shinyServer(function(input, output) {
         )
         
         Data7$clust <- as.factor(Data7$clust)
-        ggplot(Data7, aes(x=clust, y=clust)) + geom_bar(stat = "identity") +labs(x="Cluster name", y="Frequency")
+        ggplotly(ggplot(Data7, aes(x=clust, y=clust)) + geom_bar(stat = "identity") +labs(x="Cluster name", y="Frequency"))
           
         
       }
@@ -1951,7 +2134,7 @@ shinyServer(function(input, output) {
     }
   })
   
-  output$plot405 <- renderPlot({
+  output$plot405 <- renderPlotly({
     if(input$analysis == "Similarity_of_Names_in_Rows_and_Columns1"){
       if(input$Similarity_of_Names_in_Rows_and_Columns == 'Correspondence_MDS_Names1') {
       
@@ -1984,7 +2167,7 @@ shinyServer(function(input, output) {
         sn <- sammon(Data11_dist)
         output <- sn$points
         Data2 <- cbind(output, Data1)
-        ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=name1)) + geom_text(aes(colour=name2)) + labs(y="axis2",x="axis1")
+        ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=name1)) + geom_text(aes(colour=name2)) + labs(y="axis2",x="axis1"))
       }
     }
   })
@@ -2031,19 +2214,20 @@ shinyServer(function(input, output) {
     }
   })
   
-  output$plot403 <- renderPlot({
+  output$plot403 <- renderPlotly({
     if(input$analysis == "Similarity_of_Names_in_Rows_and_Columns1"){
       if(input$Similarity_of_Names_in_Rows_and_Columns == 'Heat_map_Clustering1') {
         
         req(input$file1)
         
+        library(heatmaply)
         if(input$sep2 == "Separator_Comma"){sep <- ","}
         if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
         if(input$sep2 == "Separator_Tab"){sep <- "\t"}
         Data <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=1)
         
         DataM <- as.matrix(Data)
-        heatmap(DataM, scale="none")
+        heatmaply(DataM, scale="none")
       }
     }
   })

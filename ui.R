@@ -1,4 +1,8 @@
 library(shiny)
+library(heatmaply)
+library(plotly)
+library(networkD3)
+library(visNetwork)
 
 
 fluidPage(
@@ -25,96 +29,110 @@ fluidPage(
           conditionalPanel(
             condition = "input.Among_all_columns == 'Stratifeid_graph1'",
             
-            selectInput("Gtype", "Graph type",  choices = c("histgram", "scatter", "box_plot", "line_graph", "bar")),
-            numericInput('Lcol', 'Label', "1"),
+            selectInput("Gtype", "Graph type",  choices = c("histgram", "scatter", "box_plot", "line_graph", "bar", "3D-scatter")),
             conditionalPanel(
-              condition = "input.Gtype != 'histgram'",
+              condition = "input.Gtype == '3D-scatter'",
+              numericInput('Xcol12', 'X axis', "1"),
+              numericInput('Ycol12', 'Y axis', "1"),
+              numericInput('Zcol12', 'Z axis', "1"),
+              numericInput('Ccol12', 'Coloring (if "0" do not used colors)', "0"),
+            ),
+            
+            
+            conditionalPanel(
+              condition = "input.Gtype != '3D-scatter'",
+              
+              numericInput('Lcol', 'Label', "1"),
               conditionalPanel(
-                condition = "input.Gtype != 'bar'",
+                condition = "input.Gtype != 'histgram'",
+                conditionalPanel(
+                  condition = "input.Gtype != 'bar'",
+                  conditionalPanel(
+                    condition = "input.Gtype != 'line_graph'",
+                    numericInput('Xcol', 'X axis', "1"),
+                  ),
+                ),
+              ),
+            
+              
+              
+              numericInput('Scol', 'area separate 1 (if "0" not separate)', "0"),
+              conditionalPanel(
+                condition = "input.Gtype != 'scatter'",
+                
                 conditionalPanel(
                   condition = "input.Gtype != 'line_graph'",
-                  numericInput('Xcol', 'X axis', "1"),
+                  conditionalPanel(
+                    condition = "input.Scol > 0",
+                    numericInput('Scol2', 'area separate 2 (if "0" not separate)', "0"),
+                  ),
                 ),
               ),
-            ),
-            
-            
-            numericInput('Scol', 'area separate 1 (if "0" not separate)', "0"),
-            conditionalPanel(
-              condition = "input.Gtype != 'scatter'",
-              
               conditionalPanel(
-                condition = "input.Gtype != 'line_graph'",
+                condition = "input.Gtype == 'histgram'",
                 conditionalPanel(
-                  condition = "input.Scol > 0",
-                  numericInput('Scol2', 'area separate 2 (if "0" not separate)', "0"),
-                ),
-              ),
-            ),
-            conditionalPanel(
-              condition = "input.Gtype == 'histgram'",
-              conditionalPanel(
-                condition = "input.Scol == 0",
-                sliderInput("Prediction_Interval_Probability2",
-                            "Prediction interval probability",
-                            min = 0,  max = 1, value = 0.95, step = 0.01)
-              ),
-              conditionalPanel(
-                condition = "input.Scol != 0",
-                checkboxInput("Using_hypothesis_testing1", "Using hypothesis testing", FALSE),
-              ),
-            ),
-            conditionalPanel(
-              condition = "input.Gtype == 'box_plot'",
-              
-              conditionalPanel(
-                condition = "input.Xcol != 0",
-                checkboxInput("Using_hypothesis_testing2", "Using hypothesis testing", FALSE),
-              ),
-            ),
-            conditionalPanel(
-              condition = "input.Gtype == 'scatter' || input.Gtype == 'line_graph'",
-              numericInput('Ccol', 'Coloring (if "0" do not used colors)', "0"),
-              conditionalPanel(
-                condition = "input.Ccol > 0",
-                checkboxInput("NumericalToCategorcalSColor2", "If coloring varaiable is numerical, changing categorical varaiable", TRUE),
-                checkboxInput("NumericalToCategorcalSColor1", "If coloring is numerical, changing categorical coloring", FALSE),
-              ),
-              conditionalPanel(
-                condition = "input.Gtype == 'scatter'",
-                conditionalPanel(
-                  condition = "input.Ccol == 0 && input.Scol == 0",
-                  checkboxInput("Using_Prediction_Interval", "Using prediction interval", FALSE),
-                ),
-                conditionalPanel(
-                  condition = "input.Using_Prediction_Interval == 1",
-                  sliderInput("Prediction_Interval_Probability",
+                  condition = "input.Scol == 0",
+                  sliderInput("Prediction_Interval_Probability2",
                               "Prediction interval probability",
                               min = 0,  max = 1, value = 0.95, step = 0.01)
                 ),
-                
-                checkboxInput("Using_GLM", "Using GLM", FALSE),
                 conditionalPanel(
-                  condition = "input.Using_GLM == 1",
-                  radioButtons("family_link2", "family_link",
-                               choices = c(gaussian_identity = "gaussian_identity",
-                                           poisson_log = "poisson_log",
-                                           binomial_logit = "binomial_logit",
-                                           binomial_probit = "binomial_probit"),
-                               selected = "gaussian_identity"),
-                  p("'gaussian_identity' = Simple mutli regression analysis"),
-                  p("'poisson_log' = Regression analysis for count data of Y"),
-                  p("'binomial_logit' = Logistic regression analysis")
-                ),
-                
-                conditionalPanel(
-                  condition = "input.Ccol == 0 && input.Scol == 0",
-                  checkboxInput("Check_difference_between_two_variablesl", "Check difference between two variables", FALSE),
+                  condition = "input.Scol != 0",
+                  checkboxInput("Using_hypothesis_testing1", "Using hypothesis testing", FALSE),
                 ),
               ),
-              
+              conditionalPanel(
+                condition = "input.Gtype == 'box_plot'",
+                
+                conditionalPanel(
+                  condition = "input.Xcol != 0",
+                  checkboxInput("Using_hypothesis_testing2", "Using hypothesis testing", FALSE),
+                ),
+              ),
+              conditionalPanel(
+                condition = "input.Gtype == 'scatter' || input.Gtype == 'line_graph'",
+                numericInput('Ccol', 'Coloring (if "0" do not used colors)', "0"),
+                conditionalPanel(
+                  condition = "input.Ccol > 0",
+                  checkboxInput("NumericalToCategorcalSColor2", "If coloring varaiable is numerical, changing categorical varaiable", TRUE),
+                  checkboxInput("NumericalToCategorcalSColor1", "If coloring is numerical, changing categorical coloring", FALSE),
+                ),
+                conditionalPanel(
+                  condition = "input.Gtype == 'scatter'",
+                  conditionalPanel(
+                    condition = "input.Ccol == 0 && input.Scol == 0",
+                    checkboxInput("Using_Prediction_Interval", "Using prediction interval", FALSE),
+                  ),
+                  conditionalPanel(
+                    condition = "input.Using_Prediction_Interval == 1",
+                    sliderInput("Prediction_Interval_Probability",
+                                "Prediction interval probability",
+                                min = 0,  max = 1, value = 0.95, step = 0.01)
+                  ),
+                  
+                  checkboxInput("Using_GLM", "Using GLM", FALSE),
+                  conditionalPanel(
+                    condition = "input.Using_GLM == 1",
+                    radioButtons("family_link2", "family_link",
+                                 choices = c(gaussian_identity = "gaussian_identity",
+                                             poisson_log = "poisson_log",
+                                             binomial_logit = "binomial_logit",
+                                             binomial_probit = "binomial_probit"),
+                                 selected = "gaussian_identity"),
+                    p("'gaussian_identity' = Simple mutli regression analysis"),
+                    p("'poisson_log' = Regression analysis for count data of Y"),
+                    p("'binomial_logit' = Logistic regression analysis")
+                  ),
+                  
+                  conditionalPanel(
+                    condition = "input.Ccol == 0 && input.Scol == 0",
+                    checkboxInput("Check_difference_between_two_variablesl", "Check difference between two variables", FALSE),
+                  ),
+                ),
+                
+              )
             )
-          )
+          ),
         )
       ),
       
@@ -371,10 +389,26 @@ fluidPage(
         conditionalPanel(
           condition = "input.Dimension_for_clustering == 'Dimension_2'",   
           radioButtons("Dimension_Reduction", "Dimension Reduction",
-                       choices = c(MDS = "MDS1",
+                       choices = c(None = "None1",
+                                    MDS = "MDS1",
                                    tSNE = "MDS2",
                                    nMDS = "nMDS1"),
-                       selected = "MDS1"),
+                       selected = "None1"),
+          
+          conditionalPanel(
+            condition = "input.Dimension_Reduction == 'None1'",
+            numericInput('Xcol11', 'X axis', "1"),
+            numericInput('Ycol11', 'Y axis', "2"),
+            numericInput('Scol11', 'area separate 2 (if "0" not separate)', "0"),
+            conditionalPanel(
+              condition = "input.Scol11 > '0'",
+              p("If using methods for categorical variable, this tool changes numerical variable into categorical.
+                    For example, if '5 is the input, numerical variable is divided into 5 ranges.
+                    And names of the ranges are used as categories."),
+              
+              numericInput('NumericalToCategorcalS11', 'No of ranges', "3"),
+            ),
+          ),
           
           conditionalPanel(
             condition = "input.Dimension_Reduction == 'MDS2'",
@@ -386,8 +420,6 @@ fluidPage(
           
           conditionalPanel(
             condition = "input.Dimension_Reduction != 'nMDS1'",
-            checkboxInput("AddClustering", "Add clustering methods", FALSE),
-            
             conditionalPanel(
               condition = "input.AddClustering == 0",
               radioButtons("plot_type2", "Plot type",
@@ -398,53 +430,58 @@ fluidPage(
                                        Only_Plot = "G15"),
                            selected = "G15")
             ),
-          
             conditionalPanel(
-              condition = "input.AddClustering == 1",
-                
-              radioButtons("Clustering", "Clustering",
-                           choices = c(k_Means = "clust3",
-                                       GMM= "clust1",
-                                       DBSCAN = "clust2",
-                                       One_class_SVM_Clustering = "One_class_SVM_Clustering1"),
-                           selected = "clust1"),
-              conditionalPanel(
-                condition = "input.Clustering == 'clust3' || input.Clustering == 'clust1'",
-                numericInput('k', 'Number of Clusters', 2)
-              ),
-              
-              conditionalPanel(
-                condition = "input.Clustering == 'clust2'",
-                sliderInput("eps_value",
-                            "eps of DBSCAN",
-                            min = 0,  max = 1, value = 0.1, step = 0.01)
-              ),
-              
-              conditionalPanel(
-                condition = "input.Clustering == 'One_class_SVM_Clustering1'",
-                radioButtons("Kernel_library", "Kernel_library",
-                             choices = c(anovadot_kernlab= "anovadot",
-                                         rbfdot_kernlab= "rbfdot",
-                                         polydot_kernlab= "polydot",
-                                         vanilladot_kernlab= "vanilladot",
-                                         tanhdot_kernlab= "tanhdot",
-                                         laplacedot_kernlab= "laplacedot",
-                                         besseldot_kernlab= "besseldot",
-                                         splinedot_kernlab= "splinedot"),
-                             selected = "rbfdot"),
-                sliderInput("nu1",
-                            "nu (Adjust outliers)",
-                            min = 0.001,  max = 1, value = 0.2, step = 0.001)
-              ),
+              condition = "input.Dimension_Reduction != 'None1'",
+              checkboxInput("AddClustering", "Add clustering methods", FALSE),
               
             
-              radioButtons("plot_type", "Plot type",
-                           choices = c(Name_and_Clusering= "G1",
-                                       Index_and_Clusering1 = "G2",
-                                       Index_and_Clusering2 = "G3",
-                                       Only_Clustering = "G4"),
-                           selected = "G4"),
+              conditionalPanel(
+                condition = "input.AddClustering == 1",
+                  
+                radioButtons("Clustering", "Clustering",
+                             choices = c(k_Means = "clust3",
+                                         GMM= "clust1",
+                                         DBSCAN = "clust2",
+                                         One_class_SVM_Clustering = "One_class_SVM_Clustering1"),
+                             selected = "clust1"),
+                conditionalPanel(
+                  condition = "input.Clustering == 'clust3' || input.Clustering == 'clust1'",
+                  numericInput('k', 'Number of Clusters', 2)
+                ),
+                
+                conditionalPanel(
+                  condition = "input.Clustering == 'clust2'",
+                  sliderInput("eps_value",
+                              "eps of DBSCAN",
+                              min = 0,  max = 1, value = 0.1, step = 0.01)
+                ),
+                
+                conditionalPanel(
+                  condition = "input.Clustering == 'One_class_SVM_Clustering1'",
+                  radioButtons("Kernel_library", "Kernel_library",
+                               choices = c(anovadot_kernlab= "anovadot",
+                                           rbfdot_kernlab= "rbfdot",
+                                           polydot_kernlab= "polydot",
+                                           vanilladot_kernlab= "vanilladot",
+                                           tanhdot_kernlab= "tanhdot",
+                                           laplacedot_kernlab= "laplacedot",
+                                           besseldot_kernlab= "besseldot",
+                                           splinedot_kernlab= "splinedot"),
+                               selected = "rbfdot"),
+                  sliderInput("nu1",
+                              "nu (Adjust outliers)",
+                              min = 0.001,  max = 1, value = 0.2, step = 0.001)
+                ),
+                
               
+                radioButtons("plot_type", "Plot type",
+                             choices = c(Name_and_Clusering= "G1",
+                                         Index_and_Clusering1 = "G2",
+                                         Index_and_Clusering2 = "G3",
+                                         Only_Clustering = "G4"),
+                             selected = "G4"),
+                
+              ),
             ),
           ),
           
@@ -510,17 +547,17 @@ fluidPage(
             
             conditionalPanel(
               condition = "input.Variable_Network == 'Cramer_Network1'",
-              numericInput('NumericalToCategorcalC', 'No of ranges', "5"),
+              numericInput('NumericalToCategorcalC', 'No of ranges', "3"),
               
             ),
             conditionalPanel(
               condition = "input.Variable_Network == 'Bayesian_Network1'",
-              numericInput('NumericalToCategorcalB', 'No of ranges', "5"),
+              numericInput('NumericalToCategorcalB', 'No of ranges', "3"),
               p("If 0 is input, numerical variables are not changed into categorical variables.")
             ),
             conditionalPanel(
               condition = "input.Variable_Network == 'Association1'",
-              numericInput('NumericalToCategorcalA', 'No of ranges', "5"),
+              numericInput('NumericalToCategorcalA', 'No of ranges', "3"),
             ),
           ),
           
@@ -542,7 +579,7 @@ fluidPage(
                   For example, if '5 is the input, numerical variable is divided into 5 ranges.
                   And names of the ranges are used as categories."),
             
-            numericInput('NumericalToCategorcalU', 'No of ranges', "5"),
+            numericInput('NumericalToCategorcalU', 'No of ranges', "3"),
             
           ),
           conditionalPanel(
@@ -552,7 +589,7 @@ fluidPage(
                   For example, if '5 is the input, numerical variable is divided into 5 ranges.
                   And names of the ranges are used as categories."),
             
-            numericInput('NumericalToCategorcalL', 'No of ranges', "5"),
+            numericInput('NumericalToCategorcalL', 'No of ranges', "3"),
             
           ),
             
@@ -613,7 +650,9 @@ fluidPage(
             
             h3("Heat map"),
             p("Visualization of Data Table"),
-            plotOutput("plot03"),
+            #plotOutput("plot03"),
+            plotlyOutput("plot03"),
+            
             a("Code (English)",href="http://data-science.tokyo/R-E/R-E1-01.html"),
             a(" (Japanese)",href="http://data-science.tokyo/R-J/R-J1-01.html"),br(),
             a("About Heat map(English)",href="http://data-science.tokyo/ed-e/ede1-4-3-2.html"),
@@ -624,7 +663,7 @@ fluidPage(
             condition = "input.Among_all_columns == 'Line_graph1'",
             
             h3("Line graph of all variables"),
-            plotOutput("plot01"),
+            plotlyOutput("plot01"),
             p("Categorical variables are changed into dummy variables"),
             a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-01.html"),
             a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-01.html")
@@ -634,11 +673,22 @@ fluidPage(
           conditionalPanel(
             condition = "input.Among_all_columns == 'Stratifeid_graph1'",
             h3("Stratifeid_graph"),
+            #conditionalPanel(
+            #  condition = "input.Scol == 0",
+            #  checkboxInput("Using_interactive_graph1", "Using interactive graph", FALSE),
+            #),
             conditionalPanel(
               condition = "input.Gtype == 'bar'",
               p("n of categories"),
             ),
-            plotOutput("plot14"),
+            #conditionalPanel(
+            #  condition = "input.Using_interactive_graph1 == 0",
+            plotlyOutput("plot14"),
+            #),
+            #conditionalPanel(
+            #  condition = "input.Using_interactive_graph1 == 1",
+            #  plotlyOutput("plot538"),
+            #),
             
             conditionalPanel(
               condition = "input.Gtype == 'scatter'",
@@ -831,8 +881,16 @@ fluidPage(
                 verbatimTextOutput("text536"),
               ),
             ),
-            a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-01.html"),
-            a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-01.html")
+            conditionalPanel(
+              condition = "input.Gtype == '3D-scatter'",
+              a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E5-02.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J5-02.html")
+            ),
+            conditionalPanel(
+              condition = "input.Gtype != '3D-scatter'",
+              a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E5-01.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J5-01.html")
+            ),
           ),
           
           conditionalPanel(
@@ -841,7 +899,15 @@ fluidPage(
             conditionalPanel(
               condition = "input.Variable_Network == 'Correlation_Network1'",
               h3("Correlation Coefficient --> Network graph"),
-              plotOutput("plot06"),
+              selectInput("network_library1", "Library of network",  choices = c("igraph", "networkD3")),
+              conditionalPanel(
+                condition = "input.network_library1 == 'igraph'",
+                plotOutput("plot06"),
+              ),
+              conditionalPanel(
+                condition = "input.network_library1 == 'networkD3'",
+                simpleNetworkOutput("plot06b"),
+              ),
               dataTableOutput("Data_Output2"),
               
               downloadButton("downloadData2", "Download analyzed data"),
@@ -860,7 +926,15 @@ fluidPage(
             conditionalPanel(
               condition = "input.Variable_Network == 'Graphical_Lasso1'",
               h3("Graphical Lasso"),
-              plotOutput("plot07"),
+              selectInput("network_library2", "Library of network",  choices = c("igraph", "networkD3")),
+              conditionalPanel(
+                condition = "input.network_library2 == 'igraph'",
+                plotOutput("plot07"),
+              ),
+              conditionalPanel(
+                condition = "input.network_library2 == 'networkD3'",
+                simpleNetworkOutput("plot07b"),
+              ),
               dataTableOutput("Data_Output3"),
               downloadButton("downloadData3", "Download analyzed data"),
               h4("Algorithm"),
@@ -877,7 +951,15 @@ fluidPage(
             conditionalPanel(
               condition = "input.Variable_Network == 'Cramer_Network1'",
               h3("Cramer's coefficient of association --> Network graph"),
-              plotOutput("plot09"),
+              selectInput("network_library3", "Library of network",  choices = c("igraph", "networkD3")),
+              conditionalPanel(
+                condition = "input.network_library3 == 'igraph'",
+                plotOutput("plot09"),
+              ),
+              conditionalPanel(
+                condition = "input.network_library3 == 'networkD3'",
+                simpleNetworkOutput("plot09b"),
+              ),
               dataTableOutput("Data_Output4"),
               downloadButton("downloadData4", "Download analyzed data"),
               
@@ -922,20 +1004,51 @@ fluidPage(
               condition = "input.Variable_Network == 'Association1'",
               h3("Associations Rules"),
               p("Similarity among Categories"),
-              
+              selectInput("network_library4", "Library of network",  choices = c("visNetwork", "igraph")),
+              #selectInput("network_library4", "Library of network",  choices = c("igraph","visNetwork")),
+              #selectInput("network_library4", "Library of network",  choices = c( "visNetwork")),
+              #selectInput("network_library4", "Library of network",  choices = c( "igraph")),
               h4("Sets of high confidence"),
-              plotOutput("plot12"),
+              #plotOutput("plot12"),
+              conditionalPanel(
+                condition = "input.network_library4 == 'igraph'",
+                plotOutput("plotap32a"),
+              ),
+              conditionalPanel(
+                condition = "input.network_library4 == 'visNetwork'",
+                visNetworkOutput("plotap32b"),
+              ),
               #plotOutput("plotap32"),
               dataTableOutput("ap221"),
               downloadButton("downloadData221", "Download analyzed data"),
               
               h4("Sets of high support"),
-              plotOutput("plotap31"),
+              conditionalPanel(
+                condition = "input.network_library4 == 'igraph'",
+                plotOutput("plotap31a"),
+                
+              ),
+              conditionalPanel(
+                condition = "input.network_library4 == 'visNetwork'",
+                #simpleNetworkOutput("plotap31b"),
+                visNetworkOutput("plotap31b"),
+                h4("Graph of support is the unfirected network. But this graph is directed network because of bug"),
+              ),
+              #plotOutput("plotap31a"),
               dataTableOutput("ap211"),
               downloadButton("downloadData211", "Download analyzed data"),
               
               h4("Sets of high lift"),
-              plotOutput("plotap33"),
+              conditionalPanel(
+                condition = "input.network_library4 == 'igraph'",
+                plotOutput("plotap33a"),
+              ),
+              conditionalPanel(
+                condition = "input.network_library4 == 'visNetwork'",
+                #simpleNetworkOutput("plotap33b"),
+                visNetworkOutput("plotap33b"),
+              ),
+              #plotOutput("plotap33"),
               dataTableOutput("ap231"),
               downloadButton("downloadData231", "Download analyzed data"),
               
@@ -958,7 +1071,7 @@ fluidPage(
             conditionalPanel(
               condition = "input.Using_MDS == 'PCA_MDS1'",
               h3("PCA --> MDS"),
-              plotOutput("plot08"),
+              plotlyOutput("plot08"),
               h4("Algorithm"),
               p("1. All categorical variables are changed into dummy variables"),
               p("2. PCA to calculate factor loading. Output is multi-dimensional data"),
@@ -974,7 +1087,7 @@ fluidPage(
             conditionalPanel(
               condition = "input.Using_MDS == 'Correspondence_MDS_Categories1'",
               h3("Correspondence and MDS Analysis for Categories"),
-              plotOutput("plot13"),
+              plotlyOutput("plot13"),
               
               h4("Contribution rate of eigenvalue"),
               textOutput("text131"),
@@ -999,7 +1112,7 @@ fluidPage(
             condition = "input.Among_all_columns == 'Factor_Analysis1'",
             h3("Factor analysis"),
             verbatimTextOutput("text406"),
-            plotOutput("plot406"),
+            plotlyOutput("plot406"),
             
             
             a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E4-09.html"),
@@ -1032,7 +1145,7 @@ fluidPage(
             condition = "input.Between_label_column_and_others == 'Scatter_plot1'",
             h3("Scatter plot (label column vs Others)"),
             p("Similarity among Variables"),
-            plotOutput("plot05"),
+            plotlyOutput("plot05"),
             p("Categorical data is changed into dummy variables"),
             p("If label column is numerical, 2 dimension scatter plot. 
               If label column is categorical, 1 dimension scatter plot stratidied by categories."),
@@ -1080,7 +1193,7 @@ fluidPage(
               condition = "input.One_class == 'Basic_test_All_Varaiables1'",
               h3("Check differences between label'0' and label'1'"),
             ),
-            plotOutput("plot301"),
+            plotlyOutput("plot301"),
             conditionalPanel(
               condition = "input.One_class == 'Basic_test_All_Varaiables1'",
               plotOutput("plot601"),
@@ -1089,7 +1202,7 @@ fluidPage(
             ),
             conditionalPanel(
               condition = "input.One_class == 'PCA_MT_All_Varaiables1'",
-              plotOutput("plotPCAMT"),
+              plotlyOutput("plotPCAMT"),
               h3("Factor loading (Correlation coefficient between variables and PCs)"),
               dataTableOutput("Data_OutputPCAMT"),
             ),
@@ -1156,7 +1269,7 @@ fluidPage(
               condition = "input.finder == 'Hidden_PCA1'",
               h3("Label column vs (Other variables and Principal components)"),
               
-              plotOutput("plot10"),
+              plotlyOutput("plot10"),
               
               h4("Algorithm"),
               p("1. All categorical variables except label column are changed into dummy variables"),
@@ -1173,7 +1286,7 @@ fluidPage(
             conditionalPanel(
               condition = "input.finder == 'Hidden_ICA1'",
               h3("Label column vs (Other variables and Independent components)"),
-              plotOutput("plot11"),
+              plotlyOutput("plot11"),
               h4("Algorithm"),
               p("1. All categorical variables except label column are changed into dummy variables"),
               p("2. Independent components are calculated except the label column variable"),
@@ -1197,9 +1310,35 @@ fluidPage(
         conditionalPanel(
           condition = "input.Dimension_for_clustering == 'Dimension_2'",   
           h3("Similarity of samples"),
-          plotOutput("plot201"),
-          p("Axis1 and axis2 do not have physical meaning"),
-          p("Change from High dimension data into 2 dimension data."),
+          conditionalPanel(
+            condition = "input.Dimension_Reduction == 'None1'",
+            plotlyOutput("plot204"),
+          ),
+          conditionalPanel(
+            condition = "input.Dimension_Reduction != 'nMDS1'",
+            conditionalPanel(
+              condition = "input.Dimension_Reduction != 'None1'",
+              plotlyOutput("plot201"),
+            ),
+          ),
+          conditionalPanel(
+            condition = "input.Dimension_Reduction == 'nMDS1'",
+            selectInput("network_library5", "Library of network",  choices = c("igraph", "networkD3")),
+            conditionalPanel(
+              condition = "input.network_library5 == 'igraph'",
+              plotOutput("plot203"),
+            ),
+            conditionalPanel(
+              condition = "input.network_library5 == 'networkD3'",
+              simpleNetworkOutput("plot203b"),
+            ),
+            #plotOutput("plot203"),
+          ),
+          conditionalPanel(
+            condition = "input.Dimension_Reduction != 'None1'",
+            p("Axis1 and axis2 do not have physical meaning"),
+            p("Change from High dimension data into 2 dimension data."),
+          ),
         
         
           conditionalPanel(
@@ -1238,7 +1377,7 @@ fluidPage(
         conditionalPanel(
           condition = "input.Dimension_for_clustering == 'Dimension_All'", 
           h3("Similarity of samples"),
-          plotOutput("plot202"),   
+          plotlyOutput("plot202"),   
           p("Categorical variables are changed into dummy variables"),
           p("Clust name 0 is the samples judged as outliers"),
           p("Download analyzed data for the next step.
@@ -1271,7 +1410,7 @@ fluidPage(
         conditionalPanel(
           condition = "input.Similarity_of_Names_in_Rows_and_Columns == 'Correspondence_MDS_Names1'",
           p("Analysis of count data (0, 1, 2, 3,,,,), Not use for negative values and categorical values"),
-          plotOutput("plot405"),
+          plotlyOutput("plot405"),
           h4("Contribution rate of eigenvalue"),
           textOutput("text4051"),
           h4("No of dimensions used in the model"),
@@ -1323,7 +1462,7 @@ fluidPage(
         ),
         conditionalPanel(
           condition = "input.Similarity_of_Names_in_Rows_and_Columns == 'Heat_map_Clustering1'",
-          plotOutput("plot403"),
+          plotlyOutput("plot403"),
           
           a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-06.html"),
           a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-06.html")
