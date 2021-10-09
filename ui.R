@@ -4,11 +4,10 @@ library(plotly)
 library(networkD3)
 library(visNetwork)
 
-
 fluidPage(
   
   titlePanel("R-EDA1 (R Exploratory Data Analysis)"),
-  p("conducted by Tetsuro Sugihara"),
+  p("made by Tetsuro Sugihara"),
   HTML('<div id="fb-root"></div><script async defer crossorigin="anonymous" src="https://connect.facebook.net/ja_JP/sdk.js#xfbml=1&version=v10.0" nonce="Y3i7onlm"></script>'),
   #HTML('<a href="https://twitter.com/share" class="twitter-share-button")>Twitter</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>'),
   HTML('<a href="https://ecodata222.shinyapps.io/R-EDA1" class="twitter-share-button" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>'),
@@ -19,6 +18,20 @@ fluidPage(
     sidebarPanel(
       
       fileInput("file1", "Choose CSV File", multiple = TRUE,accept = c("text/csv", "text/comma-separated-values,text/plain",".csv")),
+      conditionalPanel(
+        condition = "input.analysis == 'Similarity_of_Samples1' || input.analysis == 'Similarity_of_Names_in_Rows_and_Columns1'",
+        checkboxInput("Use_one_row_as_sample_name2", "Use one of the row as sample name", TRUE),
+        
+        conditionalPanel(
+          condition = "input.Use_one_row_as_sample_name2 == 1",
+          numericInput('sample_row2', 'Row number of sample name', "1"),
+        ),
+        
+        conditionalPanel(
+          condition = "input.Use_one_row_as_sample_name2 == 0",
+          p("Index is used as sample name.")
+        ),
+      ),
       
       conditionalPanel(
         condition = "input.analysis == 'Similarity_of_Variables_and_Categories1'",
@@ -176,11 +189,44 @@ fluidPage(
       
       radioButtons("analysis", "Analysis",
                    choices = c(Basic_EDA ="Basic_EDA1",
+                               Heat_map = "Heat_map1",
                                 Similarity_of_Variables_and_Categories = "Similarity_of_Variables_and_Categories1",
                                Similarity_of_Samples = "Similarity_of_Samples1",
                                Similarity_of_Names_in_Rows_and_Columns = "Similarity_of_Names_in_Rows_and_Columns1"),
                    selected = "Basic_EDA1"),
       
+      conditionalPanel(
+        condition = "input.analysis == 'Heat_map1'",
+        checkboxInput("Use_one_row_as_sample_name1", "Use one of the row as sample name", TRUE),
+        
+        conditionalPanel(
+          condition = "input.Use_one_row_as_sample_name1 == 1",
+          numericInput('sample_row1', 'Row number of sample name', "1"),
+        ),
+        conditionalPanel(
+          condition = "input.Use_one_row_as_sample_name1 == 0",
+          p("Index is used as sample name.")
+        ),
+
+        radioButtons("Change_categorical_data_into", "Change categorical data into",
+                     choices = c(Factor_Level = "Factor_Level1",
+                                 Dummy_Varaiables = "Dummy_Varaiables1")),br(),
+        checkboxInput("Normalization_use", "Use normalization", FALSE),
+        
+        checkboxInput("AddClusteringRow", "Add clustering methods for rows", FALSE),
+        
+        checkboxInput("AddClusteringCol", "Add clustering methods for columns", FALSE),
+        
+        conditionalPanel(
+          condition = "input.AddClusteringCol == 0",
+            checkboxInput("Use_decreasing1", "Use decreasing the columns", FALSE),
+          
+          conditionalPanel(
+            condition = "input.Use_decreasing1 == 1",
+              numericInput('Row_number_decreasing1', 'Row number for decreasing', "1"),
+          ),
+        ),
+      ),
       
       conditionalPanel(
         condition = "input.analysis == 'Similarity_of_Variables_and_Categories1'",
@@ -194,29 +240,31 @@ fluidPage(
         conditionalPanel(
           condition = "input.Similarity_of_Variables_and_Categories == 'Among_all_columns1'",
           radioButtons("Among_all_columns", "Method",
-                       choices = c(Heat_map = "Heat_map1",
-                                   Line_graph = "Line_graph1",
+                       choices = c(Line_graph = "Line_graph1",
                                    Stratifeid_graph = "Stratifeid_graph1",
                                    Variable_Network = "Variable_Network1",
                                    Using_MDS = "Using_MDS1",
-                                   Factor_Analysis = "Factor_Analysis1",
                                    Log_Linear = "Log_Linear1")
           ),
           
           conditionalPanel(
             condition = "input.Among_all_columns == 'Using_MDS1'",
             radioButtons("Using_MDS", "What_Using_MDS",
-                         choices = c(PCA_MDS = "PCA_MDS1",
-                                     Correspondence_MDS_Categories = "Correspondence_MDS_Categories1"))
-          ),
-          conditionalPanel(
-            condition = "input.Among_all_columns == 'Heat_map1'",
-            radioButtons("Normalization_use", "Normalization_use",
-                         choices = c(No = "Heat_map_Raw1",
-                                     Yes = "Heat_map_Noramalized1")),
-            radioButtons("Change_categorical_data_into", "Change_categorical_data_into",
-                         choices = c(Factor_Level = "Factor_Level1",
-                                     Dummy_Varaiables = "Dummy_Varaiables1"))
+                         choices = c(PCA = "PCA_MDS1",
+                                     Factor_Analysis = "Factor_Analysis1",
+                                     Correspondence_Analysis = "Correspondence_MDS_Categories1")),
+            conditionalPanel(
+              condition = "input.Using_MDS == 'Factor_Analysis1'",
+              numericInput('Factors', 'Number of factors', "2"),
+              radioButtons("Factor_Rotation", "Rotation_Type",
+                           choices = c(varimax = "varimax",
+                                       quartimax = "quartimax",
+                                       geominT = "geominT",
+                                       promax = "promax",
+                                       cluster = "cluster",
+                                       oblimin = "oblimin",
+                                       geominQ = "geominQ"))
+            ),
           ),
           conditionalPanel(
             condition = "input.Among_all_columns == 'Line_graph1'",
@@ -266,18 +314,7 @@ fluidPage(
             )
           ),
           
-          conditionalPanel(
-            condition = "input.Among_all_columns == 'Factor_Analysis1'",
-            numericInput('Factors', 'Number of factors', "2"),
-            radioButtons("Factor_Rotation", "Rotation_Type",
-                         choices = c(varimax = "varimax",
-                                     quartimax = "quartimax",
-                                     geominT = "geominT",
-                                     promax = "promax",
-                                     cluster = "cluster",
-                                     oblimin = "oblimin",
-                                     geominQ = "geominQ"))
-          ),
+          
           
         ),
         
@@ -297,7 +334,23 @@ fluidPage(
             condition = "input.Between_label_column_and_others == 'Decision_Tree1'",
             radioButtons("Decision_Tree", "Tree_Method",
                          choices = c(C5.0 = "C501",
-                                     RandomForest = "RandomForest1"))
+                                     RandomForest = "RandomForest1",
+                                     C5.0_based_RandomForest = "C50_based_RandomForest1")),
+            conditionalPanel(
+              condition = "input.Decision_Tree == 'C50_based_RandomForest1'",
+              checkboxInput("Use_sampling_variables", "Random sampling of variables (rows)", TRUE),
+              checkboxInput("Use_sampling_samples", "Random sampling of samples (columns)", TRUE),
+            ),
+            conditionalPanel(
+              condition = "input.Decision_Tree != 'RandomForest1'",
+              checkboxInput("Use_minCases", "Use minimum size of splits", TRUE),
+              conditionalPanel(
+                condition = "input.Use_minCases == 1",
+                sliderInput("Ratio_of_columns",
+                            "Ratio of the number of minimum size",
+                            min = 0,  max = 0.3, value = 0.1, step = 0.001),
+              ),
+            ),
           ),
           conditionalPanel(
             condition = "input.Between_label_column_and_others == 'GLMM1'",
@@ -447,56 +500,59 @@ fluidPage(
                            selected = "G15")
             ),
             conditionalPanel(
-              condition = "input.Dimension_Reduction != 'None1' && input.Dimension_Reduction != 'Facotr1'",
-              checkboxInput("AddClustering", "Add clustering methods", FALSE),
-              
-            
+              condition = "input.Dimension_Reduction != 'None1'",
               conditionalPanel(
-                condition = "input.AddClustering == 1",
-                  
-                radioButtons("Clustering", "Clustering",
-                             choices = c(k_Means = "clust3",
-                                         GMM= "clust1",
-                                         DBSCAN = "clust2",
-                                         One_class_SVM_Clustering = "One_class_SVM_Clustering1"),
-                             selected = "clust1"),
-                conditionalPanel(
-                  condition = "input.Clustering == 'clust3' || input.Clustering == 'clust1'",
-                  numericInput('k', 'Number of Clusters', 2)
-                ),
-                
-                conditionalPanel(
-                  condition = "input.Clustering == 'clust2'",
-                  sliderInput("eps_value",
-                              "eps of DBSCAN",
-                              min = 0,  max = 1, value = 0.1, step = 0.01)
-                ),
-                
-                conditionalPanel(
-                  condition = "input.Clustering == 'One_class_SVM_Clustering1'",
-                  radioButtons("Kernel_library", "Kernel_library",
-                               choices = c(anovadot_kernlab= "anovadot",
-                                           rbfdot_kernlab= "rbfdot",
-                                           polydot_kernlab= "polydot",
-                                           vanilladot_kernlab= "vanilladot",
-                                           tanhdot_kernlab= "tanhdot",
-                                           laplacedot_kernlab= "laplacedot",
-                                           besseldot_kernlab= "besseldot",
-                                           splinedot_kernlab= "splinedot"),
-                               selected = "rbfdot"),
-                  sliderInput("nu1",
-                              "nu (Adjust outliers)",
-                              min = 0.001,  max = 1, value = 0.2, step = 0.001)
-                ),
+                condition = "input.Dimension_Reduction != 'Facotr1'",
+                checkboxInput("AddClustering", "Add clustering methods", FALSE),
                 
               
-                radioButtons("plot_type", "Plot type",
-                             choices = c(Name_and_Clusering= "G1",
-                                         Index_and_Clusering1 = "G2",
-                                         Index_and_Clusering2 = "G3",
-                                         Only_Clustering = "G4"),
-                             selected = "G4"),
+                conditionalPanel(
+                  condition = "input.AddClustering == 1",
+                    
+                  radioButtons("Clustering", "Clustering",
+                               choices = c(k_Means = "clust3",
+                                           GMM= "clust1",
+                                           DBSCAN = "clust2",
+                                           One_class_SVM_Clustering = "One_class_SVM_Clustering1"),
+                               selected = "clust1"),
+                  conditionalPanel(
+                    condition = "input.Clustering == 'clust3' || input.Clustering == 'clust1'",
+                    numericInput('k', 'Number of Clusters', 2)
+                  ),
+                  
+                  conditionalPanel(
+                    condition = "input.Clustering == 'clust2'",
+                    sliderInput("eps_value",
+                                "eps of DBSCAN",
+                                min = 0,  max = 1, value = 0.1, step = 0.01)
+                  ),
+                  
+                  conditionalPanel(
+                    condition = "input.Clustering == 'One_class_SVM_Clustering1'",
+                    radioButtons("Kernel_library", "Kernel_library",
+                                 choices = c(anovadot_kernlab= "anovadot",
+                                             rbfdot_kernlab= "rbfdot",
+                                             polydot_kernlab= "polydot",
+                                             vanilladot_kernlab= "vanilladot",
+                                             tanhdot_kernlab= "tanhdot",
+                                             laplacedot_kernlab= "laplacedot",
+                                             besseldot_kernlab= "besseldot",
+                                             splinedot_kernlab= "splinedot"),
+                                 selected = "rbfdot"),
+                    sliderInput("nu1",
+                                "nu (Adjust outliers)",
+                                min = 0.001,  max = 1, value = 0.2, step = 0.001)
+                  ),
+                  
                 
+                  radioButtons("plot_type", "Plot type",
+                               choices = c(Name_and_Clusering= "G1",
+                                           Index_and_Clusering1 = "G2",
+                                           Index_and_Clusering2 = "G3",
+                                           Only_Clustering = "G4"),
+                               selected = "G4"),
+                  
+                ),
               ),
             ),
           ),
@@ -536,8 +592,7 @@ fluidPage(
                      choices = c(Bipartite_graph = "Bipartite_graph1",
                                  Correspondence_MDS_Names = "Correspondence_MDS_Names1",
                                  Independence_Test = "Independence_Test1",
-                                 Two_way_GLM = "Two_way_GLM1",
-                                 Heat_map_Clustering = "Heat_map_Clustering1"),
+                                 Two_way_GLM = "Two_way_GLM1"),
                      selected = "Two_way_GLM1"),
         
         conditionalPanel(
@@ -599,13 +654,21 @@ fluidPage(
           
           conditionalPanel(
             condition = "input.Among_all_columns == 'Using_MDS1'",
+            conditionalPanel(
+              condition = "input.Using_MDS == 'Correspondence_MDS_Categories1'",
             
-            p("If using methods for categorical variable, this tool changes numerical variable into categorical.
-                  For example, if '5 is the input, numerical variable is divided into 5 ranges.
-                  And names of the ranges are used as categories."),
-            
-            numericInput('NumericalToCategorcalU', 'No of ranges', "3"),
-            
+              p("This tool changes numerical variables into categorical.
+                    For example, if '5 is the input, numerical variable is divided into 5 ranges.
+                    And names of the ranges are used as categories."),
+              
+              numericInput('NumericalToCategorcalU', 'No of ranges', "3"),
+            ),
+            conditionalPanel(
+              condition = "input.Using_MDS != 'Correspondence_MDS_Categories1'",
+              
+              p("Tool changes categorical variables into numerical (dummy variables)."),
+              
+            ),
           ),
           conditionalPanel(
             condition = "input.Among_all_columns == 'Log_Linear1'",
@@ -631,21 +694,7 @@ fluidPage(
           )
         )
       ),
-      conditionalPanel(
-        condition = "input.analysis == 'Similarity_of_Samples1'",
-        conditionalPanel(
-          condition = "input.Dimension_for_clustering == 'Dimension_2'",
-          p("If 'Dimension_2' is chosed,"),
-          p("label column of the CSV-data must be the sample name or index No.")
-        )
-      ),
       
-      conditionalPanel(
-        condition = "input.analysis == 'Similarity_of_Names_in_Rows_and_Columns1'",
-        p("If 'Similarity_of_Names_in_Rows_and_Columns' is chosed,"),
-        p("first column (left side) of the CSV-data must be names,"),
-        p("This analysis uses names of first rows and first columns.")
-      ),
       a("Guide (English)   ",href="http://data-science.tokyo/R-E/about_R-EDA1.html"),
       a(" (Japanese)   ",href="http://data-science.tokyo/R-J/about_R-EDA1.html"),
       
@@ -653,7 +702,11 @@ fluidPage(
       
       conditionalPanel(
         condition = "input.analysis != 'Similarity_of_Samples1'",
-        checkboxInput("DoNotUseFirst", "Do not use the first column of CSV", FALSE),
+          
+        conditionalPanel(
+          condition = "input.analysis != 'Heat_map1'",
+          checkboxInput("DoNotUseFirst", "Do not use the first column of CSV", FALSE),
+        ),
       ),
       
     ),
@@ -668,25 +721,26 @@ fluidPage(
         condition = "input.analysis == 'Basic_EDA1'",
         dataTableOutput("text00")
       ),
+      conditionalPanel(
+        condition = "input.analysis == 'Heat_map1'",
+        
+        h3("Heat map"),
+        p("Visualization of Data Table"),
+        #plotOutput("plot03"),
+        plotlyOutput("plot03"),
+        
+        a("Code (English)",href="http://data-science.tokyo/R-E/R-E1-01.html"),
+        a(" (Japanese)",href="http://data-science.tokyo/R-J/R-J1-01.html"),br(),
+        a("About Heat map(English)",href="http://data-science.tokyo/ed-e/ede1-4-3-2.html"),
+        a("(Japanese)",href="http://data-science.tokyo/ed/edj1-4-3-2.html"),
+        
+      ),
       
       conditionalPanel(
         condition = "input.analysis == 'Similarity_of_Variables_and_Categories1'",
         conditionalPanel(
           condition = "input.Similarity_of_Variables_and_Categories == 'Among_all_columns1'",
-          conditionalPanel(
-            condition = "input.Among_all_columns == 'Heat_map1'",
-            
-            h3("Heat map"),
-            p("Visualization of Data Table"),
-            #plotOutput("plot03"),
-            plotlyOutput("plot03"),
-            
-            a("Code (English)",href="http://data-science.tokyo/R-E/R-E1-01.html"),
-            a(" (Japanese)",href="http://data-science.tokyo/R-J/R-J1-01.html"),br(),
-            a("About Heat map(English)",href="http://data-science.tokyo/ed-e/ede1-4-3-2.html"),
-            a("(Japanese)",href="http://data-science.tokyo/ed/edj1-4-3-2.html"),
-            
-          ),
+          
           conditionalPanel(
             condition = "input.Among_all_columns == 'Line_graph1'",
             
@@ -1099,6 +1153,7 @@ fluidPage(
             conditionalPanel(
               condition = "input.Using_MDS == 'PCA_MDS1'",
               h3("PCA --> MDS"),
+              verbatimTextOutput("text410"),
               plotlyOutput("plot08"),
               h4("Algorithm"),
               p("1. All categorical variables are changed into dummy variables"),
@@ -1115,8 +1170,8 @@ fluidPage(
             conditionalPanel(
               condition = "input.Using_MDS == 'Correspondence_MDS_Categories1'",
               h3("Correspondence and MDS Analysis for Categories"),
+              #verbatimTextOutput("text409"),
               plotlyOutput("plot13"),
-              
               h4("Contribution rate of eigenvalue"),
               textOutput("text131"),
               h4("No of dimensions used in the model"),
@@ -1134,20 +1189,21 @@ fluidPage(
               a("About the reason to use MDS after Correspondence analysis (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-4-2-4.html"),
               a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-4-2-4.html")
             ),
+            conditionalPanel(
+              condition = "input.Using_MDS == 'Factor_Analysis1'",
+              h3("Factor analysis"),
+              verbatimTextOutput("text406"),
+              plotlyOutput("plot406"),
+              plotlyOutput("plot408"),
+              
+              
+              a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E4-09.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J4-09.html"),br(),
+              a("About Factor analysis (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-4.html"),br(),
+              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-4.html"),br(),
+            ),
           ),
           
-          conditionalPanel(
-            condition = "input.Among_all_columns == 'Factor_Analysis1'",
-            h3("Factor analysis"),
-            verbatimTextOutput("text406"),
-            plotlyOutput("plot406"),
-            
-            
-            a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E4-09.html"),
-            a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J4-09.html"),br(),
-            a("About Factor analysis (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-4.html"),br(),
-            a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-4.html"),br(),
-          ),
             
           conditionalPanel(
             condition = "input.Among_all_columns == 'Log_Linear1'",
@@ -1205,9 +1261,24 @@ fluidPage(
           conditionalPanel(
             condition = "input.Between_label_column_and_others == 'Decision_Tree1'",
             h3("Decision Tree"),
-            plotOutput("plot15"),
+            
+            conditionalPanel(
+              condition = "input.Decision_Tree == 'C50_based_RandomForest1'",
+              plotOutput("plotDT01"),br(),
+              plotOutput("plotDT02"),br(),
+              plotOutput("plotDT03"),br(),
+              plotOutput("plotDT04"),br(),
+              plotOutput("plotDT05"),br(),
+            ),
+            conditionalPanel(
+              condition = "input.Decision_Tree != 'C50_based_RandomForest1'",
+              plotOutput("plot15"),
+            ),
+            
             a("About Decision_Tree (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-1.html"),
-            a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-1.html")
+            a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-1.html"),
+            a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E4-02.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J4-02.html")
           ),
           
           
@@ -1346,7 +1417,12 @@ fluidPage(
             condition = "input.Dimension_Reduction == 'Factor1'",
             h3("Factor analysis"),
             verbatimTextOutput("text407"),
+            h3("Similarity of variables by heatmap"),
             plotlyOutput("plot407"),
+            h3("Similarity of variables by MDS"),
+            p("Axis1 and axis2 do not have physical meaning. These two dimension are made from multi-dimension data usin MDS."),
+            plotlyOutput("plot409"),
+            h3("Similarity of samples related with factors"),
             plotlyOutput("plot205"),
             a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E4-09.html"),
             a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J4-09.html"),br(),

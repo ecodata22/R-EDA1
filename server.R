@@ -18,53 +18,66 @@ shinyServer(function(input, output) {
       if(input$DoNotUseFirst == 1){
         Data[,1] <- NULL
       }
-      
-          
           
       summary(Data)
     }
   })
   #output$plot03 <- renderPlot({
   output$plot03 <- renderPlotly({
-    if(input$analysis == "Similarity_of_Variables_and_Categories1"){
-      if(input$Similarity_of_Variables_and_Categories == "Among_all_columns1"){
-        if(input$Among_all_columns == "Heat_map1"){
+    if(input$analysis ==  "Heat_map1"){
           
-          req(input$file1)
-          
-          if(input$sep2 == "Separator_Comma"){sep <- ","}
-          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
-          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
-          Data <- read.csv(input$file1$datapath, header=T,sep = sep)
-          if(input$DoNotUseFirst == 1){
-            Data[,1] <- NULL
+      req(input$file1)
+      
+      if(input$sep2 == "Separator_Comma"){sep <- ","}
+      if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+      if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+      
+      if(input$Use_one_row_as_sample_name1 == 1){
+        Data <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=input$sample_row1)
+      } else {
+        Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+      }
+      
+      
+      library(dummies)
+      library(heatmaply)
+      
+      if(input$Change_categorical_data_into == "Dummy_Varaiables1"){
+        Data2 <- dummy.data.frame(Data)
+      } else {
+        Data2 <- Data
+        n <- ncol(Data)
+        for (i in 1:n) {
+          if(class(Data[,i]) == "character"){
+            Data2[,i] <- as.numeric(as.factor(Data[,i]))
           }
-          
-          library(dummies)
-          library(heatmaply)
-          
-          if(input$Change_categorical_data_into == "Dummy_Varaiables1"){
-            Data2 <- dummy.data.frame(Data)
-          } else {
-            Data2 <- Data
-            n <- ncol(Data)
-            for (i in 1:n) {
-              if(class(Data[,i]) == "character"){
-                Data2[,i] <- as.numeric(as.factor(Data[,i]))
-              }
-            }
-          }
-          
-          Data3 <- Data2
-          if(input$Normalization_use == "Heat_map_Noramalized1"){
-            n <- ncol(Data2)
-            for (i in 1:n) {
-              Data3[,i] <- (Data2[,i]-min(Data2[,i]))/(max(Data2[,i])-min(Data2[,i]))
-            }
-          }
-          Data4 <- as.matrix(Data3)
-          #heatmap(Data4, Colv = NA, Rowv = NA, scale="none")
+        }
+      }
+      
+      Data3 <- Data2
+      if(input$Normalization_use == 1){
+        n <- ncol(Data2)
+        for (i in 1:n) {
+          Data3[,i] <- (Data2[,i]-min(Data2[,i]))/(max(Data2[,i])-min(Data2[,i]))
+        }
+      }
+      
+      if(input$Use_decreasing1 == 1){
+        Data3 <- Data3[order(Data3[,input$Row_number_decreasing1], decreasing=T),]
+        
+      }
+      Data4 <- as.matrix(Data3)
+      if(input$AddClusteringRow == 0){
+        if(input$AddClusteringCol == 0){
           heatmaply(Data4, Colv = NA, Rowv = NA)
+        } else {
+          heatmaply(Data4, Colv = NA)
+        }
+      } else {
+        if(input$AddClusteringCol == 0){
+          heatmaply(Data4, Rowv = NA)
+        } else {
+          heatmaply(Data4)
         }
       }
     }
@@ -133,9 +146,9 @@ shinyServer(function(input, output) {
           
           if(input$Gtype == "scatter"){
             if(input$Scol != 0 && input$Ccol != 0){
-              if(class(Data1[,input$Scol]) == "numeric"){Data1[,input$Scol] <- droplevels(cut(Data1[,input$Scol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
+              if(class(Data1[,input$Scol]) == "numeric" || class(Data1[,input$Scol]) == "integer"){Data1[,input$Scol] <- droplevels(cut(Data1[,input$Scol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
               if(input$NumericalToCategorcalSColor2 == 1){
-                if(class(Data1[,input$Ccol]) == "numeric"){Data1[,input$Ccol] <- droplevels(cut(Data1[,input$Ccol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
+                if(class(Data1[,input$Ccol]) == "numeric" || class(Data1[,input$Ccol]) == "integer"){Data1[,input$Ccol] <- droplevels(cut(Data1[,input$Ccol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
               }
               if(input$NumericalToCategorcalSColor1 == 1){Data1[,input$Ccol] <- as.factor(Data1[,input$Ccol])}
               
@@ -157,7 +170,7 @@ shinyServer(function(input, output) {
               gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_point(aes(colour=Data1[,input$Ccol])) + facet_wrap(~Data1[,input$Scol],scales="free")+ labs(x=Xname,y=Lname,color=Cname,subtitle = Sname)
             } else if(input$Scol == 0 && input$Ccol != 0){
               if(input$NumericalToCategorcalSColor2 == 1){
-                if(class(Data1[,input$Ccol]) == "numeric"){Data1[,input$Ccol] <- droplevels(cut(Data1[,input$Ccol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
+                if(class(Data1[,input$Ccol]) == "numeric" || class(Data1[,input$Ccol]) == "integer"){Data1[,input$Ccol] <- droplevels(cut(Data1[,input$Ccol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
               }
               if(input$NumericalToCategorcalSColor1 == 1){Data1[,input$Ccol] <- as.factor(Data1[,input$Ccol])}
               
@@ -177,7 +190,7 @@ shinyServer(function(input, output) {
               }
               gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_point(aes(colour=Data1[,input$Ccol])) + labs(x=Xname,y=Lname,color=Cname)
             } else if(input$Scol != 0 && input$Ccol == 0){
-              if(class(Data1[,input$Scol]) == "numeric"){Data1[,input$Scol] <- droplevels(cut(Data1[,input$Scol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
+              if(class(Data1[,input$Scol]) == "numeric" || class(Data1[,input$Scol]) == "integer"){Data1[,input$Scol] <- droplevels(cut(Data1[,input$Scol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
               
               if(input$Using_GLM == 1){
                 output$text529 <- renderPrint(anova(step(lm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol], data=Data1))))
@@ -234,22 +247,22 @@ shinyServer(function(input, output) {
             Data1$No <-as.numeric(row.names(Data1)) 
             
             if(input$Scol != 0 && input$Ccol != 0){
-              if(class(Data1[,input$Scol]) == "numeric"){Data1[,input$Scol] <- droplevels(cut(Data1[,input$Scol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
+              if(class(Data1[,input$Scol]) == "numeric" || class(Data1[,input$Scol]) == "integer"){Data1[,input$Scol] <- droplevels(cut(Data1[,input$Scol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
               if(input$NumericalToCategorcalSColor2 == 1){
-                if(class(Data1[,input$Ccol]) == "numeric"){Data1[,input$Ccol] <- droplevels(cut(Data1[,input$Ccol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
+                if(class(Data1[,input$Ccol]) == "numeric" || class(Data1[,input$Ccol]) == "integer"){Data1[,input$Ccol] <- droplevels(cut(Data1[,input$Ccol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
               }
               if(input$NumericalToCategorcalSColor1 == 1){Data1[,input$Ccol] <- as.factor(Data1[,input$Ccol])}
               
               gplot <- ggplot(Data1, aes(x=Data1$No,y=Data1[,input$Lcol])) + geom_line(aes(colour=Data1[,input$Ccol])) + facet_wrap(~Data1[,input$Scol],scales="free")+ labs(x="Index",y=Lname,color=Cname,subtitle = Sname)
             } else if(input$Scol == 0 && input$Ccol != 0){
               if(input$NumericalToCategorcalSColor2 == 1){
-                if(class(Data1[,input$Ccol]) == "numeric"){Data1[,input$Ccol] <- droplevels(cut(Data1[,input$Ccol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
+                if(class(Data1[,input$Ccol]) == "numeric" || class(Data1[,input$Ccol]) == "integer"){Data1[,input$Ccol] <- droplevels(cut(Data1[,input$Ccol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
               }
               if(input$NumericalToCategorcalSColor1 == 1){Data1[,input$Ccol] <- as.factor(Data1[,input$Ccol])}
   
               gplot <- ggplot(Data1, aes(x=Data1$No,y=Data1[,input$Lcol])) + geom_line(aes(colour=Data1[,input$Ccol])) + labs(x="Index",y=Lname,color=Cname)
             } else if(input$Scol != 0 && input$Ccol == 0){
-              if(class(Data1[,input$Scol]) == "numeric"){Data1[,input$Scol] <- droplevels(cut(Data1[,input$Scol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
+              if(class(Data1[,input$Scol]) == "numeric" || class(Data1[,input$Scol]) == "integer"){Data1[,input$Scol] <- droplevels(cut(Data1[,input$Scol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
               
               gplot <- ggplot(Data1, aes(x=Data1$No,y=Data1[,input$Lcol])) + geom_line() + facet_wrap(~Data1[,input$Scol],scales="free")+ labs(x="Index",y=Lname,subtitle = Sname)
             } else {
@@ -263,7 +276,7 @@ shinyServer(function(input, output) {
             
             if(input$Xcol != 0){
               if(input$Scol != 0){
-                if(class(Data1[,input$Scol]) == "numeric"){Data1[,input$Scol] <- droplevels(cut(Data1[,input$Scol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
+                if(class(Data1[,input$Scol]) == "numeric" || class(Data1[,input$Scol]) == "integer"){Data1[,input$Scol] <- droplevels(cut(Data1[,input$Scol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
                 if(input$Scol2 == 0){
                   mean01 <- aggregate(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol],data=Data1,FUN=mean)
                   names(mean01) <- c(names(Data1[input$Xcol]),names(Data1[input$Scol]),paste("mean of",names(Data1[input$Lcol])))
@@ -314,10 +327,10 @@ shinyServer(function(input, output) {
             
           } else if(input$Gtype == "histgram"){
             if(input$Scol != 0){
-              if(class(Data1[,input$Scol]) == "numeric"){Data1[,input$Scol] <- droplevels(cut(Data1[,input$Scol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
+              if(class(Data1[,input$Scol]) == "numeric" || class(Data1[,input$Scol]) == "integer"){Data1[,input$Scol] <- droplevels(cut(Data1[,input$Scol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
               
               if(input$Scol2 != 0){
-                if(class(Data1[,input$Scol2]) == "numeric"){Data1[,input$Scol2] <- droplevels(cut(Data1[,input$Scol2], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
+                if(class(Data1[,input$Scol2]) == "numeric" || class(Data1[,input$Scol2]) == "integer"){Data1[,input$Scol2] <- droplevels(cut(Data1[,input$Scol2], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
                 
                   mean01 <- aggregate(Data1[,input$Lcol]~Data1[,input$Scol]*Data1[,input$Scol2],data=Data1,FUN=mean)
                   names(mean01) <- c(names(Data1[input$Scol]),names(Data1[input$Scol2]),paste("mean of",names(Data1[input$Lcol])))
@@ -361,9 +374,9 @@ shinyServer(function(input, output) {
             ggplotly(gplot)
               
           } else if(input$Gtype == "bar"){
-            if(class(Data1[,input$Lcol]) == "numeric"){Data1[,input$Lcol] <- droplevels(cut(Data1[,input$Lcol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
+            if(class(Data1[,input$Lcol]) == "numeric" || class(Data1[,input$Lcol]) == "integer"){Data1[,input$Lcol] <- droplevels(cut(Data1[,input$Lcol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
             if(input$Scol != 0){
-              if(class(Data1[,input$Scol]) == "numeric"){Data1[,input$Scol] <- droplevels(cut(Data1[,input$Scol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
+              if(class(Data1[,input$Scol]) == "numeric" || class(Data1[,input$Scol]) == "integer"){Data1[,input$Scol] <- droplevels(cut(Data1[,input$Scol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
                 if(input$Scol2 == 0){
                   Data2 <- cbind(Data1[input$Xcol],Data1[input$Scol])
                   Data3 <- count(group_by(Data2,Data2[,1:2],.drop=FALSE)) 
@@ -374,7 +387,7 @@ shinyServer(function(input, output) {
                   output$text5362 <- renderPrint(chisq.test(Data4))
                   gplot <- ggplot(Data1, aes(x=Data1[,input$Lcol])) + geom_bar() + geom_text(stat='count', aes(label=..count..), vjust=-1) + facet_grid(.~Data1[,input$Scol])+ labs(x=Lname,subtitle = Sname)
                 } else {
-                  if(class(Data1[,input$Scol2]) == "numeric"){Data1[,input$Scol2] <- droplevels(cut(Data1[,input$Scol2], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
+                  if(class(Data1[,input$Scol2]) == "numeric" || class(Data1[,input$Scol2]) == "integer"){Data1[,input$Scol2] <- droplevels(cut(Data1[,input$Scol2], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
                   Data2 <- cbind(Data1[input$Lcol],Data1[input$Scol],Data1[input$Scol2])
                   
                   Data3 <- count(group_by(Data2,Data2[,1:3],.drop=FALSE))
@@ -557,7 +570,7 @@ shinyServer(function(input, output) {
             Data1 <- Data
             n <- ncol(Data1)
             for (i in 1:n) {
-              if (class(Data1[,i]) == "numeric") {
+              if (class(Data1[,i]) == "numeric" || class(Data1[,i]) == "integer") {
                 Data1[,i] <- droplevels(cut(Data1[,i], breaks = input$NumericalToCategorcalC, include.lowest = TRUE))
               }
             }
@@ -757,7 +770,7 @@ shinyServer(function(input, output) {
             library(igraph) 
             
             for (i in 1:ncol(Data)) {
-              if (class(Data[,i]) == "numeric") {
+              if (class(Data[,i]) == "numeric" || class(Data[,i]) == "integer"){
                 Data[,i] <- droplevels(cut(Data[,i], breaks = input$NumericalToCategorcalA, include.lowest = TRUE))
               }
             }
@@ -885,6 +898,7 @@ shinyServer(function(input, output) {
             library(MASS)
             Data1 <- dummy.data.frame(Data)
             pc <- prcomp(Data1, scale=TRUE,tol=0.01)
+            output$text410 <- renderPrint(summary(pc))
             pc2 <- sweep(pc$rotation, MARGIN=2, pc$sdev, FUN="*")
             Data11 <- pc2
             Data11_dist <- dist(Data11)
@@ -921,7 +935,7 @@ shinyServer(function(input, output) {
             library(MASS)
             library(ggplot2)
             for (i in 1:ncol(Data)) {
-              if (class(Data[,i]) == "numeric") {
+              if (class(Data[,i]) == "numeric"|| class(Data[,i]) == "integer"){
                 Data[,i] <- droplevels(cut(Data[,i], breaks = input$NumericalToCategorcalU, include.lowest = TRUE))
               }
             }
@@ -929,6 +943,7 @@ shinyServer(function(input, output) {
             pc <- corresp(Data_dmy,nf=min(ncol(Data),nrow(Data)))
             pc1 <- data.frame(pc$cscore)
             pc1 <- transform(pc1 ,name1 = rownames(pc1))
+            #output$text409 <- renderPrint(summary(pc))
             ei1 <- round(pc$cor^2/sum(pc$cor^2),2)
             output$text131 <- renderText(ei1)
             for (i in 1: length(ei1)){
@@ -942,7 +957,7 @@ shinyServer(function(input, output) {
             sn <- sammon(Data11_dist)
             output <- sn$points
             Data2 <- cbind(output, pc1)
-            ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=name1)) + geom_text())
+            ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=name1)) + geom_text()+ labs(y="axis2",x="axis1"))
           }
         }
       }
@@ -953,29 +968,52 @@ shinyServer(function(input, output) {
   output$text406 <- renderPrint({
     if(input$analysis == "Similarity_of_Variables_and_Categories1"){
       if(input$Similarity_of_Variables_and_Categories == "Among_all_columns1"){
-        if(input$Among_all_columns == "Factor_Analysis1"){
-          
-          req(input$file1)
-          
-          if(input$sep2 == "Separator_Comma"){sep <- ","}
-          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
-          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
-          Data <- read.csv(input$file1$datapath, header=T,sep = sep)
-          if(input$DoNotUseFirst == 1){
-            Data[,1] <- NULL
+        if(input$Among_all_columns == "Using_MDS1"){
+          if(input$Using_MDS == "Factor_Analysis1"){
+            
+            req(input$file1)
+            
+            if(input$sep2 == "Separator_Comma"){sep <- ","}
+            if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+            if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+            Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+            if(input$DoNotUseFirst == 1){
+              Data[,1] <- NULL
+            }
+            
+            
+            library(psych)
+            library(GPArotation)
+            library(heatmaply)
+            library(fastDummies) 
+            
+            Check_variable <- "0"
+            for (i in 1:ncol(Data)) {
+              if (class(Data[,i]) != "numeric") {
+                if (class(Data[,i]) != "integer") {
+                  Check_variable <- "1"
+                }
+              }  
+            }
+            if(Check_variable == "1"){
+              Data1 <- dummy_cols(Data,remove_first_dummy = TRUE,remove_selected_columns = TRUE)
+            } else {
+              Data1 <- Data
+            }
+            
+            fa_result <- fa(Data1, nfactors = input$Factors, fm = "ml", rotate = input$Factor_Rotation)
+            output$plot406 <- renderPlotly(heatmaply(fa_result$loadings, scale="none"))
+            
+            fa_loadings <- fa_result$loadings[,1:input$Factors]
+            Data11 <- as.data.frame(fa_loadings)
+            Data11_dist <- dist(Data11)
+            sn <- sammon(Data11_dist)
+            Data2 <- sn$points
+            name1 <-  row.names(Data11)
+            Data2 <- cbind.data.frame(Data2 ,name1)
+            output$plot408 <- renderPlotly(ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=name1)) + geom_text()+ labs(y="axis2",x="axis1")))
+            fa_result$loadings
           }
-          
-          
-          library(dummies)
-          library(psych)
-          library(GPArotation)
-          library(heatmaply)
-          Data1 <- dummy.data.frame(Data)
-          
-          
-          fa_result <- fa(Data1, nfactors = input$Factors, fm = "ml", rotate = input$Factor_Rotation)
-          output$plot406 <- renderPlotly(heatmaply(fa_result$loadings, scale="none"))
-          fa_result$loadings
         }
       }
     }
@@ -1006,7 +1044,7 @@ shinyServer(function(input, output) {
           Data1 <- Data
           nc <- ncol(Data1)
           for (i in 1:nc) {
-            if (class(Data1[,i]) == "numeric") {
+            if (class(Data1[,i]) == "numeric" || class(Data1[,i]) == "integer") {
               Data1[,i] <- droplevels(cut(Data1[,i], breaks = input$NumericalToCategorcalL, include.lowest = TRUE))
             }
           }
@@ -1144,42 +1182,192 @@ shinyServer(function(input, output) {
     if(input$analysis == "Similarity_of_Variables_and_Categories1"){
       if(input$Similarity_of_Variables_and_Categories == "Between_label_column_and_others1"){
         if(input$Between_label_column_and_others == "Decision_Tree1"){
+          if (input$Decision_Tree != "C50_based_RandomForest1"){
           
-          req(input$file1)
-          
-          if(input$sep2 == "Separator_Comma"){sep <- ","}
-          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
-          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
-          Data <- read.csv(input$file1$datapath, header=T,sep = sep)
-          if(input$DoNotUseFirst == 1){
-            Data[,1] <- NULL
-          }
-          library(C50)
-          library(partykit)
-          library(randomForest) 
-          #if (input$Numerical_to_Categorical == "Numerical_to_Categorical1") {
-          #  for (i in 2:ncol(Data)) {
-          #    if (class(Data[,i]) == "numeric") {
-          #      Data[,i] <- as.factor(droplevels(cut(Data[,i], breaks = 3,include.lowest = TRUE)))
-          #    }
-          #  }
-          #}
-          Data[,input$Label_column] <- as.factor(Data[,input$Label_column])
-          for (i in 1:ncol(Data)) {
-            if (class(Data[,i]) == "logical") {
-              Data[,i] <- as.factor(Data[,i])
-            }
-          }
-          
-          Ydata <- Data[,input$Label_column]
-          Data[,input$Label_column]<-NULL
-          if (input$Decision_Tree == "C501"){
+            req(input$file1)
             
-            treeModel <- C5.0(Ydata ~ ., data = Data)
-            plot(as.party(treeModel))
-          } else{
-            treeModel <- randomForest(Ydata ~ ., data = Data, ntree = 30)
-            varImpPlot(treeModel) 
+            if(input$sep2 == "Separator_Comma"){sep <- ","}
+            if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+            if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+            Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+            DataR <- Data
+            if(input$DoNotUseFirst == 1){
+              Data[,1] <- NULL
+            }
+            library(C50)
+            library(partykit)
+            library(randomForest) 
+            #if (input$Numerical_to_Categorical == "Numerical_to_Categorical1") {
+            #  for (i in 2:ncol(Data)) {
+            #    if (class(Data[,i]) == "numeric" || class(Data[,i]) == "integer"){
+            #      Data[,i] <- as.factor(droplevels(cut(Data[,i], breaks = 3,include.lowest = TRUE)))
+            #    }
+            #  }
+            #}
+            Data[,input$Label_column] <- as.factor(Data[,input$Label_column])
+            for (i in 1:ncol(Data)) {
+              if (class(Data[,i]) == "logical") {
+                Data[,i] <- as.factor(Data[,i])
+              }
+            }
+            
+            Ydata <- Data[,input$Label_column]
+            Data[,input$Label_column]<-NULL
+            
+            
+            if (input$Decision_Tree == "C501"){
+                if(input$Use_minCases == 1){
+                  treeModel <- C5.0(Ydata ~ ., data = Data,control = C5.0Control(minCase = floor(nrow(Data)*input$Ratio_of_columns)))
+                } else {
+                  treeModel <- C5.0(Ydata ~ ., data = Data)
+                }
+              
+              plot(as.party(treeModel))
+            } else {
+              treeModel <- randomForest(Ydata ~ ., datset = Data, ntree = 30)
+              varImpPlot(treeModel) 
+            } 
+          }
+        }
+      }
+    }
+  })
+  
+  output$plotDT05 <- renderPlot({
+    if(input$analysis == "Similarity_of_Variables_and_Categories1"){
+      if(input$Similarity_of_Variables_and_Categories == "Between_label_column_and_others1"){
+        if(input$Between_label_column_and_others == "Decision_Tree1"){
+          if (input$Decision_Tree == "C50_based_RandomForest1"){
+          
+            req(input$file1)
+            
+            if(input$sep2 == "Separator_Comma"){sep <- ","}
+            if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+            if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+            Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+            DataR <- Data
+            if(input$DoNotUseFirst == 1){
+              Data[,1] <- NULL
+            }
+            library(C50)
+            library(partykit)
+            library(randomForest) 
+            #if (input$Numerical_to_Categorical == "Numerical_to_Categorical1") {
+            #  for (i in 2:ncol(Data)) {
+            #    if (class(Data[,i]) == "numeric" || class(Data[,i]) == "integer"){
+            #      Data[,i] <- as.factor(droplevels(cut(Data[,i], breaks = 3,include.lowest = TRUE)))
+            #    }
+            #  }
+            #}
+            Data[,input$Label_column] <- as.factor(Data[,input$Label_column])
+            for (i in 1:ncol(Data)) {
+              if (class(Data[,i]) == "logical") {
+                Data[,i] <- as.factor(Data[,i])
+              }
+            }
+            
+            Ydata <- Data[,input$Label_column]
+            Data[,input$Label_column]<-NULL
+            
+            
+            ncolMax <- ncol(Data)
+            nrowMax <- nrow(Data)
+            
+            output$plotDT01 <- renderPlot({
+              if(input$Use_sampling_variables == 1){
+                DataX <- Data[,floor(runif (floor(sqrt(ncolMax)), min=1,max=ncolMax))]
+              } else {
+                DataX <- Data
+              }
+              Data1 <- transform(DataX, Y = Ydata)
+              if(input$Use_sampling_samples == 1){
+                Data2 <- Data1[floor(runif (floor(sqrt(nrowMax)), min=1,max=nrowMax)),]
+              } else {
+                Data2 <- Data1
+              }
+              if(input$Use_minCases == 1){
+                treeModel <- C5.0(Y ~ ., data = Data2,control = C5.0Control(minCase = floor(nrow(Data2)*input$Ratio_of_columns)))
+              } else {
+                treeModel <- C5.0(Y ~ ., data = Data2)
+              }
+              plot(as.party(treeModel))
+            })
+            output$plotDT02 <- renderPlot({
+              if(input$Use_sampling_variables == 1){
+                DataX <- Data[,floor(runif (floor(sqrt(ncolMax)), min=1,max=ncolMax))]
+              } else {
+                DataX <- Data
+              }
+              Data1 <- transform(DataX, Y = Ydata)
+              if(input$Use_sampling_samples == 1){
+                Data2 <- Data1[floor(runif (floor(sqrt(nrowMax)), min=1,max=nrowMax)),]
+              } else {
+                Data2 <- Data1
+              }
+              if(input$Use_minCases == 1){
+                treeModel <- C5.0(Y ~ ., data = Data2,control = C5.0Control(minCase = floor(nrow(Data2)*input$Ratio_of_columns)))
+              } else {
+                treeModel <- C5.0(Y ~ ., data = Data2)
+              }
+              plot(as.party(treeModel))
+            })
+            output$plotDT03 <- renderPlot({
+              if(input$Use_sampling_variables == 1){
+                DataX <- Data[,floor(runif (floor(sqrt(ncolMax)), min=1,max=ncolMax))]
+              } else {
+                DataX <- Data
+              }
+              Data1 <- transform(DataX, Y = Ydata)
+              if(input$Use_sampling_samples == 1){
+                Data2 <- Data1[floor(runif (floor(sqrt(nrowMax)), min=1,max=nrowMax)),]
+              } else {
+                Data2 <- Data1
+              }
+              if(input$Use_minCases == 1){
+                treeModel <- C5.0(Y ~ ., data = Data2,control = C5.0Control(minCase = floor(nrow(Data2)*input$Ratio_of_columns)))
+              } else {
+                treeModel <- C5.0(Y ~ ., data = Data2)
+              }
+              plot(as.party(treeModel))
+            })
+            output$plotDT04 <- renderPlot({
+              if(input$Use_sampling_variables == 1){
+                DataX <- Data[,floor(runif (floor(sqrt(ncolMax)), min=1,max=ncolMax))]
+              } else {
+                DataX <- Data
+              }
+              Data1 <- transform(DataX, Y = Ydata)
+              if(input$Use_sampling_samples == 1){
+                Data2 <- Data1[floor(runif (floor(sqrt(nrowMax)), min=1,max=nrowMax)),]
+              } else {
+                Data2 <- Data1
+              }
+              if(input$Use_minCases == 1){
+                treeModel <- C5.0(Y ~ ., data = Data2,control = C5.0Control(minCase = floor(nrow(Data2)*input$Ratio_of_columns)))
+              } else {
+                treeModel <- C5.0(Y ~ ., data = Data2)
+              }
+              plot(as.party(treeModel))
+            })
+              if(input$Use_sampling_variables == 1){
+                DataX <- Data[,floor(runif (floor(sqrt(ncolMax)), min=1,max=ncolMax))]
+              } else {
+                DataX <- Data
+              }
+              Data1 <- transform(DataX, Y = Ydata)
+              if(input$Use_sampling_samples == 1){
+                Data2 <- Data1[floor(runif (floor(sqrt(nrowMax)), min=1,max=nrowMax)),]
+              } else {
+                Data2 <- Data1
+              }
+              if(input$Use_minCases == 1){
+                treeModel <- C5.0(Y ~ ., data = Data2,control = C5.0Control(minCase = floor(nrow(Data2)*input$Ratio_of_columns)))
+              } else {
+                treeModel <- C5.0(Y ~ ., data = Data2)
+              }
+              plot(as.party(treeModel))
+              
+            
           }
         }
       }
@@ -1875,10 +2063,17 @@ shinyServer(function(input, output) {
           library(dbscan)
           library(e1071)
           library(kernlab)
+          
           Data1 <- Data
-          Y <- names(Data1[1])
-          Ydata <- Data1[,1]
-          Data1[,1] <- NULL
+          if(input$Use_one_row_as_sample_name2 == 1){
+            Y <- names(Data1[input$sample_row2])
+            Ydata <- Data1[,input$sample_row2]
+            Data1[,input$sample_row2] <- NULL
+          } else {
+            Y <- "Index_No"
+            Ydata <- row.names(Data)
+          }
+          
           Data2 <- dummy.data.frame(Data1)
           Data3 <- Data2
           n <- ncol(Data2)
@@ -2009,10 +2204,20 @@ shinyServer(function(input, output) {
           
           library(dummies)
           library(ggplot2)
+          #Data1 <- Data
+          #Y <- names(Data1[1])
+          #Ydata <- Data1[,1]
+          #Data1[,1] <- NULL
+          
           Data1 <- Data
-          Y <- names(Data1[1])
-          Ydata <- Data1[,1]
-          Data1[,1] <- NULL
+          if(input$Use_one_row_as_sample_name2 == 1){
+            Y <- names(Data1[input$sample_row2])
+            Ydata <- Data1[,input$sample_row2]
+            Data1[,input$sample_row2] <- NULL
+          } else {
+            Y <- "Index_No"
+            Ydata <- row.names(Data)
+          }
           Data1$Index = row.names(Data1)
           
           if(input$Xcol11 > 0){Xname <- names(Data1[input$Xcol11])} else {Xname <- "None"}
@@ -2020,7 +2225,7 @@ shinyServer(function(input, output) {
           if(input$Scol11 > 0){Sname <- names(Data1[input$Scol11])} else {Sname <- "None"}
           
           if(input$Scol11 != 0 ){
-            if(class(Data1[,input$Scol11]) == "numeric"){Data1[,input$Scol11] <- droplevels(cut(Data1[,input$Scol11], breaks = input$NumericalToCategorcalS11, include.lowest = TRUE))}
+            if(class(Data1[,input$Scol11]) == "numeric" || class(Data1[,input$Scol11]) == "integer"){Data1[,input$Scol11] <- droplevels(cut(Data1[,input$Scol11], breaks = input$NumericalToCategorcalS11, include.lowest = TRUE))}
             #gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point() + facet_wrap(~Data1[,input$Scol11],scales="free")+ labs(x=Xname,y=Lname,subtitle = Sname)
             
             if(input$plot_type2 == "G11") {
@@ -2078,21 +2283,60 @@ shinyServer(function(input, output) {
           #  Data[,1] <- NULL
           #}
           
-          Data1 <- dummy.data.frame(Data)
-          
-          library(dummies)
           library(psych)
           library(GPArotation)
           library(heatmaply)
+          library(fastDummies) 
+          library(psych)
           library(ggplot2)
-          Data11 <- Data
-          Y <- names(Data11[1])
-          Ydata <- Data11[,1]
-          Data11[,1] <- NULL
           
-          fa_result <- fa(Data11, nfactors = input$Factors2, fm = "ml", rotate = input$Factor_Rotation2)
+          
+          
+          
+          #Y <- names(Data[1])
+          #Ydata <- Data[,1]
+          #Data[,1] <- NULL
+          
+          #Data1 <- Data
+          if(input$Use_one_row_as_sample_name2 == 1){
+            Y <- names(Data[input$sample_row2])
+            Ydata <- Data[,input$sample_row2]
+            Data[,input$sample_row2] <- NULL
+          } else {
+            Y <- "Index_No"
+            Ydata <- row.names(Data)
+          }
+          
+          
+          Check_variable <- "0"
+          for (i in 1:ncol(Data)) {
+            if (class(Data[,i]) != "numeric") {
+              if (class(Data[,i]) != "integer") {
+                Check_variable <- "1"
+              }
+            }  
+          }
+          if(Check_variable == "1"){
+            Data1 <- dummy_cols(Data,remove_first_dummy = TRUE,remove_selected_columns = TRUE)
+          } else {
+            Data1 <- Data
+          }
+          
+          fa_result <- fa(Data1, nfactors = input$Factors, fm = "ml", rotate = input$Factor_Rotation2)
           output$plot407 <- renderPlotly(heatmaply(fa_result$loadings, scale="none"))
           output$text407 <- renderPrint(fa_result$loadings)
+          
+          
+          fa_loadings <- fa_result$loadings[,1:input$Factors]
+          Data11 <- as.data.frame(fa_loadings)
+          Data11_dist <- dist(Data11)
+          sn <- sammon(Data11_dist)
+          Data2 <- sn$points
+          name1 <-  row.names(Data11)
+          Data2 <- cbind.data.frame(Data2 ,name1)
+          output$plot409 <- renderPlotly(ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=name1)) + geom_text()+ labs(y="axis2",x="axis1")))
+          
+          
           
           Data1 <- fa_result$scores
           Data1 <- as.data.frame(Data1)
@@ -2136,7 +2380,11 @@ shinyServer(function(input, output) {
         library(dummies)
         library(ggplot2)
         
-        Data <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=1)
+        if(input$Use_one_row_as_sample_name2 == 1){
+          Data <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=input$sample_row2)
+        } else {
+          Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+        }
         
         
         if(input$Method_Dimension_All == "hclust1"){
@@ -2191,7 +2439,15 @@ shinyServer(function(input, output) {
         if(input$sep2 == "Separator_Comma"){sep <- ","}
         if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
         if(input$sep2 == "Separator_Tab"){sep <- "\t"}
-        DM <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=1)
+        
+        
+        
+        if(input$Use_one_row_as_sample_name2 == 1){
+          DM <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=input$sample_row2)
+        } else {
+          DM <- read.csv(input$file1$datapath, header=T,sep = sep)
+        }
+        
         DM.mat = as.matrix(DM)/max(DM)*5
         DM.mat[DM.mat<1] <- 0
         DM.g<-graph_from_incidence_matrix(DM.mat,weighted=T)
@@ -2217,7 +2473,13 @@ shinyServer(function(input, output) {
         if(input$sep2 == "Separator_Comma"){sep <- ","}
         if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
         if(input$sep2 == "Separator_Tab"){sep <- "\t"}
-        Data <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=1)
+        
+        
+        if(input$Use_one_row_as_sample_name2 == 1){
+          Data <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=input$sample_row2)
+        } else {
+          Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+        }
         library(MASS)
         library(ggplot2)
         pc <- corresp(Data,nf=min(ncol(Data),nrow(Data)))
@@ -2256,7 +2518,11 @@ shinyServer(function(input, output) {
         if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
         if(input$sep2 == "Separator_Tab"){sep <- "\t"}
         
-        Data <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=1)
+        if(input$Use_one_row_as_sample_name2 == 1){
+          Data <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=input$sample_row2)
+        } else {
+          Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+        }
         
         chisq.test(Data)
       }
@@ -2274,10 +2540,17 @@ shinyServer(function(input, output) {
         
         Data <- read.csv(input$file1$datapath, header=T,sep = sep)
         
+        if(input$Use_one_row_as_sample_name2 == 1){
+          RowName <- colnames(Data[input$sample_row2])
+        } else {
+          RowName <- "Index_No"
+          Data$Index_No <- row.names(Data)
+        }
+        
         library(tidyr)
         library(MASS)
         library(lme4)
-        RowName <- colnames(Data[1])
+        
         Data1 <- tidyr::gather(Data, key="ColName", value = Val, -RowName)
         if(input$family_link3 == "gaussian_identity"){
           anova(step(glm(Val~., data=Data1,family=gaussian))) 
@@ -2288,21 +2561,21 @@ shinyServer(function(input, output) {
     }
   })
   
-  output$plot403 <- renderPlotly({
-    if(input$analysis == "Similarity_of_Names_in_Rows_and_Columns1"){
-      if(input$Similarity_of_Names_in_Rows_and_Columns == 'Heat_map_Clustering1') {
+  #output$plot403 <- renderPlotly({
+  #  if(input$analysis == "Similarity_of_Names_in_Rows_and_Columns1"){
+  #    if(input$Similarity_of_Names_in_Rows_and_Columns == 'Heat_map_Clustering1') {
         
-        req(input$file1)
+  #      req(input$file1)
         
-        library(heatmaply)
-        if(input$sep2 == "Separator_Comma"){sep <- ","}
-        if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
-        if(input$sep2 == "Separator_Tab"){sep <- "\t"}
-        Data <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=1)
+  #      library(heatmaply)
+  #      if(input$sep2 == "Separator_Comma"){sep <- ","}
+  #      if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+  #      if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+  #      Data <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=1)
         
-        DataM <- as.matrix(Data)
-        heatmaply(DataM, scale="none")
-      }
-    }
-  })
+  #      DataM <- as.matrix(Data)
+  #      heatmaply(DataM, scale="none")
+  #    }
+  #  }
+  #})
 })
