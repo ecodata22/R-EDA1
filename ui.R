@@ -192,7 +192,8 @@ fluidPage(
                                Heat_map = "Heat_map1",
                                 Similarity_of_Variables_and_Categories = "Similarity_of_Variables_and_Categories1",
                                Similarity_of_Samples = "Similarity_of_Samples1",
-                               Similarity_of_Names_in_Rows_and_Columns = "Similarity_of_Names_in_Rows_and_Columns1"),
+                               Similarity_of_Names_in_Rows_and_Columns = "Similarity_of_Names_in_Rows_and_Columns1",
+                               Time_series = "Time_series1"),
                    selected = "Basic_EDA1"),
       
       conditionalPanel(
@@ -281,7 +282,7 @@ fluidPage(
                                      Cramer_Network = "Cramer_Network1",
                                      Bayesian_Network = "Bayesian_Network1",
                                      Association_rules = "Association1")),
-                                     #LiNGAM = "LiNGAM1"
+                                     #LiNGAM = "LiNGAM1")),
             
             
             conditionalPanel(
@@ -693,6 +694,110 @@ fluidPage(
             p("0 labeled samples are used to make model (as the 'One class').")
           )
         )
+      ),
+      
+      conditionalPanel(
+        condition = "input.analysis == 'Time_series1'",
+        
+        radioButtons("Dimension_type", "Dimension_type",
+                     choices = c(Multi_variable = "Multi_variable",
+                                 One_variable = "One_variable"
+                     )
+        ),
+        conditionalPanel(
+          condition = "input.Dimension_type == 'One_variable'",
+          radioButtons("Method4", "Method",
+                       choices = c(Difference_previous = "Difference_previous",
+                                   Auto_correlation = "Auto_correlation",
+                                   fft = "fft",
+                                   Quasi_periodic = "Quasi_periodic"
+                       ),
+          ),
+          numericInput('Value_to_analyze', 'Value to analyze', "1"),
+          conditionalPanel(
+            condition = "input.Method4 == 'Difference_previous'",
+            numericInput('Lag_of_diff', 'Lag_of_diff', "1"),
+            p("If 1 is selected, diffence from 1 previous value is calculated."),
+          ),
+          
+          conditionalPanel(
+            condition = "input.Method4 == 'Quasi_periodic'",
+            radioButtons("Using_01variable_in_table", "Using_01variable_in_table",
+                         choices = c(Yes = "Using_01variable_in_table_Y",
+                                     No = "Using_01variable_in_table_N"
+                         )
+            ),
+            conditionalPanel(
+              condition = "input.Using_01variable_in_table == 'Using_01variable_in_table_Y'",
+  
+              numericInput('Row_of_01variable', 'Row of 01variable', "1"),
+            ),
+            conditionalPanel(
+              condition = "input.Using_01variable_in_table == 'Using_01variable_in_table_N'",
+              
+              numericInput('Row_to_divide01', 'Row to divide 0 or 1', "1"),
+              p("If 1 is selected, value in 1st row is used to divide 0 or 1."),
+              numericInput('Value_to_0or1', 'Value to divide 0 or 1', "0"),
+              p("If 30 is selected, value over 30 is 1. Value under 30 is 0."),
+              
+            ),
+          ),
+        ),
+        
+        conditionalPanel(
+          condition = "input.Dimension_type == 'Multi_variable'",
+          radioButtons("Method5", "Method",
+                       choices = c(Stratifeid_graph = "Stratifeid_graph3",
+                                   Dimension_reduction = "Dimension_reduction3",
+                                   Cross_correlation = "Cross_correlation")
+          ),
+          
+            
+          conditionalPanel(
+            condition = "input.Method5 == 'Dimension_reduction3'",
+            radioButtons("Line_graph2", "Box_Type",
+                         choices = c(Box_Integrated = "Box_Integrated1",
+                                     Box_Separated = "Box_Separated1")
+            ),
+            radioButtons("Dimension_reduction_type3", "Dimension reduction type",
+                         choices = c(None = "None3",
+                                     PCA = "PCA3",
+                                     ICA = "ICA3",
+                                     Factor = "Factor3"),
+            ),
+            conditionalPanel(
+              condition = "input.Dimension_reduction_type3 ==  'Factor3'",
+              numericInput('Factors3', 'Number of factors', "2"),
+              radioButtons("Factor_Rotation3", "Rotation_Type",
+                           choices = c(varimax = "varimax",
+                                       quartimax = "quartimax",
+                                       geominT = "geominT",
+                                       promax = "promax",
+                                       cluster = "cluster",
+                                       oblimin = "oblimin",
+                                       geominQ = "geominQ"))
+            ),
+          ),
+          conditionalPanel(
+            condition = "input.Method5 == 'Stratifeid_graph3'",
+            
+            numericInput('Lcol3', 'Label', "1"),
+            numericInput('Ccol3', 'Coloring (if "0" do not used colors)', "0"),
+            numericInput('Scol3', 'area separate 1 (if "0" not separate)', "0"),
+            conditionalPanel(
+              condition = "input.Ccol3 > 0",
+              checkboxInput("NumericalToCategorcalSColor23", "If coloring varaiable is numerical, changing categorical varaiable", TRUE),
+              checkboxInput("NumericalToCategorcalSColor13", "If coloring is numerical, changing categorical coloring", FALSE),
+            ),
+            numericInput('NumericalToCategorcalS3', 'No of ranges', "3"),
+          ),
+          conditionalPanel(
+            condition = "input.Method5 == 'Cross_correlation'",
+            
+            numericInput('Xcol4', 'Value_to_analyze_X', "1"),
+            numericInput('Ycol4', 'Value_to_analyze_Y', "1"),
+          ),
+        ),
       ),
       
       a("Guide (English)   ",href="http://data-science.tokyo/R-E/about_R-EDA1.html"),
@@ -1589,8 +1694,90 @@ fluidPage(
           a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-06.html")
         ),
         
-      )
+      ),
       
+      conditionalPanel(
+        condition = "input.analysis == 'Time_series1'",
+        conditionalPanel(
+          condition = "input.Dimension_type == 'One_variable'",
+          conditionalPanel(
+            condition = "input.Method4 == 'Difference_previous'",
+            h3("Row data"),
+            plotlyOutput("plot503"),
+            h3("Difference from previous value"),
+            plotlyOutput("plot501"),
+            plotlyOutput("plot502"),
+            a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E7-02.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J7-02.html"),
+          ),
+          
+          conditionalPanel(
+            condition = "input.Method4 == 'Auto_correlation'",
+            h3("Auto_correlation"),
+            p("Data to analyze"),
+            plotlyOutput("plot724"),
+            p("Correlogram, Auto_correlation"),
+            plotOutput("plot723"),
+            a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E7-02.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J7-02.html"),
+          ),
+          conditionalPanel(
+            condition = "input.Method4 == 'fft'",
+            h3("fft"),
+            p("Data to analyze"),
+            plotlyOutput("plot722"),
+            p("fft output"),
+            plotlyOutput("plot721"),
+            a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E7-02.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J7-02.html"),
+          ),
+          conditionalPanel(
+            condition = "input.Method4 == 'Quasi_periodic'",
+            h3("Quasi periodic analysis"),
+            dataTableOutput("text701"),
+            downloadButton("downloadData700", "Download type 1 data"),
+            downloadButton("downloadData704", "Download type 2 data"),
+            br(),
+            a("About quasi periodic data analysis (English)   ",href="http://data-science.tokyo/ed-e/ede1-9-3-6-4.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-9-3-6-4.html"),br(),
+            a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E7-01.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J7-01.html"),
+          ),
+        ),
+        
+        conditionalPanel(
+          condition = "input.Dimension_type == 'Multi_variable'",
+          conditionalPanel(
+            condition = "input.Method5== 'Dimension_reduction3'",
+            h3("All variables"),
+            plotlyOutput("plot701"),
+            conditionalPanel(
+              condition = "input.Dimension_reduction_type3 != 'None3'",
+              verbatimTextOutput("text702"),
+              downloadButton("downloadData714", "Download analysed data"),
+            ),
+            a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E7-03.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J7-03.html"),
+          ),
+          conditionalPanel(
+            condition = "input.Method5== 'Stratifeid_graph3'",
+            h3("Stratifeid graph"),
+            plotlyOutput("plot702"),
+            
+          ),
+          conditionalPanel(
+            condition = "input.Method5== 'Cross_correlation'",
+            h3("Cross correlation"),
+            p("Data to analyze"),
+            plotlyOutput("plot726"),
+            p("Correlogram, Auto_correlation"),
+            plotOutput("plot725"),
+            a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E7-02.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J7-02.html"),
+            
+          ),
+        )
+      )
       
     )
   )

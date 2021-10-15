@@ -701,9 +701,9 @@ shinyServer(function(input, output) {
   #          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
   #          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
   #          Data <- read.csv(input$file1$datapath, header=T,sep = sep)
-  #if(input$DoNotUseFirst == 1){
-  #  Data[,1] <- NULL
-  #}
+  #             if(input$DoNotUseFirst == 1){
+  #               Data[,1] <- NULL
+  #             }
   #          library(pcalg)
   #          library(igraph)
   #          library(dummies)
@@ -986,6 +986,8 @@ shinyServer(function(input, output) {
             library(GPArotation)
             library(heatmaply)
             library(fastDummies) 
+            library(ggplot2)
+            
             
             Check_variable <- "0"
             for (i in 1:ncol(Data)) {
@@ -2578,4 +2580,369 @@ shinyServer(function(input, output) {
   #    }
   #  }
   #})
+  
+  output$plot702 <- renderPlotly({
+    if(input$analysis == "Time_series1"){
+      if(input$Dimension_type == "Multi_variable"){
+        if(input$Method5 == "Stratifeid_graph3"){
+          
+          req(input$file1)
+          library(lme4)
+          library(dplyr)
+          library(plotly)
+          library(ggplot2)
+          
+          if(input$sep2 == "Separator_Comma"){sep <- ","}
+          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+          Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+          if(input$DoNotUseFirst == 1){
+            Data[,1] <- NULL
+          }
+          Data1 <- Data
+          
+          if(input$Lcol3 > 0){Lname<-names(Data1[input$Lcol3])} else {Lname<-"None"}
+          if(input$Ccol3 > 0){Cname<-names(Data1[input$Ccol3])} else {Cname<-"None"}
+          if(input$Scol3 > 0){Sname<-names(Data1[input$Scol3])} else {Sname<-"None"}
+          
+          Data1$No <-as.numeric(row.names(Data1)) 
+          
+          if(input$Scol3 != 0 && input$Ccol3 != 0){
+            if(class(Data1[,input$Scol3]) == "numeric" || class(Data1[,input$Scol3]) == "integer"){Data1[,input$Scol3] <- droplevels(cut(Data1[,input$Scol3], breaks = input$NumericalToCategorcalS3, include.lowest = TRUE))}
+            if(input$NumericalToCategorcalSColor23 == 1){
+              if(class(Data1[,input$Ccol3]) == "numeric" || class(Data1[,input$Ccol3]) == "integer"){Data1[,input$Ccol3] <- droplevels(cut(Data1[,input$Ccol3], breaks = input$NumericalToCategorcalS3, include.lowest = TRUE))}
+            }
+            if(input$NumericalToCategorcalSColor13 == 1){Data1[,input$Ccol3] <- as.factor(Data1[,input$Ccol3])}
+            
+            gplot <- ggplot(Data1, aes(x=Data1$No,y=Data1[,input$Lcol3])) + geom_line(aes(colour=Data1[,input$Ccol3])) + facet_wrap(~Data1[,input$Scol3],scales="free")+ labs(x="Index",y=Lname,color=Cname,subtitle = Sname)
+          } else if(input$Scol3 == 0 && input$Ccol3 != 0){
+            if(input$NumericalToCategorcalSColor23 == 1){
+              if(class(Data1[,input$Ccol3]) == "numeric" || class(Data1[,input$Ccol3]) == "integer"){Data1[,input$Ccol3] <- droplevels(cut(Data1[,input$Ccol3], breaks = input$NumericalToCategorcalS3, include.lowest = TRUE))}
+            }
+            if(input$NumericalToCategorcalSColor13 == 1){Data1[,input$Ccol3] <- as.factor(Data1[,input$Ccol3])}
+            
+            gplot <- ggplot(Data1, aes(x=Data1$No,y=Data1[,input$Lcol3])) + geom_line(aes(colour=Data1[,input$Ccol3])) + labs(x="Index",y=Lname,color=Cname)
+          } else if(input$Scol != 0 && input$Ccol == 0){
+            if(class(Data1[,input$Scol3]) == "numeric" || class(Data1[,input$Scol3]) == "integer"){Data1[,input$Scol3] <- droplevels(cut(Data1[,input$Scol3], breaks = input$NumericalToCategorcalS3, include.lowest = TRUE))}
+            
+            gplot <- ggplot(Data1, aes(x=Data1$No,y=Data1[,input$Lcol3])) + geom_line() + facet_wrap(~Data1[,input$Scol3],scales="free")+ labs(x="Index",y=Lname,subtitle = Sname)
+          } else {
+            
+            gplot <- ggplot(Data1, aes(x=Data1$No,y=Data1[,input$Lcol3])) + geom_line() + labs(x="Index",y=Lname)
+          }
+          ggplotly(gplot)
+        }
+      }
+    }
+  })
+  
+  output$plot701 <- renderPlotly({
+    if(input$analysis == "Time_series1"){
+      if(input$Dimension_type == "Multi_variable"){
+        if(input$Method5 == "Dimension_reduction3"){
+          
+          req(input$file1)
+          
+          if(input$sep2 == "Separator_Comma"){sep <- ","}
+          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+          Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+          if(input$DoNotUseFirst == 1){
+            Data[,1] <- NULL
+          }
+          library(ggplot2)
+          library(tidyr)
+          library(dummies)
+          library(fastICA)
+          library(psych)
+          library(GPArotation)
+          
+          if(input$Dimension_reduction_type3 == "None3"){
+            Data2 <- dummy.data.frame(Data)
+          } else if(input$Dimension_reduction_type3 == "PCA3"){
+            pc <- prcomp(Data, scale=TRUE,tol=0.01)
+            Data2 <- as.data.frame(pc$x)
+            output$text702 <- renderPrint(summary(pc))
+            
+          } else if(input$Dimension_reduction_type3 == "ICA3"){
+            pc <- prcomp(Data, scale=TRUE, tol=0.01)
+            ic <- fastICA(Data, ncol(pc$x))
+            Data2 <- as.data.frame(ic$S)
+            output$text702 <- renderPrint(summary(ic))
+            
+          } else if(input$Dimension_reduction_type3 == "Factor3"){
+            fa_result <- fa(Data, nfactors = input$Factors3, fm = "ml", rotate = input$Factor_Rotation3)
+            Data2 <- as.data.frame(fa_result$scores)
+            output$text702 <- renderPrint(fa_result$loadings)
+          }
+          Data2$No <-as.numeric(row.names(Data2))
+          
+          output$downloadData714 <- downloadHandler(
+            filename = function() {
+              paste("Dimension_reduction", ".csv", sep = "")
+            },
+            content = function(file) {
+              write.csv(Data2, file, row.names = FALSE)
+            }
+          )
+          
+          Data_long <- tidyr::gather(Data2, key="Yno", value = Ys, -No)
+          
+          if(input$Line_graph2 == "Box_Integrated1"){
+            gplot <- ggplot(Data_long, aes(x=No,y=Ys, colour=Yno)) + geom_line()
+          } else {
+            gplot <- ggplot(Data_long, aes(x=No,y=Ys)) + geom_line() + facet_wrap(~Yno,scales="free")
+          }
+          ggplotly(gplot)
+        }
+      }  
+    }
+  })
+  
+  
+  output$plot725 <- renderPlot({
+    if(input$analysis == "Time_series1"){
+      if(input$Dimension_type == "Multi_variable"){
+        if(input$Method5 == "Cross_correlation"){
+          
+          req(input$file1)
+          
+          library(plotly)
+          library(ggplot2)
+          library(tidyr)
+          if(input$sep2 == "Separator_Comma"){sep <- ","}
+          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+          Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+          if(input$DoNotUseFirst == 1){
+            Data[,1] <- NULL
+          }
+          
+          output$plot726 <- renderPlotly({
+            Data$No <-as.numeric(row.names(Data))
+            Data2 <- Data$No
+            Data2 <- as.data.frame(Data2)
+            Data2$X <- Data[,input$Xcol4]
+            Data2$Y <- Data[,input$Ycol4]
+            Data_long <- tidyr::gather(Data2, key="Yno", value = Ys, -Data2)
+            gplot <- ggplot(Data_long, aes(x=Data2,y=Ys)) + geom_line() + facet_grid(Yno~.)+labs(x="No",y="Ys")
+            ggplotly(gplot)
+          })
+          Value_to_analyze_X <- input$Xcol4
+          Value_to_analyze_Y <- input$Ycol4
+          ccf(Data[,Value_to_analyze_X],Data[,Value_to_analyze_Y])   
+        }
+      }  
+    }
+  })
+  
+  
+  output$plot501 <- renderPlotly({
+    if(input$analysis == "Time_series1"){
+      if(input$Dimension_type == "One_variable"){
+        if(input$Method4 == "Difference_previous"){
+            
+          req(input$file1)
+          
+          if(input$sep2 == "Separator_Comma"){sep <- ","}
+          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+          Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+          if(input$DoNotUseFirst == 1){
+            Data[,1] <- NULL
+          }
+          
+          library(ggplot2)
+          
+          
+          Data_diff <- diff(Data[,input$Value_to_analyze],input$Lag_of_diff)
+          Data_diff <- as.data.frame(Data_diff)
+          Data_diff$No <-as.numeric(row.names(Data_diff))+1
+          Lname<-names(Data[input$Value_to_analyze])
+          gplot <- ggplot(Data_diff, aes(x = No,y=Data_diff)) + geom_line()
+          
+          output$plot502 <- renderPlotly({
+            gplot2 <- ggplot(Data_diff, aes(x =Data_diff)) + geom_histogram()
+            ggplotly(gplot2)
+          })
+          output$plot503 <- renderPlotly({
+            Data$No <-as.numeric(row.names(Data))
+            gplot2 <- ggplot(Data, aes(x =No, y=Data[,input$Value_to_analyze])) + geom_line()+ labs(x="No",y=Lname)
+            ggplotly(gplot2)
+          })
+          ggplotly(gplot)
+          
+        }
+      }
+    }
+  })
+  
+  output$plot721 <- renderPlotly({
+    if(input$analysis == "Time_series1"){
+      if(input$Dimension_type == "One_variable"){
+        if(input$Method4 == "fft"){
+          
+          req(input$file1)
+          
+          library(plotly)
+          library(ggplot2)
+          if(input$sep2 == "Separator_Comma"){sep <- ","}
+          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+          Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+          if(input$DoNotUseFirst == 1){
+            Data[,1] <- NULL
+          }
+          n <- nrow(Data)
+          ft <- log10(abs(fft(Data[,input$Value_to_analyze]^2)))
+          Data2 <- as.data.frame(ft)
+          Data2$Index <- as.numeric(row.names(Data2))
+          Data3 <- Data2[2:floor(n/2),]
+          Data3$Wavelength <- n / (Data3$Index-1)
+          
+          gplot2 <- ggplot(Data3, aes(x =Wavelength, y=ft)) + geom_line()+labs(x="Wavelength",y="Power")
+          
+          
+          
+          output$plot722 <- renderPlotly({
+            Lname<-names(Data[input$Value_to_analyze])
+            Data$No <-as.numeric(row.names(Data))
+            gplot <- ggplot(Data, aes(x =No, y=Data[,input$Value_to_analyze])) + geom_line()+ labs(x="No",y=Lname)
+            ggplotly(gplot)
+          })
+          
+          ggplotly(gplot2)            
+        }
+      }  
+    }
+  })
+  output$plot723 <- renderPlot({
+    if(input$analysis == "Time_series1"){
+      if(input$Dimension_type == "One_variable"){
+        if(input$Method4 == "Auto_correlation"){
+          
+          req(input$file1)
+          
+          library(plotly)
+          library(ggplot2)
+          if(input$sep2 == "Separator_Comma"){sep <- ","}
+          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+          Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+          if(input$DoNotUseFirst == 1){
+            Data[,1] <- NULL
+          }
+          
+          output$plot724 <- renderPlotly({
+            Lname<-names(Data[input$Value_to_analyze])
+            Data$No <-as.numeric(row.names(Data))
+            gplot <- ggplot(Data, aes(x =No, y=Data[,input$Value_to_analyze])) + geom_line()+ labs(x="No",y=Lname)
+            ggplotly(gplot)
+          })
+          Value_to_analyze <- input$Value_to_analyze
+          acf(Data[,Value_to_analyze])   
+        }
+      }  
+    }
+  })
+  
+  output$text701 <- renderDataTable({
+    if(input$analysis == "Time_series1"){
+      if(input$Dimension_type == "One_variable"){
+        if(input$Method4 == "Quasi_periodic"){
+          
+          req(input$file1)
+          
+          if(input$sep2 == "Separator_Comma"){sep <- ","}
+          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+          Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+          if(input$DoNotUseFirst == 1){
+            Data[,1] <- NULL
+          }
+          
+          library(ggplot2)
+          library(dplyr)
+          
+          
+          if(input$Using_01variable_in_table == "Using_01variable_in_table_Y"){
+            Data$Value01 <- Data[,input$Row_of_01variable]
+          } else {
+            Data$Value01 <- ifelse(Data[,input$Row_to_divide01] > input$Value_to_0or1, 1, 0)
+          }
+          Data$Index <-as.numeric(row.names(Data)) 
+          Data$Value02 <- Data[,input$Value_to_analyze]
+          
+          Data$Index_Set1to0 <-Data[,1]
+          Data$Set1to0 <-Data[,1]
+          Data$Index_Set0to1 <-Data[,1]
+          Data$Set0to1 <-Data[,1]
+          n <- nrow(Data)
+          Data$Index_Set1to0 <- 0
+          Data$Set1to0 <- 0
+          Data$Index_Set0to1 <- 0
+          Data$Set0to1 <- 0
+          
+          for (i in 2:n) {
+            if (Data$Value01[i-1] == 0 &&  Data$Value01[i] == 1) {
+              Data$Index_Set1to0[i] <- 0
+              Data$Set1to0[i] <- Data$Set1to0[i-1] +1
+              Data$Index_Set0to1[i] <- Data$Index_Set0to1[i-1] +1
+              Data$Set0to1[i] <- Data$Set0to1[i-1]
+            } else if (Data$Value01[i-1] == 1 && Data$Value01[i] == 0){
+              Data$Index_Set1to0[i] <- Data$Index_Set1to0[i-1] +1
+              Data$Set1to0[i] <- Data$Set1to0[i-1]
+              Data$Index_Set0to1[i] <- 0
+              Data$Set0to1[i] <- Data$Set0to1[i-1] +1
+            } else {
+              Data$Index_Set1to0[i] <- Data$Index_Set1to0[i-1] +1
+              Data$Set1to0[i] <- Data$Set1to0[i-1]
+              Data$Index_Set0to1[i] <- Data$Index_Set0to1[i-1]
+              Data$Set0to1[i] <- Data$Set0to1[i-1]
+            }
+          }
+          
+          Data42 <- Data %>% group_by(Set0to1)
+          Data43 <- summarize(Data42, n_01 = n(), Max_01 = max(Value02), Min_01 = min(Value02), Mean_01 = mean(Value02))
+          
+          
+          Data21 <- Data[Data$Value01 == "0",]
+          Data22 <- Data21 %>% group_by(Set0to1)
+          Data23 <- summarize(Data22, n_0 = n(), Max_0 = max(Value02), Min_0 = min(Value02), Mean_0 = mean(Value02))
+          #Data23 <- summarize(Data22, n_0 = n(), Max_0 = max(Value02), Min_0 = min(Value02))
+          Data31 <- Data[Data$Value01 == "1",]
+          Data32 <- Data31 %>% group_by(Set0to1)
+          Data33 <- summarize(Data32, n_1 = n(), Max_1 = max(Value02), Min_1 = min(Value02), Start_Index_1 = min(Index), End_Index_1 = max(Index), Mean_1 = mean(Value02))
+          #Data33 <- summarize(Data32, n_1 = n(), Max_1 = max(Value02), Min_1 = min(Value02), Start_Index_1 = min(Index), End_Index_1 = max(Index))
+          #Data33 <- summarize(Data32, n_1 = n())
+          Data4 <- merge(Data23, Data33, all=T)
+          Data4 <- merge(Data4, Data43, all=T)
+          
+          
+          output$downloadData700 <- downloadHandler(
+            filename = function() {
+              paste("Quasi_periodic_type1", ".csv", sep = "")
+            },
+            content = function(file) {
+              write.csv(Data, file, row.names = FALSE)
+            }
+          )
+          output$downloadData704 <- downloadHandler(
+            filename = function() {
+              paste("Quasi_periodic_type2", ".csv", sep = "")
+            },
+            content = function(file) {
+              write.csv(Data4, file, row.names = FALSE)
+            }
+          )
+          Data4
+        }
+      }
+    }
+  })
+  
+  
+
+  
+  
 })
