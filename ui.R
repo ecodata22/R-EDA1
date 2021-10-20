@@ -20,15 +20,15 @@ fluidPage(
       fileInput("file1", "Choose CSV File", multiple = TRUE,accept = c("text/csv", "text/comma-separated-values,text/plain",".csv")),
       conditionalPanel(
         condition = "input.analysis == 'Similarity_of_Samples1' || input.analysis == 'Similarity_of_Names_in_Rows_and_Columns1'",
-        checkboxInput("Use_one_row_as_sample_name2", "Use one of the row as sample name", TRUE),
+        checkboxInput("Use_one_column_as_sample_name2", "Use one of the column as sample name", TRUE),
         
         conditionalPanel(
-          condition = "input.Use_one_row_as_sample_name2 == 1",
-          numericInput('sample_row2', 'Row number of sample name', "1"),
+          condition = "input.Use_one_column_as_sample_name2 == 1",
+          numericInput('sample_row2', 'Column number of sample name', "1"),
         ),
         
         conditionalPanel(
-          condition = "input.Use_one_row_as_sample_name2 == 0",
+          condition = "input.Use_one_column_as_sample_name2 == 0",
           p("Index is used as sample name.")
         ),
       ),
@@ -198,14 +198,14 @@ fluidPage(
       
       conditionalPanel(
         condition = "input.analysis == 'Heat_map1'",
-        checkboxInput("Use_one_row_as_sample_name1", "Use one of the row as sample name", TRUE),
+        checkboxInput("Use_one_column_as_sample_name1", "Use one of the column as sample name", TRUE),
         
         conditionalPanel(
-          condition = "input.Use_one_row_as_sample_name1 == 1",
-          numericInput('sample_row1', 'Row number of sample name', "1"),
+          condition = "input.Use_one_column_as_sample_name1 == 1",
+          numericInput('sample_row1', 'Column number of sample name', "1"),
         ),
         conditionalPanel(
-          condition = "input.Use_one_row_as_sample_name1 == 0",
+          condition = "input.Use_one_column_as_sample_name1 == 0",
           p("Index is used as sample name.")
         ),
 
@@ -809,8 +809,11 @@ fluidPage(
         condition = "input.analysis != 'Similarity_of_Samples1'",
           
         conditionalPanel(
-          condition = "input.analysis != 'Heat_map1'",
-          checkboxInput("DoNotUseFirst", "Do not use the first column of CSV", FALSE),
+          condition = "input.analysis != 'Similarity_of_Names_in_Rows_and_Columns1'",
+          conditionalPanel(
+            condition = "input.analysis != 'Heat_map1'",
+            checkboxInput("DoNotUseFirst", "Do not use the first column of CSV", FALSE),
+          ),
         ),
       ),
       

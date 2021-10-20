@@ -32,7 +32,7 @@ shinyServer(function(input, output) {
       if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
       if(input$sep2 == "Separator_Tab"){sep <- "\t"}
       
-      if(input$Use_one_row_as_sample_name1 == 1){
+      if(input$Use_one_column_as_sample_name1 == 1){
         Data <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=input$sample_row1)
       } else {
         Data <- read.csv(input$file1$datapath, header=T,sep = sep)
@@ -987,6 +987,7 @@ shinyServer(function(input, output) {
             library(heatmaply)
             library(fastDummies) 
             library(ggplot2)
+            library(MASS)
             
             
             Check_variable <- "0"
@@ -2067,7 +2068,7 @@ shinyServer(function(input, output) {
           library(kernlab)
           
           Data1 <- Data
-          if(input$Use_one_row_as_sample_name2 == 1){
+          if(input$Use_one_column_as_sample_name2 == 1){
             Y <- names(Data1[input$sample_row2])
             Ydata <- Data1[,input$sample_row2]
             Data1[,input$sample_row2] <- NULL
@@ -2212,7 +2213,7 @@ shinyServer(function(input, output) {
           #Data1[,1] <- NULL
           
           Data1 <- Data
-          if(input$Use_one_row_as_sample_name2 == 1){
+          if(input$Use_one_column_as_sample_name2 == 1){
             Y <- names(Data1[input$sample_row2])
             Ydata <- Data1[,input$sample_row2]
             Data1[,input$sample_row2] <- NULL
@@ -2291,6 +2292,7 @@ shinyServer(function(input, output) {
           library(fastDummies) 
           library(psych)
           library(ggplot2)
+          library(MASS)
           
           
           
@@ -2300,7 +2302,7 @@ shinyServer(function(input, output) {
           #Data[,1] <- NULL
           
           #Data1 <- Data
-          if(input$Use_one_row_as_sample_name2 == 1){
+          if(input$Use_one_column_as_sample_name2 == 1){
             Y <- names(Data[input$sample_row2])
             Ydata <- Data[,input$sample_row2]
             Data[,input$sample_row2] <- NULL
@@ -2324,12 +2326,12 @@ shinyServer(function(input, output) {
             Data1 <- Data
           }
           
-          fa_result <- fa(Data1, nfactors = input$Factors, fm = "ml", rotate = input$Factor_Rotation2)
+          fa_result <- fa(Data1, nfactors = input$Factors2, fm = "ml", rotate = input$Factor_Rotation2)
           output$plot407 <- renderPlotly(heatmaply(fa_result$loadings, scale="none"))
           output$text407 <- renderPrint(fa_result$loadings)
           
           
-          fa_loadings <- fa_result$loadings[,1:input$Factors]
+          fa_loadings <- fa_result$loadings[,1:input$Factors2]
           Data11 <- as.data.frame(fa_loadings)
           Data11_dist <- dist(Data11)
           sn <- sammon(Data11_dist)
@@ -2382,7 +2384,7 @@ shinyServer(function(input, output) {
         library(dummies)
         library(ggplot2)
         
-        if(input$Use_one_row_as_sample_name2 == 1){
+        if(input$Use_one_column_as_sample_name2 == 1){
           Data <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=input$sample_row2)
         } else {
           Data <- read.csv(input$file1$datapath, header=T,sep = sep)
@@ -2444,7 +2446,7 @@ shinyServer(function(input, output) {
         
         
         
-        if(input$Use_one_row_as_sample_name2 == 1){
+        if(input$Use_one_column_as_sample_name2 == 1){
           DM <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=input$sample_row2)
         } else {
           DM <- read.csv(input$file1$datapath, header=T,sep = sep)
@@ -2477,7 +2479,7 @@ shinyServer(function(input, output) {
         if(input$sep2 == "Separator_Tab"){sep <- "\t"}
         
         
-        if(input$Use_one_row_as_sample_name2 == 1){
+        if(input$Use_one_column_as_sample_name2 == 1){
           Data <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=input$sample_row2)
         } else {
           Data <- read.csv(input$file1$datapath, header=T,sep = sep)
@@ -2520,7 +2522,7 @@ shinyServer(function(input, output) {
         if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
         if(input$sep2 == "Separator_Tab"){sep <- "\t"}
         
-        if(input$Use_one_row_as_sample_name2 == 1){
+        if(input$Use_one_column_as_sample_name2 == 1){
           Data <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=input$sample_row2)
         } else {
           Data <- read.csv(input$file1$datapath, header=T,sep = sep)
@@ -2542,7 +2544,7 @@ shinyServer(function(input, output) {
         
         Data <- read.csv(input$file1$datapath, header=T,sep = sep)
         
-        if(input$Use_one_row_as_sample_name2 == 1){
+        if(input$Use_one_column_as_sample_name2 == 1){
           RowName <- colnames(Data[input$sample_row2])
         } else {
           RowName <- "Index_No"
@@ -2563,23 +2565,6 @@ shinyServer(function(input, output) {
     }
   })
   
-  #output$plot403 <- renderPlotly({
-  #  if(input$analysis == "Similarity_of_Names_in_Rows_and_Columns1"){
-  #    if(input$Similarity_of_Names_in_Rows_and_Columns == 'Heat_map_Clustering1') {
-        
-  #      req(input$file1)
-        
-  #      library(heatmaply)
-  #      if(input$sep2 == "Separator_Comma"){sep <- ","}
-  #      if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
-  #      if(input$sep2 == "Separator_Tab"){sep <- "\t"}
-  #      Data <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=1)
-        
-  #      DataM <- as.matrix(Data)
-  #      heatmaply(DataM, scale="none")
-  #    }
-  #  }
-  #})
   
   output$plot702 <- renderPlotly({
     if(input$analysis == "Time_series1"){
@@ -2798,7 +2783,7 @@ shinyServer(function(input, output) {
           Data2 <- as.data.frame(ft)
           Data2$Index <- as.numeric(row.names(Data2))
           Data3 <- Data2[2:floor(n/2),]
-          Data3$Wavelength <- n / (Data3$Index-1)
+          Data3$Wavelength <- n*2 / (Data3$Index-1)
           
           gplot2 <- ggplot(Data3, aes(x =Wavelength, y=ft)) + geom_line()+labs(x="Wavelength",y="Power")
           
