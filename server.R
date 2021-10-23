@@ -901,11 +901,18 @@ shinyServer(function(input, output) {
             output$text410 <- renderPrint(summary(pc))
             pc2 <- sweep(pc$rotation, MARGIN=2, pc$sdev, FUN="*")
             Data11 <- pc2
-            Data11_dist <- dist(Data11)
-            sn <- sammon(Data11_dist)
-            Data2 <- sn$points
             name1 <-  row.names(Data11)
-            Data2 <- cbind.data.frame(Data2 ,name1)
+            if(input$Dimension_reduction6 == "MDS6"){
+              Data11_dist <- dist(Data11)
+              sn <- sammon(Data11_dist)
+              Data2 <- sn$points
+              Data2 <- cbind.data.frame(Data2 ,name1)
+            }else if(input$Dimension_reduction6 == "tSNE6"){
+              library(Rtsne)
+              ts <- Rtsne(Data11, perplexity = input$perplexity_value6)
+              Data2 <- ts$Y
+              Data2 <- cbind.data.frame(Data2 ,name1)
+            }
             ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=name1)) + geom_text()+ labs(y="axis2",x="axis1"))
           }
         }
@@ -954,9 +961,18 @@ shinyServer(function(input, output) {
             output$text132 <- renderText(n1)
             Data11 <- pc1[,1:n1]
             Data11_dist <- dist(Data11)
-            sn <- sammon(Data11_dist)
-            output <- sn$points
-            Data2 <- cbind(output, pc1)
+            name1 <-  row.names(Data11)
+            if(input$Dimension_reduction6 == "MDS6"){
+              Data11_dist <- dist(Data11)
+              sn <- sammon(Data11_dist)
+              Data2 <- sn$points
+              Data2 <- cbind.data.frame(Data2 ,name1)
+            }else if(input$Dimension_reduction6 == "tSNE6"){
+              library(Rtsne)
+              ts <- Rtsne(Data11, perplexity = input$perplexity_value6)
+              Data2 <- ts$Y
+              Data2 <- cbind.data.frame(Data2 ,name1)
+            }
             ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=name1)) + geom_text()+ labs(y="axis2",x="axis1"))
           }
         }
@@ -1010,10 +1026,18 @@ shinyServer(function(input, output) {
             fa_loadings <- fa_result$loadings[,1:input$Factors]
             Data11 <- as.data.frame(fa_loadings)
             Data11_dist <- dist(Data11)
-            sn <- sammon(Data11_dist)
-            Data2 <- sn$points
             name1 <-  row.names(Data11)
-            Data2 <- cbind.data.frame(Data2 ,name1)
+            if(input$Dimension_reduction6 == "MDS6"){
+              Data11_dist <- dist(Data11)
+              sn <- sammon(Data11_dist)
+              Data2 <- sn$points
+              Data2 <- cbind.data.frame(Data2 ,name1)
+            }else if(input$Dimension_reduction6 == "tSNE6"){
+              library(Rtsne)
+              ts <- Rtsne(Data11, perplexity = input$perplexity_value6)
+              Data2 <- ts$Y
+              Data2 <- cbind.data.frame(Data2 ,name1)
+            }
             output$plot408 <- renderPlotly(ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=name1)) + geom_text()+ labs(y="axis2",x="axis1")))
             fa_result$loadings
           }
@@ -2470,7 +2494,7 @@ shinyServer(function(input, output) {
   
   output$plot405 <- renderPlotly({
     if(input$analysis == "Similarity_of_Names_in_Rows_and_Columns1"){
-      if(input$Similarity_of_Names_in_Rows_and_Columns == 'Correspondence_MDS_Names1') {
+      if(input$Similarity_of_Names_in_Rows_and_Columns == 'Using_other_variables1') {
       
         req(input$file1)
         
@@ -2486,28 +2510,65 @@ shinyServer(function(input, output) {
         }
         library(MASS)
         library(ggplot2)
-        pc <- corresp(Data,nf=min(ncol(Data),nrow(Data)))
-        pc1 <- data.frame(pc$cscore)
-        pc1 <- transform(pc1 ,name1 = rownames(pc1), name2 = "A")
-        pc2 <- data.frame(pc$rscore)
-        pc2 <- transform(pc2 ,name1 = rownames(pc2), name2 = "B")
-        Data1 <- rbind(pc1,pc2)
         
-        ei1 <- round(pc$cor^2/sum(pc$cor^2),2)
-        output$text4051 <- renderText(ei1)
-        for (i in 1: length(ei1)){
-          if(ei1[i] > 0.001){
-            n1 <- i
+        
+        
+        if(input$Make_variables == "Correspondence5"){
+          pc <- corresp(Data,nf=min(ncol(Data),nrow(Data)))
+          pc1 <- data.frame(pc$cscore)
+          pc1 <- transform(pc1 ,Name1 = rownames(pc1), Name2 = "col")
+          pc2 <- data.frame(pc$rscore)
+          pc2 <- transform(pc2 ,Name1 = rownames(pc2), Name2 = "row")
+          Data1 <- rbind(pc1,pc2)
+          
+          ei1 <- round(pc$cor^2/sum(pc$cor^2),2)
+          output$text4051 <- renderText(ei1)
+          for (i in 1: length(ei1)){
+            if(ei1[i] > 0.001){
+              n1 <- i
+            }
           }
+          output$text4052 <- renderText(n1)
+        } else if(input$Make_variables == "SVD5"){
+          Data1 = as.matrix(Data)
+          Pt <- svd(Data1)
+          PtB = Pt$u
+          PtA = Pt$v
+          A = data.frame(PtA)
+          n1 <- ncol(A)
+          A$Name1 <-colnames(Data1)
+          A$Name2 <- "col"
+          B = data.frame(PtB)
+          B$Name1 <-rownames(Data1)
+          B$Name2 <- "row"
+          Data1 <- rbind(A,B)
         }
-        output$text4052 <- renderText(n1)
         
-        Data11 <- Data1[,1:n1]
-        Data11_dist <- dist(Data11)
-        sn <- sammon(Data11_dist)
-        output <- sn$points
-        Data2 <- cbind(output, Data1)
-        ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=name1)) + geom_text(aes(colour=name2)) + labs(y="axis2",x="axis1"))
+        
+        output$downloadData6 <- downloadHandler(
+          filename = function() {
+            paste("row_column_analysis_data", ".csv", sep = "")
+          },
+          content = function(file) {
+            write.csv(Data1, file, row.names = FALSE)
+          }
+        )
+        if(input$Dimension_reduction5 == "MDS5"){
+          Data11 <- Data1[,1:n1]
+          Data11_dist <- dist(Data11)
+          sn <- sammon(Data11_dist)
+          output <- sn$points
+          Data2 <- cbind(output, Data1)
+          gplot <- ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=Name1)) + geom_text(aes(colour=Name2)) + labs(y="axis2",x="axis1"))
+        }else if(input$Dimension_reduction5 == "tSNE5"){
+          library(Rtsne)
+          ts <- Rtsne(Data1[,1:n1], perplexity = input$perplexity_value5)
+          output <- ts$Y
+          Data2 <- cbind(output, Data1)
+          gplot <- ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=Name1)) + geom_text(aes(colour=Name2)) + labs(y="axis2",x="axis1"))
+        
+        }
+        gplot
       }
     }
   })

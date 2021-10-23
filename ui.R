@@ -244,13 +244,13 @@ fluidPage(
                        choices = c(Line_graph = "Line_graph1",
                                    Stratifeid_graph = "Stratifeid_graph1",
                                    Variable_Network = "Variable_Network1",
-                                   Using_MDS = "Using_MDS1",
+                                   Using_Dimension_reduction = "Using_MDS1",
                                    Log_Linear = "Log_Linear1")
           ),
           
           conditionalPanel(
             condition = "input.Among_all_columns == 'Using_MDS1'",
-            radioButtons("Using_MDS", "What_Using_MDS",
+            radioButtons("Using_MDS", "Analysis_of_variables",
                          choices = c(PCA = "PCA_MDS1",
                                      Factor_Analysis = "Factor_Analysis1",
                                      Correspondence_Analysis = "Correspondence_MDS_Categories1")),
@@ -265,6 +265,16 @@ fluidPage(
                                        cluster = "cluster",
                                        oblimin = "oblimin",
                                        geominQ = "geominQ"))
+            ),
+            
+            radioButtons("Dimension_reduction6", "Dimension_reduction",
+                         choices = c(MDS = "MDS6",
+                                     tSNE = "tSNE6")),
+            conditionalPanel(
+              condition = "input.Dimension_reduction6 == 'tSNE6'",
+              sliderInput("perplexity_value6",
+                          "perplexity of t-SNE",
+                          min = 1,  max = 100, value = 1, step = 1)
             ),
           ),
           conditionalPanel(
@@ -590,11 +600,10 @@ fluidPage(
         condition = "input.analysis == 'Similarity_of_Names_in_Rows_and_Columns1'",
         
         radioButtons("Similarity_of_Names_in_Rows_and_Columns", "Method",
-                     choices = c(Bipartite_graph = "Bipartite_graph1",
-                                 Correspondence_MDS_Names = "Correspondence_MDS_Names1",
+                     choices = c(Using_other_variables = "Using_other_variables1",
+                                 Bipartite_graph = "Bipartite_graph1",
                                  Independence_Test = "Independence_Test1",
-                                 Two_way_GLM = "Two_way_GLM1"),
-                     selected = "Two_way_GLM1"),
+                                 Two_way_GLM = "Two_way_GLM1")),
         
         conditionalPanel(
           condition = "input.Similarity_of_Names_in_Rows_and_Columns == 'Bipartite_graph1'",
@@ -603,6 +612,22 @@ fluidPage(
                                    layout_as_bipartite = "layout_as_bipartite1",
                                    layout_as_star = "layout_as_star1"),
                        selected = "layout_default1")
+        ),
+        conditionalPanel(
+          condition = "input.Similarity_of_Names_in_Rows_and_Columns == 'Using_other_variables1'",
+          radioButtons("Make_variables", "Make variables",
+                       choices = c(SVD = "SVD5",
+                                   Correspondence = "Correspondence5")),
+          
+          radioButtons("Dimension_reduction5", "Dimension_reduction",
+                       choices = c(MDS = "MDS5",
+                                   tSNE = "tSNE5")),
+          conditionalPanel(
+            condition = "input.Dimension_reduction5 == 'tSNE5'",
+            sliderInput("perplexity_value5",
+                        "perplexity of t-SNE",
+                        min = 1,  max = 1000, value = 1, step = 1)
+          ),
         ),
         conditionalPanel(
           condition = "input.Similarity_of_Names_in_Rows_and_Columns == 'Two_way_GLM1'",
@@ -1260,13 +1285,15 @@ fluidPage(
             condition = "input.Among_all_columns == 'Using_MDS1'",
             conditionalPanel(
               condition = "input.Using_MDS == 'PCA_MDS1'",
-              h3("PCA --> MDS"),
+              h3("PCA and dimension reduction"),
+              
               verbatimTextOutput("text410"),
               plotlyOutput("plot08"),
               h4("Algorithm"),
               p("1. All categorical variables are changed into dummy variables"),
               p("2. PCA to calculate factor loading. Output is multi-dimensional data"),
-              p("3. MDS(sammon) as dimension reduction. Output is 2-dimension data"),
+              p("3. MDS(sammon) or t-SNE as dimension reduction. Output is 2-dimension data"),
+              p("* PCA is not used as the method of dimension reduction. In this tool, dimension reduction is MDS and t-SNE"),
               a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-02.html"),
               a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-02.html"),br(),
               a("About similariy of categories (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-2.html"),
@@ -1289,7 +1316,8 @@ fluidPage(
               p("1. All numerical variables are changed into categorical variables"),
               p("2. All categorical variables are changed into dummy variables"),
               p("3. Correspondence analysis. Output is multi-dimensional data"),
-              p("4. MDS(sammon) as dimension reduction. Output is 2-dimension data"),
+              p("4. MDS(sammon) or t-SNE as dimension reduction. Output is 2-dimension data"),
+              p("* Correspondence analysis is not used as the method of dimension reduction. In this tool, dimension reduction is MDS and t-SNE"),
               a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-04.html"),
               a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-04.html"),br(),
               a("About similariy of categories (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-2.html"),
@@ -1304,6 +1332,12 @@ fluidPage(
               plotlyOutput("plot406"),
               plotlyOutput("plot408"),
               
+              
+              h4("Algorithm"),
+              p("1. All categorical variables are changed into dummy variables"),
+              p("2. Factor analysis to calculate factor loading. Output is multi-dimensional data"),
+              p("3. MDS(sammon) or t-SNE as dimension reduction. Output is 2-dimension data"),
+              p("* Factor analysis is not used as the method of dimension reduction. In this tool, dimension reduction is MDS and t-SNE"),
               
               a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E4-09.html"),
               a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J4-09.html"),br(),
@@ -1637,17 +1671,24 @@ fluidPage(
           a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-06.html")
         ),
         conditionalPanel(
-          condition = "input.Similarity_of_Names_in_Rows_and_Columns == 'Correspondence_MDS_Names1'",
-          p("Analysis of count data (0, 1, 2, 3,,,,), Not use for negative values and categorical values"),
+          condition = "input.Similarity_of_Names_in_Rows_and_Columns == 'Using_other_variables1'",
           plotlyOutput("plot405"),
-          h4("Contribution rate of eigenvalue"),
-          textOutput("text4051"),
-          h4("No of dimensions used in the model"),
-          p("If contribution rate of eigenvalue is over 0.01, the dimension is used."),
-          textOutput("text4052"),
+          downloadButton("downloadData6", "Download analyzed data"),
+          
+          conditionalPanel(
+            condition = "input.Make_variables == 'Correspondence5'",
+            p("Analysis of count data (0, 1, 2, 3,,,,), Not use for negative values and categorical values"),
+            h4("Contribution rate of eigenvalue"),
+            textOutput("text4051"),
+            h4("No of dimensions used in the model"),
+            p("If contribution rate of eigenvalue is over 0.01, the dimension is used."),
+            textOutput("text4052"),
+            
+          ),
           h4("Algorithm"),
-          p("1. Correspondence analysis. Output is multi-dimensional data."),
-          p("2. MDS(sammon) to change from high dimension into 2 dimension"),
+          p("1. SVD (Singular Value Decomposition) or Correspondence analysis. Output is multi-dimensional data."),
+          p("2. Bind two matrix. One is for row. The other is for column"),
+          p("3. MDS(sammon) or t-SNE to change from high dimension into 2 dimension"),
           a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-06.html"),
           a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-06.html"),br(),
           a("About the reason to use MDS after Correspondence analysis (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-4-2-4.html"),
