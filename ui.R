@@ -19,12 +19,13 @@ fluidPage(
       
       fileInput("file1", "Choose CSV File", multiple = TRUE,accept = c("text/csv", "text/comma-separated-values,text/plain",".csv")),
       conditionalPanel(
-        condition = "input.analysis == 'Similarity_of_Samples1' || input.analysis == 'Similarity_of_Names_in_Rows_and_Columns1'",
-        checkboxInput("Use_one_column_as_sample_name2", "Use one of the column as sample name", TRUE),
+        condition = "input.analysis == 'Similarity_of_Samples1'",
+        
+        checkboxInput("Use_one_column_as_sample_name2", "Use one of the column as sample name", FALSE),
         
         conditionalPanel(
           condition = "input.Use_one_column_as_sample_name2 == 1",
-          numericInput('sample_row2', 'Column number of sample name', "1"),
+          numericInput('sample_row2', 'Column number for  sample name', "1"),
         ),
         
         conditionalPanel(
@@ -42,34 +43,34 @@ fluidPage(
           conditionalPanel(
             condition = "input.Among_all_columns == 'Stratifeid_graph1'",
             
-            selectInput("Gtype", "Graph type",  choices = c("histgram", "scatter", "box_plot", "line_graph", "bar", "3D-scatter")),
+            selectInput("Gtype", "Graph type",  choices = c("histgram", "scatter", "box_plot", "bar", "3D-scatter")),
             conditionalPanel(
               condition = "input.Gtype == '3D-scatter'",
-              numericInput('Xcol12', 'X axis', "1"),
-              numericInput('Ycol12', 'Y axis', "1"),
-              numericInput('Zcol12', 'Z axis', "1"),
-              numericInput('Ccol12', 'Coloring (if "0" do not used colors)', "0"),
+              numericInput('Xcol12', 'Column number for X axis', "1"),
+              numericInput('Ycol12', 'Column number for Y axis', "1"),
+              numericInput('Zcol12', 'Column number for Z axis', "1"),
+              numericInput('Ccol12', 'Column number for coloring (if "0" do not used colors)', "0"),
             ),
             
             
             conditionalPanel(
               condition = "input.Gtype != '3D-scatter'",
               
-              numericInput('Lcol', 'Label', "1"),
+              numericInput('Lcol', 'Column number for  label', "1"),
               conditionalPanel(
                 condition = "input.Gtype != 'histgram'",
                 conditionalPanel(
                   condition = "input.Gtype != 'bar'",
                   conditionalPanel(
                     condition = "input.Gtype != 'line_graph'",
-                    numericInput('Xcol', 'X axis', "1"),
+                    numericInput('Xcol', 'Column number for X axis', "1"),
                   ),
                 ),
               ),
             
               
               
-              numericInput('Scol', 'area separate 1 (if "0" not separate)', "0"),
+              numericInput('Scol', 'Column number for area separate 1 (if "0" not separate)', "0"),
               conditionalPanel(
                 condition = "input.Gtype != 'scatter'",
                 
@@ -77,7 +78,7 @@ fluidPage(
                   condition = "input.Gtype != 'line_graph'",
                   conditionalPanel(
                     condition = "input.Scol > 0",
-                    numericInput('Scol2', 'area separate 2 (if "0" not separate)', "0"),
+                    numericInput('Scol2', 'Column number for area separate 2 (if "0" not separate)', "0"),
                   ),
                 ),
               ),
@@ -104,7 +105,7 @@ fluidPage(
               ),
               conditionalPanel(
                 condition = "input.Gtype == 'scatter' || input.Gtype == 'line_graph'",
-                numericInput('Ccol', 'Coloring (if "0" do not used colors)', "0"),
+                numericInput('Ccol', 'Column number for coloring (if "0" do not used colors)', "0"),
                 conditionalPanel(
                   condition = "input.Ccol > 0",
                   checkboxInput("NumericalToCategorcalSColor2", "If coloring varaiable is numerical, changing categorical varaiable", TRUE),
@@ -192,17 +193,17 @@ fluidPage(
                                Heat_map = "Heat_map1",
                                 Similarity_of_Variables_and_Categories = "Similarity_of_Variables_and_Categories1",
                                Similarity_of_Samples = "Similarity_of_Samples1",
-                               Similarity_of_Names_in_Rows_and_Columns = "Similarity_of_Names_in_Rows_and_Columns1",
+                               Many_vs_many = "Similarity_of_Names_in_Rows_and_Columns1",
                                Time_series = "Time_series1"),
                    selected = "Basic_EDA1"),
       
       conditionalPanel(
         condition = "input.analysis == 'Heat_map1'",
-        checkboxInput("Use_one_column_as_sample_name1", "Use one of the column as sample name", TRUE),
+        checkboxInput("Use_one_column_as_sample_name1", "Use one of the column as sample name", FALSE),
         
         conditionalPanel(
           condition = "input.Use_one_column_as_sample_name1 == 1",
-          numericInput('sample_row1', 'Column number of sample name', "1"),
+          numericInput('sample_row1', 'Column number for  sample name', "1"),
         ),
         conditionalPanel(
           condition = "input.Use_one_column_as_sample_name1 == 0",
@@ -224,7 +225,7 @@ fluidPage(
           
           conditionalPanel(
             condition = "input.Use_decreasing1 == 1",
-              numericInput('Row_number_decreasing1', 'Row number for decreasing', "1"),
+              numericInput('Row_number_decreasing1', 'Column number for decreasing', "1"),
           ),
         ),
       ),
@@ -331,7 +332,7 @@ fluidPage(
         
         conditionalPanel(
           condition = "input.Similarity_of_Variables_and_Categories == 'Between_label_column_and_others1'",
-          numericInput('Label_column', 'Label_column', "1"),
+          numericInput('Label_column', 'Column number for  label', "1"),
           radioButtons("Between_label_column_and_others", "Method",
                        choices = c(Scatter_plot = "Scatter_plot1",
                                    GLMM__Regression_analysis = "GLMM1",
@@ -457,14 +458,14 @@ fluidPage(
                                    Factor = "Factor1",
                                     MDS = "MDS1",
                                    tSNE = "MDS2",
-                                   nMDS = "nMDS1"),
+                                   NetworkMDS = "nMDS1"),
                        selected = "None1"),
           
           conditionalPanel(
             condition = "input.Dimension_Reduction == 'None1'",
-            numericInput('Xcol11', 'X axis', "1"),
-            numericInput('Ycol11', 'Y axis', "2"),
-            numericInput('Scol11', 'area separate 2 (if "0" not separate)', "0"),
+            numericInput('Xcol11', 'Column number for X axis', "1"),
+            numericInput('Ycol11', 'Column number for Y axis', "2"),
+            numericInput('Scol11', 'Column number for area separate (if "0" not separate)', "0"),
             conditionalPanel(
               condition = "input.Scol11 > '0'",
               p("If using methods for categorical variable, this tool changes numerical variable into categorical.
@@ -476,8 +477,8 @@ fluidPage(
           ),
           conditionalPanel(
             condition = "input.Dimension_Reduction ==  'Factor1'",
-            numericInput('Xcol13', 'X axis', "1"),
-            numericInput('Ycol13', 'Y axis', "2"),
+            numericInput('Xcol13', 'Column number for X axis', "1"),
+            numericInput('Ycol13', 'Column number for Y axis', "2"),
             numericInput('Factors2', 'Number of factors', "2"),
             radioButtons("Factor_Rotation2", "Rotation_Type",
                          choices = c(varimax = "varimax",
@@ -599,47 +600,83 @@ fluidPage(
       conditionalPanel(
         condition = "input.analysis == 'Similarity_of_Names_in_Rows_and_Columns1'",
         
-        radioButtons("Similarity_of_Names_in_Rows_and_Columns", "Method",
-                     choices = c(Using_other_variables = "Using_other_variables1",
-                                 Bipartite_graph = "Bipartite_graph1",
-                                 Independence_Test = "Independence_Test1",
-                                 Two_way_GLM = "Two_way_GLM1")),
+        radioButtons("Matrix_type", "Matrix type",
+                     choices = c(A_B = "A_B",
+                                 A_A = "A_A")),
         
+        a("About 'Matrix type' (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-4.html"),
+        a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-4.html"),
         conditionalPanel(
-          condition = "input.Similarity_of_Names_in_Rows_and_Columns == 'Bipartite_graph1'",
-          radioButtons("Layout2", "Layout",
-                       choices = c(layout_default = "layout_default1",
-                                   layout_as_bipartite = "layout_as_bipartite1",
-                                   layout_as_star = "layout_as_star1"),
-                       selected = "layout_default1")
-        ),
-        conditionalPanel(
-          condition = "input.Similarity_of_Names_in_Rows_and_Columns == 'Using_other_variables1'",
-          radioButtons("Make_variables", "Make variables",
-                       choices = c(SVD = "SVD5",
-                                   Correspondence = "Correspondence5")),
+          condition = "input.Matrix_type == 'A_B'",
+          radioButtons("A_B_method", "Method",
+                       choices = c(Using_other_variables = "Using_other_variables1",
+                                   Bipartite_graph = "Bipartite_graph1",
+                                   Independence_Test = "Independence_Test1",
+                                   Two_way_GLM = "Two_way_GLM1")),
           
-          radioButtons("Dimension_reduction5", "Dimension_reduction",
-                       choices = c(MDS = "MDS5",
-                                   tSNE = "tSNE5")),
           conditionalPanel(
-            condition = "input.Dimension_reduction5 == 'tSNE5'",
-            sliderInput("perplexity_value5",
-                        "perplexity of t-SNE",
-                        min = 1,  max = 1000, value = 1, step = 1)
+            condition = "input.A_B_method == 'Bipartite_graph1'",
+            
+            radioButtons("Layout2", "Layout",
+                         choices = c(layout_default = "layout_default1",
+                                     layout_as_bipartite = "layout_as_bipartite1",
+                                     layout_as_star = "layout_as_star1"),
+                         selected = "layout_default1"),
+            sliderInput("Minimum_value_of_width_of_edge1",
+                        "Minimum value of width of edge",
+                        min = 0,  max = 5, value = 2, step = 0.1)
+            
+            
+          ),
+          conditionalPanel(
+            condition = "input.A_B_method == 'Using_other_variables1'",
+            radioButtons("Make_variables", "Make variables",
+                         choices = c(SVD = "SVD5",
+                                     Correspondence = "Correspondence5")),
+            
+            radioButtons("Dimension_reduction5", "Dimension_reduction",
+                         choices = c(MDS = "MDS5",
+                                     tSNE = "tSNE5")),
+            conditionalPanel(
+              condition = "input.Dimension_reduction5 == 'tSNE5'",
+              sliderInput("perplexity_value5",
+                          "perplexity of t-SNE",
+                          min = 1,  max = 1000, value = 1, step = 1)
+            ),
+          ),
+          conditionalPanel(
+            condition = "input.A_B_method == 'Two_way_GLM1'",
+            radioButtons("family_link3", "family_link",
+                         choices = c(gaussian_identity = "gaussian_identity",
+                                     poisson_log = "poisson_log"),
+                         selected = "gaussian_identity"),
+            p("'gaussian_identity' = Similar to 'two-way anova without interaction' and 'Quantification theory type I'"),
+            p("'poisson_log' = Log_Linear_model. Y is count data")
           ),
         ),
+        
         conditionalPanel(
-          condition = "input.Similarity_of_Names_in_Rows_and_Columns == 'Two_way_GLM1'",
-          radioButtons("family_link3", "family_link",
-                       choices = c(gaussian_identity = "gaussian_identity",
-                                   poisson_log = "poisson_log"),
-                       selected = "gaussian_identity"),
-          p("'gaussian_identity' = Similar to 'two-way anova without interaction' and 'Quantification theory type I'"),
-          p("'poisson_log' = Log_Linear_model. Y is count data")
+          condition = "input.Matrix_type == 'A_A'",
+          radioButtons("A_A_method", "Method",
+                       choices = c(Monopartite_graph = "Monopartite_graph1",
+                                   MDS_sammon = "MDS_sammon1",
+                                   Eigen_value = "Eigen_value1")),
+          
+          conditionalPanel(
+            condition = "input.A_A_method == 'Monopartite_graph1'",
+            checkboxInput("Use_direction1", "Use direction", FALSE),
+            checkboxInput("Change_to_Largecolse", "Change large=far data into large=close data", FALSE),
+            sliderInput("Minimum_value_of_width_of_edge2",
+                        "Minimum value of width of edge",
+                        min = 0,  max = 5, value = 2, step = 0.1)
+          ),
+          conditionalPanel(
+            condition = "input.A_A_method == 'MDS_sammon1'",
+            checkboxInput("Change_to_Largefar", "Change large=close data into large=far data", FALSE),
+          ),
+          
         ),
       ),
-      
       
       
       conditionalPanel(
@@ -755,13 +792,13 @@ fluidPage(
             conditionalPanel(
               condition = "input.Using_01variable_in_table == 'Using_01variable_in_table_Y'",
   
-              numericInput('Row_of_01variable', 'Row of 01variable', "1"),
+              numericInput('Column_of_01variable', 'Column of 01variable', "1"),
             ),
             conditionalPanel(
               condition = "input.Using_01variable_in_table == 'Using_01variable_in_table_N'",
               
-              numericInput('Row_to_divide01', 'Row to divide 0 or 1', "1"),
-              p("If 1 is selected, value in 1st row is used to divide 0 or 1."),
+              numericInput('Column_to_divide01', 'Column to divide 0 or 1', "1"),
+              p("If 1 is selected, value in 1st column is used to divide 0 or 1."),
               numericInput('Value_to_0or1', 'Value to divide 0 or 1', "0"),
               p("If 30 is selected, value over 30 is 1. Value under 30 is 0."),
               
@@ -806,9 +843,9 @@ fluidPage(
           conditionalPanel(
             condition = "input.Method5 == 'Stratifeid_graph3'",
             
-            numericInput('Lcol3', 'Label', "1"),
-            numericInput('Ccol3', 'Coloring (if "0" do not used colors)', "0"),
-            numericInput('Scol3', 'area separate 1 (if "0" not separate)', "0"),
+            numericInput('Lcol3', 'Column number for label', "1"),
+            numericInput('Ccol3', 'Column number for coloring (if "0" do not used colors)', "0"),
+            numericInput('Scol3', 'Column number for area separate (if "0" not separate)', "0"),
             conditionalPanel(
               condition = "input.Ccol3 > 0",
               checkboxInput("NumericalToCategorcalSColor23", "If coloring varaiable is numerical, changing categorical varaiable", TRUE),
@@ -1622,7 +1659,7 @@ fluidPage(
             condition = "input.Dimension_Reduction == 'nMDS1'",
             p("Change from High dimension data into 2 dimension data using network graph algrithm. "),
             
-            a("About nMDS (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-3-1-1-1.html"),
+            a("About NetworkMDS (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-3-1-1-1.html"),
             a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-3-1-1-1.html"),br(),
           )
         )
@@ -1660,84 +1697,104 @@ fluidPage(
       conditionalPanel(
         condition = "input.analysis == 'Similarity_of_Names_in_Rows_and_Columns1'",
         
-        h3("Similarity of Names in Rows and Columns"),
         conditionalPanel(
-          condition = "input.Similarity_of_Names_in_Rows_and_Columns == 'Bipartite_graph1'",
-          p("Analysis of count data (0, 1, 2, 3,,,,), Not use for negative values and categorical values"),
-          p("Values are used as thickness of lines. Small values are not used as lines."),
-          plotOutput("plot401"),
-          
-          a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-06.html"),
-          a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-06.html")
-        ),
-        conditionalPanel(
-          condition = "input.Similarity_of_Names_in_Rows_and_Columns == 'Using_other_variables1'",
-          plotlyOutput("plot405"),
-          downloadButton("downloadData6", "Download analyzed data"),
-          
+          condition = "input.Matrix_type == 'A_B'",
           conditionalPanel(
-            condition = "input.Make_variables == 'Correspondence5'",
+            condition = "input.A_B_method == 'Bipartite_graph1'",
+            p("value of matrix is changed into the width of the edge, Cannot use negative values and categorical values"),
+            plotOutput("plot401"),
+            
+            
+            
+            a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-06.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-06.html")
+          ),
+          conditionalPanel(
+            condition = "input.A_B_method == 'Using_other_variables1'",
+            plotlyOutput("plot405"),
+            downloadButton("downloadData6", "Download analyzed data"),
+            
+            conditionalPanel(
+              condition = "input.Make_variables == 'Correspondence5'",
+              p("Analysis of count data (0, 1, 2, 3,,,,), Not use for negative values and categorical values"),
+              h4("Contribution rate of eigenvalue"),
+              textOutput("text4051"),
+              h4("No of dimensions used in the model"),
+              p("If contribution rate of eigenvalue is over 0.01, the dimension is used."),
+              textOutput("text4052"),
+              
+            ),
+            h4("Algorithm"),
+            p("1. SVD (Singular Value Decomposition) or Correspondence analysis. Output is multi-dimensional data."),
+            p("2. Bind two matrix. One is for row. The other is for column"),
+            p("3. MDS(sammon) or t-SNE to change from high dimension into 2 dimension"),
+            a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-06.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-06.html"),br(),
+            a("About the reason to use MDS after Correspondence analysis (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-4-2-4.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-4-2-4.html")
+          ),
+          conditionalPanel(
+            condition = "input.A_B_method == 'Independence_Test1'",
             p("Analysis of count data (0, 1, 2, 3,,,,), Not use for negative values and categorical values"),
-            h4("Contribution rate of eigenvalue"),
-            textOutput("text4051"),
-            h4("No of dimensions used in the model"),
-            p("If contribution rate of eigenvalue is over 0.01, the dimension is used."),
-            textOutput("text4052"),
             
-          ),
-          h4("Algorithm"),
-          p("1. SVD (Singular Value Decomposition) or Correspondence analysis. Output is multi-dimensional data."),
-          p("2. Bind two matrix. One is for row. The other is for column"),
-          p("3. MDS(sammon) or t-SNE to change from high dimension into 2 dimension"),
-          a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-06.html"),
-          a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-06.html"),br(),
-          a("About the reason to use MDS after Correspondence analysis (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-4-2-4.html"),
-          a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-4-2-4.html")
-        ),
-        conditionalPanel(
-          condition = "input.Similarity_of_Names_in_Rows_and_Columns == 'Independence_Test1'",
-          p("Analysis of count data (0, 1, 2, 3,,,,), Not use for negative values and categorical values"),
-          
-          verbatimTextOutput("text403"),
-          
-          a("About Two_way_GLM (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-3-3-1.html"),
-          a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3-3-1.html")
-        ),
-        conditionalPanel(
-          condition = "input.Similarity_of_Names_in_Rows_and_Columns == 'Two_way_GLM1'",
-          verbatimTextOutput("text402"),
-          
-          
-          conditionalPanel(
-            condition = "input.family_likn3 == 'gaussian_identity'",
-            p("Values are used as Label(Y) of the model.
-            Names are used as features(X)."),
+            verbatimTextOutput("text403"),
             
-            a("About Quantification theory type I (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-6-1.html"),
-            a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-6-1.html")
+            a("About Two_way_GLM (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-3-3-1.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3-3-1.html")
           ),
           conditionalPanel(
-            condition = "input.family_likn3 != 'gaussian_identity'",
-            p("Analysis of count data (0, 1, 2, 3,,,,), Not use for negative values and categorical values"),
-            p("Values are used as Label(Y) of the model.
-            Names are used as features(X)."),
-            p("Count values are used as Label(Y) of the model.
-            Names are used as features(X)."),
+            condition = "input.A_B_method == 'Two_way_GLM1'",
+            verbatimTextOutput("text402"),
             
-            a("About Loglinear_model (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-3-3-2.html"),
-            a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3-3-2.html")
+            
+            conditionalPanel(
+              condition = "input.family_likn3 == 'gaussian_identity'",
+              p("Values are used as Label(Y) of the model.
+              Names are used as features(X)."),
+              
+              a("About Quantification theory type I (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-6-1.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-6-1.html")
+            ),
+            conditionalPanel(
+              condition = "input.family_likn3 != 'gaussian_identity'",
+              p("Analysis of count data (0, 1, 2, 3,,,,), Not use for negative values and categorical values"),
+              p("Values are used as Label(Y) of the model.
+              Names are used as features(X)."),
+              p("Count values are used as Label(Y) of the model.
+              Names are used as features(X)."),
+              
+              a("About Loglinear_model (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-3-3-2.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3-3-2.html")
+            ),
+            a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-06.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-06.html")
           ),
-          a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-06.html"),
-          a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-06.html")
-        ),
-        conditionalPanel(
-          condition = "input.Similarity_of_Names_in_Rows_and_Columns == 'Heat_map_Clustering1'",
-          plotlyOutput("plot403"),
           
-          a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-06.html"),
-          a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-06.html")
         ),
         
+        conditionalPanel(
+          condition = "input.Matrix_type == 'A_A'",
+          conditionalPanel(
+            condition = "input.A_A_method == 'Monopartite_graph1'",
+            p("The data is needed to be the adjacency matrix. (large = close)"),
+            #selectInput("network_library6", "Library of network",  choices = c("visNetwork", "igraph")),
+            plotOutput("plot4012"),
+            a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E5-04.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J5-04.html"),
+          ),
+          conditionalPanel(
+            condition = "input.A_A_method == 'MDS_sammon1'",
+            p("The data is needed to be the distance matrix. (large = far)"),
+            plotlyOutput("plot4014"),
+            a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E4-04.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J4-04.html"),
+          ),
+          conditionalPanel(
+            condition = "input.A_A_method == 'Eigen_value1'",
+            verbatimTextOutput("text4013"),
+            downloadButton("downloadData4013", "Download analyzed data"),
+          ),
+        ),
       ),
       
       conditionalPanel(

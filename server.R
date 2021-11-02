@@ -1987,7 +1987,6 @@ shinyServer(function(input, output) {
         if(input$Between_label_column_and_others == "Hidden1"){
           if(input$finder == "Hidden_PCA1"){
       
-            req(input$file1)
             
             if(input$sep2 == "Separator_Comma"){sep <- ","}
             if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
@@ -2458,174 +2457,278 @@ shinyServer(function(input, output) {
   
   output$plot401 <- renderPlot({
     if(input$analysis == "Similarity_of_Names_in_Rows_and_Columns1"){
-      if(input$Similarity_of_Names_in_Rows_and_Columns == 'Bipartite_graph1') {
+      if(input$Matrix_type == 'A_B') {
+        if(input$A_B_method == 'Bipartite_graph1') {
       
-        req(input$file1)
-        
-        library(igraph)
-        
-        if(input$sep2 == "Separator_Comma"){sep <- ","}
-        if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
-        if(input$sep2 == "Separator_Tab"){sep <- "\t"}
-        
-        
-        
-        if(input$Use_one_column_as_sample_name2 == 1){
+          req(input$file1)
+          
+          library(igraph)
+          
+          if(input$sep2 == "Separator_Comma"){sep <- ","}
+          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+          
+          
+          
           DM <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=input$sample_row2)
-        } else {
-          DM <- read.csv(input$file1$datapath, header=T,sep = sep)
-        }
-        
-        DM.mat = as.matrix(DM)/max(DM)*5
-        DM.mat[DM.mat<1] <- 0
-        DM.g<-graph_from_incidence_matrix(DM.mat,weighted=T)
-        V(DM.g)$color <- c("steel blue", "orange")[V(DM.g)$type+1]
-        V(DM.g)$shape <- c("square", "circle")[V(DM.g)$type+1]
-        if(input$Layout2 == "layout_default1"){
-          plot(DM.g, edge.width=E(DM.g)$weight) 
-        }else if(input$Layout2 == "layout_as_bipartite1"){
-          plot(DM.g, edge.width=E(DM.g)$weight, layout = layout_as_bipartite)
-        }else if(input$Layout2 == "layout_as_star1"){
-          plot(DM.g, edge.width=E(DM.g)$weight, layout = layout_as_star) 
+          
+          
+          DM.mat = as.matrix(DM)/max(DM)*5
+          DM.mat[DM.mat<input$Minimum_value_of_width_of_edge1] <- 0
+          DM.g<-graph_from_incidence_matrix(DM.mat,weighted=T)
+          V(DM.g)$color <- c("steel blue", "orange")[V(DM.g)$type+1]
+          V(DM.g)$shape <- c("square", "circle")[V(DM.g)$type+1]
+          if(input$Layout2 == "layout_default1"){
+            plot(DM.g, edge.width=E(DM.g)$weight) 
+          }else if(input$Layout2 == "layout_as_bipartite1"){
+            plot(DM.g, edge.width=E(DM.g)$weight, layout = layout_as_bipartite)
+          }else if(input$Layout2 == "layout_as_star1"){
+            plot(DM.g, edge.width=E(DM.g)$weight, layout = layout_as_star) 
+          }
         }
       }
     }
   })
   
+  
   output$plot405 <- renderPlotly({
     if(input$analysis == "Similarity_of_Names_in_Rows_and_Columns1"){
-      if(input$Similarity_of_Names_in_Rows_and_Columns == 'Using_other_variables1') {
+      if(input$Matrix_type == 'A_B') {
+        if(input$A_B_method == 'Using_other_variables1') {
       
-        req(input$file1)
-        
-        if(input$sep2 == "Separator_Comma"){sep <- ","}
-        if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
-        if(input$sep2 == "Separator_Tab"){sep <- "\t"}
-        
-        
-        if(input$Use_one_column_as_sample_name2 == 1){
-          Data <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=input$sample_row2)
-        } else {
-          Data <- read.csv(input$file1$datapath, header=T,sep = sep)
-        }
-        library(MASS)
-        library(ggplot2)
-        
-        
-        
-        if(input$Make_variables == "Correspondence5"){
-          pc <- corresp(Data,nf=min(ncol(Data),nrow(Data)))
-          pc1 <- data.frame(pc$cscore)
-          pc1 <- transform(pc1 ,Name1 = rownames(pc1), Name2 = "col")
-          pc2 <- data.frame(pc$rscore)
-          pc2 <- transform(pc2 ,Name1 = rownames(pc2), Name2 = "row")
-          Data1 <- rbind(pc1,pc2)
+          req(input$file1)
           
-          ei1 <- round(pc$cor^2/sum(pc$cor^2),2)
-          output$text4051 <- renderText(ei1)
-          for (i in 1: length(ei1)){
-            if(ei1[i] > 0.001){
-              n1 <- i
+          if(input$sep2 == "Separator_Comma"){sep <- ","}
+          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+          
+          Data <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=1)
+          
+          library(MASS)
+          library(ggplot2)
+          
+          
+          
+          if(input$Make_variables == "Correspondence5"){
+            pc <- corresp(Data,nf=min(ncol(Data),nrow(Data)))
+            pc1 <- data.frame(pc$cscore)
+            pc1 <- transform(pc1 ,Name1 = rownames(pc1), Name2 = "col")
+            pc2 <- data.frame(pc$rscore)
+            pc2 <- transform(pc2 ,Name1 = rownames(pc2), Name2 = "row")
+            Data1 <- rbind(pc1,pc2)
+            
+            ei1 <- round(pc$cor^2/sum(pc$cor^2),2)
+            output$text4051 <- renderText(ei1)
+            for (i in 1: length(ei1)){
+              if(ei1[i] > 0.001){
+                n1 <- i
+              }
             }
+            output$text4052 <- renderText(n1)
+          } else if(input$Make_variables == "SVD5"){
+            Data1 = as.matrix(Data)
+            Pt <- svd(Data1)
+            PtB = Pt$u
+            PtA = Pt$v
+            A = data.frame(PtA)
+            n1 <- ncol(A)
+            A$Name1 <-colnames(Data1)
+            A$Name2 <- "col"
+            B = data.frame(PtB)
+            B$Name1 <-rownames(Data1)
+            B$Name2 <- "row"
+            Data1 <- rbind(A,B)
           }
-          output$text4052 <- renderText(n1)
-        } else if(input$Make_variables == "SVD5"){
-          Data1 = as.matrix(Data)
-          Pt <- svd(Data1)
-          PtB = Pt$u
-          PtA = Pt$v
-          A = data.frame(PtA)
-          n1 <- ncol(A)
-          A$Name1 <-colnames(Data1)
-          A$Name2 <- "col"
-          B = data.frame(PtB)
-          B$Name1 <-rownames(Data1)
-          B$Name2 <- "row"
-          Data1 <- rbind(A,B)
-        }
-        
-        
-        output$downloadData6 <- downloadHandler(
-          filename = function() {
-            paste("row_column_analysis_data", ".csv", sep = "")
-          },
-          content = function(file) {
-            write.csv(Data1, file, row.names = FALSE)
+          
+          
+          output$downloadData6 <- downloadHandler(
+            filename = function() {
+              paste("row_column_analysis_data", ".csv", sep = "")
+            },
+            content = function(file) {
+              write.csv(Data1, file, row.names = FALSE)
+            }
+          )
+          if(input$Dimension_reduction5 == "MDS5"){
+            Data11 <- Data1[,1:n1]
+            Data11_dist <- dist(Data11)
+            sn <- sammon(Data11_dist)
+            output <- sn$points
+            Data2 <- cbind(output, Data1)
+            gplot <- ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=Name1)) + geom_text(aes(colour=Name2)) + labs(y="axis2",x="axis1"))
+          }else if(input$Dimension_reduction5 == "tSNE5"){
+            library(Rtsne)
+            ts <- Rtsne(Data1[,1:n1], perplexity = input$perplexity_value5)
+            output <- ts$Y
+            Data2 <- cbind(output, Data1)
+            gplot <- ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=Name1)) + geom_text(aes(colour=Name2)) + labs(y="axis2",x="axis1"))
+          
           }
-        )
-        if(input$Dimension_reduction5 == "MDS5"){
-          Data11 <- Data1[,1:n1]
-          Data11_dist <- dist(Data11)
-          sn <- sammon(Data11_dist)
-          output <- sn$points
-          Data2 <- cbind(output, Data1)
-          gplot <- ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=Name1)) + geom_text(aes(colour=Name2)) + labs(y="axis2",x="axis1"))
-        }else if(input$Dimension_reduction5 == "tSNE5"){
-          library(Rtsne)
-          ts <- Rtsne(Data1[,1:n1], perplexity = input$perplexity_value5)
-          output <- ts$Y
-          Data2 <- cbind(output, Data1)
-          gplot <- ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=Name1)) + geom_text(aes(colour=Name2)) + labs(y="axis2",x="axis1"))
-        
+          gplot
         }
-        gplot
       }
     }
   })
   
   output$text403 <- renderPrint({
     if(input$analysis == "Similarity_of_Names_in_Rows_and_Columns1"){
-      if(input$Similarity_of_Names_in_Rows_and_Columns == 'Independence_Test1') {
+      if(input$Matrix_type == 'A_B') {
+        if(input$A_B_method == 'Independence_Test1') {
         
-        req(input$file1)
-        
-        if(input$sep2 == "Separator_Comma"){sep <- ","}
-        if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
-        if(input$sep2 == "Separator_Tab"){sep <- "\t"}
-        
-        if(input$Use_one_column_as_sample_name2 == 1){
-          Data <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=input$sample_row2)
-        } else {
-          Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+          req(input$file1)
+          
+          if(input$sep2 == "Separator_Comma"){sep <- ","}
+          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+          
+          Data <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=1)
+          
+          
+          chisq.test(Data)
         }
-        
-        chisq.test(Data)
       }
     }
   })
   output$text402 <- renderPrint({
     if(input$analysis == "Similarity_of_Names_in_Rows_and_Columns1"){
-      if(input$Similarity_of_Names_in_Rows_and_Columns == 'Two_way_GLM1') {
+      if(input$Matrix_type == 'A_B') {
+        if(input$A_B_method == 'Two_way_GLM1') {
       
-        req(input$file1)
-        
-        if(input$sep2 == "Separator_Comma"){sep <- ","}
-        if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
-        if(input$sep2 == "Separator_Tab"){sep <- "\t"}
-        
-        Data <- read.csv(input$file1$datapath, header=T,sep = sep)
-        
-        if(input$Use_one_column_as_sample_name2 == 1){
+          req(input$file1)
+          
+          if(input$sep2 == "Separator_Comma"){sep <- ","}
+          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+          
+          Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+          
           RowName <- colnames(Data[input$sample_row2])
-        } else {
-          RowName <- "Index_No"
-          Data$Index_No <- row.names(Data)
-        }
-        
-        library(tidyr)
-        library(MASS)
-        library(lme4)
-        
-        Data1 <- tidyr::gather(Data, key="ColName", value = Val, -RowName)
-        if(input$family_link3 == "gaussian_identity"){
-          anova(step(glm(Val~., data=Data1,family=gaussian))) 
-        } else {
-          anova(step(glm(Val~.^2, data=Data1,family=poisson))) 
+          
+          
+          library(tidyr)
+          library(MASS)
+          library(lme4)
+          
+          Data1 <- tidyr::gather(Data, key="ColName", value = Val, -RowName)
+          if(input$family_link3 == "gaussian_identity"){
+            anova(step(glm(Val~., data=Data1,family=gaussian))) 
+          } else {
+            anova(step(glm(Val~.^2, data=Data1,family=poisson))) 
+          }
         }
       }
     }
   })
   
+  
+  output$plot4012 <- renderPlot({
+    if(input$analysis == "Similarity_of_Names_in_Rows_and_Columns1"){
+      if(input$Matrix_type == 'A_A') {
+        if(input$A_A_method == 'Monopartite_graph1') {
+          
+          req(input$file1)
+          
+          library(igraph)
+          
+          if(input$sep2 == "Separator_Comma"){sep <- ","}
+          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+          
+          
+          
+          DM <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=1)
+          
+          DM <- as.matrix(DM)
+          if(input$Change_to_Largecolse == 1){
+            DM <- (max(DM) - DM)
+            diag(DM) <- 0
+          }
+          DM.mat = DM/max(DM)*5
+          DM.mat[DM.mat<input$Minimum_value_of_width_of_edge2] <- 0
+          #if(input$network_library6 =="igraph"){
+          
+          if(input$Use_direction1 == 0){
+            DM.g<-graph.adjacency(DM.mat,weighted=T, mode = "undirected")
+            plot(DM.g, edge.width=E(DM.g)$weight)
+          } else {
+            DM.g<-graph.adjacency(DM.mat,weighted=T, mode = "directed")
+            plot(DM.g, edge.width=E(DM.g)$weight)
+          }
+          #}
+        }
+      }
+    }
+  })
+  
+  output$plot4014 <- renderPlotly({
+    if(input$analysis == "Similarity_of_Names_in_Rows_and_Columns1"){
+      if(input$Matrix_type == 'A_A') {
+        if(input$A_A_method == 'MDS_sammon1') {
+          
+          req(input$file1)
+          
+          library(ggplot2)
+          library(MASS)
+          
+          if(input$sep2 == "Separator_Comma"){sep <- ","}
+          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+          
+          
+          
+          DM <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=1)
+          
+          
+          name1 <-  row.names(DM)
+          DM <- as.matrix(DM)
+          
+          if(input$Change_to_Largefar == 1){
+            DM <- (max(DM) - DM)/(max(DM)-min(DM))+0.0000001
+            diag(DM) <- 0
+          }
+          sn <- sammon(DM)
+          Data2 <- sn$points
+          Data2 <- cbind.data.frame(Data2 ,name1)
+          ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=name1)) + geom_text()+ labs(y="axis2",x="axis1"))
+        }
+      }
+    }
+  })
+  output$text4013 <- renderPrint({
+    if(input$analysis == "Similarity_of_Names_in_Rows_and_Columns1"){
+      if(input$Matrix_type == 'A_A') {
+        if(input$A_A_method == 'Eigen_value1') {
+          
+          req(input$file1)
+          
+          library(ggplot2)
+          library(MASS)
+          
+          if(input$sep2 == "Separator_Comma"){sep <- ","}
+          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+          
+          
+          
+          DM <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=1)
+          
+          name1 <-  row.names(DM)
+          DM <- as.matrix(DM)
+          Data2 <- eigen(DM)
+          Data3 <- cbind.data.frame(name1, Data2$vectors)
+          output$downloadData4013 <- downloadHandler(
+            filename = function() {
+              paste("Eigen_vectors", ".csv", sep = "")
+            },
+            content = function(file) {
+              write.csv(Data3, file, row.names = FALSE)
+            }
+          )
+          Data2
+        }
+      }
+    }
+  })
   
   output$plot702 <- renderPlotly({
     if(input$analysis == "Time_series1"){
@@ -2912,9 +3015,9 @@ shinyServer(function(input, output) {
           
           
           if(input$Using_01variable_in_table == "Using_01variable_in_table_Y"){
-            Data$Value01 <- Data[,input$Row_of_01variable]
+            Data$Value01 <- Data[,input$Column_of_01variable]
           } else {
-            Data$Value01 <- ifelse(Data[,input$Row_to_divide01] > input$Value_to_0or1, 1, 0)
+            Data$Value01 <- ifelse(Data[,input$Column_to_divide01] > input$Value_to_0or1, 1, 0)
           }
           Data$Index <-as.numeric(row.names(Data)) 
           Data$Value02 <- Data[,input$Value_to_analyze]
