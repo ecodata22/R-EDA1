@@ -527,6 +527,8 @@ fluidPage(
                                            DBSCAN = "clust2",
                                            One_class_SVM_Clustering = "One_class_SVM_Clustering1"),
                                selected = "clust1"),
+                  
+                  checkboxInput("Normalization_use2", "Use normalization", FALSE),
                   conditionalPanel(
                     condition = "input.Clustering == 'clust3' || input.Clustering == 'clust1'",
                     numericInput('k', 'Number of Clusters', 2)
@@ -534,9 +536,10 @@ fluidPage(
                   
                   conditionalPanel(
                     condition = "input.Clustering == 'clust2'",
-                    sliderInput("eps_value",
-                                "eps of DBSCAN",
-                                min = 0,  max = 1, value = 0.1, step = 0.01)
+                    numericInput('eps_value', 'eps of DBSCAN', 0.1),
+                    #sliderInput("eps_value",
+                    #            "eps of DBSCAN",
+                    #            min = 0,  max = 1, value = 0.1, step = 0.01)
                   ),
                   
                   conditionalPanel(
@@ -579,7 +582,8 @@ fluidPage(
         
         conditionalPanel(
           condition = "input.Dimension_for_clustering == 'Dimension_All'",
-           
+          
+          checkboxInput("Normalization_use3", "Use normalization", FALSE),
           radioButtons("Method_Dimension_All", "Method",
                        choices = c(hclust = "hclust1",
                                    DBSCAN = "DBSCAN1"),
@@ -589,9 +593,10 @@ fluidPage(
         
           conditionalPanel(
             condition = "input.Method_Dimension_All == 'DBSCAN1'",  
-            sliderInput("eps_value2",
-                        "eps of DBSCAN",
-                        min = 0,  max = 1, value = 0.1, step = 0.01)
+            numericInput('eps_value2', 'eps of DBSCAN', 0.1),
+            #sliderInput("eps_value2",
+            #            "eps of DBSCAN",
+            #            min = 0,  max = 1, value = 0.1, step = 0.01)
           ),
         ),
       ),

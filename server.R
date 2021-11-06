@@ -2103,8 +2103,10 @@ shinyServer(function(input, output) {
           Data2 <- dummy.data.frame(Data1)
           Data3 <- Data2
           n <- ncol(Data2)
-          for (i in 1:n) {
-            Data3[,i] <- (Data2[,i]-min(Data2[,i]))/(max(Data2[,i])-min(Data2[,i]))
+          if(input$Normalization_use2 == 1){
+            for (i in 1:n) {
+              Data3[,i] <- (Data2[,i]-min(Data2[,i]))/(max(Data2[,i])-min(Data2[,i]))
+            }
           }
           
           
@@ -2413,28 +2415,25 @@ shinyServer(function(input, output) {
           Data <- read.csv(input$file1$datapath, header=T,sep = sep)
         }
         
+        Data2 <- dummy.data.frame(Data)
+        Data3 <- Data2
+        if(input$Normalization_use3 == 1){
+          for (i in 1:ncol(Data2)) {
+            Data3[,i] <- (Data2[,i]-min(Data2[,i]))/(max(Data2[,i])-min(Data2[,i]))
+          }
+        }
         
         if(input$Method_Dimension_All == "hclust1"){
           
           library(ggdendro)
           
-          Data10 <- Data
-          Data11 <- Data10
-          for (i in 1:ncol(Data10)) {
-            Data11[,i] <- (Data10[,i] - min(Data10[,i]))/(max(Data10[,i]) - min(Data10[,i]))
-          } 
-          Data11_dist <- dist(Data11)
+          Data11_dist <- dist(Data3)
           hc <- hclust(Data11_dist, "ward.D2")
           ggplotly(ggdendrogram(hc, segments = TRUE, labels = TRUE, leaf_labels = TRUE, rotate = FALSE, theme_dendro = TRUE))
           
         } else{
           library(dbscan)
           
-          Data2 <- dummy.data.frame(Data)
-          Data3 <- Data2
-          for (i in 1:ncol(Data2)) {
-            Data3[,i] <- (Data2[,i]-min(Data2[,i]))/(max(Data2[,i])-min(Data2[,i]))
-          }
           dbs <- dbscan(Data3, eps = input$eps_value2)
           Data7 <- transform(clust = dbs$cluster, Data)
           
