@@ -34,12 +34,69 @@ fluidPage(
         ),
       ),
       
+      
+      
+      
+      selectInput("analysis", "Analysis",
+                   choices = c(Basic_EDA ="Basic_EDA1",
+                               Heat_map = "Heat_map1",
+                                Similarity_of_Variables_and_Categories = "Similarity_of_Variables_and_Categories1",
+                               Similarity_of_Samples = "Similarity_of_Samples1",
+                               Many_vs_many = "Similarity_of_Names_in_Rows_and_Columns1",
+                               Time_series = "Time_series1"),
+                   selected = "Basic_EDA1"),
+      
+      conditionalPanel(
+        condition = "input.analysis == 'Heat_map1'",
+        checkboxInput("Use_one_column_as_sample_name1", "Use one of the column as sample name", FALSE),
+        
+        conditionalPanel(
+          condition = "input.Use_one_column_as_sample_name1 == 1",
+          numericInput('sample_row1', 'Column number for  sample name', "1"),
+        ),
+        conditionalPanel(
+          condition = "input.Use_one_column_as_sample_name1 == 0",
+          p("Index is used as sample name.")
+        ),
+
+        selectInput("Change_categorical_data_into", "Change categorical data into",
+                     choices = c(Factor_Level = "Factor_Level1",
+                                 Dummy_Varaiables = "Dummy_Varaiables1")),br(),
+        checkboxInput("Normalization_use", "Use normalization", FALSE),
+        
+        checkboxInput("AddClusteringRow", "Add clustering methods for rows", FALSE),
+        
+        checkboxInput("AddClusteringCol", "Add clustering methods for columns", FALSE),
+        
+        conditionalPanel(
+          condition = "input.AddClusteringCol == 0",
+            checkboxInput("Use_decreasing1", "Use decreasing the columns", FALSE),
+          
+          conditionalPanel(
+            condition = "input.Use_decreasing1 == 1",
+              numericInput('Row_number_decreasing1', 'Column number for decreasing', "1"),
+          ),
+        ),
+      ),
+      
       conditionalPanel(
         condition = "input.analysis == 'Similarity_of_Variables_and_Categories1'",
         
+        selectInput("Similarity_of_Variables_and_Categories", "Method type",
+                     choices = c(Among_all_columns = "Among_all_columns1",
+                                 Between_label_column_and_others = "Between_label_column_and_others1"
+                     )
+        ),
+        
         conditionalPanel(
           condition = "input.Similarity_of_Variables_and_Categories == 'Among_all_columns1'",
-          
+          selectInput("Among_all_columns", "Method",
+                       choices = c(Line_graph = "Line_graph1",
+                                   Stratifeid_graph = "Stratifeid_graph1",
+                                   Variable_Network = "Variable_Network1",
+                                   Using_Dimension_reduction = "Using_MDS1",
+                                   Log_Linear = "Log_Linear1")
+          ),
           conditionalPanel(
             condition = "input.Among_all_columns == 'Stratifeid_graph1'",
             
@@ -67,7 +124,7 @@ fluidPage(
                   ),
                 ),
               ),
-            
+              
               
               
               numericInput('Scol', 'Column number for area separate 1 (if "0" not separate)', "0"),
@@ -127,12 +184,12 @@ fluidPage(
                   checkboxInput("Using_GLM", "Using GLM", FALSE),
                   conditionalPanel(
                     condition = "input.Using_GLM == 1",
-                    radioButtons("family_link2", "family_link",
-                                 choices = c(gaussian_identity = "gaussian_identity",
-                                             poisson_log = "poisson_log",
-                                             binomial_logit = "binomial_logit",
-                                             binomial_probit = "binomial_probit"),
-                                 selected = "gaussian_identity"),
+                    selectInput("family_link2", "family_link",
+                                choices = c(gaussian_identity = "gaussian_identity",
+                                            poisson_log = "poisson_log",
+                                            binomial_logit = "binomial_logit",
+                                            binomial_probit = "binomial_probit"),
+                                selected = "gaussian_identity"),
                     p("'gaussian_identity' = Simple mutli regression analysis"),
                     p("'poisson_log' = Regression analysis for count data of Y"),
                     p("'binomial_logit' = Logistic regression analysis")
@@ -147,118 +204,17 @@ fluidPage(
               )
             )
           ),
-        )
-      ),
-      
-      
-      conditionalPanel(
-        condition = "input.analysis == 'Similarity_of_Variables_and_Categories1'",
-        conditionalPanel(
-          condition = "input.Similarity_of_Variables_and_Categories == 'Among_all_columns1'",
-          conditionalPanel(
-            condition = "input.Among_all_columns == 'Variable_Network1'",
-            conditionalPanel(
-              condition = "input.Variable_Network == 'Bayesian_Network1'",
-              radioButtons("Structure_Learning", "Structure_Learning",
-                           choices = c(stable_version  = "stable_version1",
-                                       Grow_Shrink = "Grow_Shrink1",
-                                       Incremental_Association_Markov_Blanket  = "Incremental_Association_Markov_Blanket1",
-                                       Fast_Incremental_Association  = "Fast_Incremental_Association1",
-                                       Interleaved_Incremental_Association = "Interleaved_Incremental_Association1",
-                                       Incremental_Association_with_FDR_Correction = "Incremental_Association_with_FDR_Correction1",
-                                       Max_Min_Parents_and_Children = "Max_Min_Parents_and_Children1",
-                                       Semi_Interleaved_Hiton_PC = "Semi_Interleaved_Hiton_PC1",
-                                       Hybrid_Parents_and_Children  = "Hybrid_Parents_and_Children1",
-                                       Hill_Climbing  = "Hill_Climbing1",
-                                       Tabu_Search = "Tabu_Search1",
-                                       Max_Min_Hill_Climbing = "Max_Min_Hill_Climbing1",
-                                       Hybrid_HPC = "Hybrid_HPC1",
-                                       General_2_Phase_Restricted_Maximization = "General_2_Phase_Restricted_Maximization1",
-                                       Chow_Liu = "Chow_Liu1",
-                                       ARACNE = "ARACNE1"))
-            ),
-          ),
-        ),
-      ),
-      
-      
-      
-      
-      
-      
-      
-      
-      radioButtons("analysis", "Analysis",
-                   choices = c(Basic_EDA ="Basic_EDA1",
-                               Heat_map = "Heat_map1",
-                                Similarity_of_Variables_and_Categories = "Similarity_of_Variables_and_Categories1",
-                               Similarity_of_Samples = "Similarity_of_Samples1",
-                               Many_vs_many = "Similarity_of_Names_in_Rows_and_Columns1",
-                               Time_series = "Time_series1"),
-                   selected = "Basic_EDA1"),
-      
-      conditionalPanel(
-        condition = "input.analysis == 'Heat_map1'",
-        checkboxInput("Use_one_column_as_sample_name1", "Use one of the column as sample name", FALSE),
-        
-        conditionalPanel(
-          condition = "input.Use_one_column_as_sample_name1 == 1",
-          numericInput('sample_row1', 'Column number for  sample name', "1"),
-        ),
-        conditionalPanel(
-          condition = "input.Use_one_column_as_sample_name1 == 0",
-          p("Index is used as sample name.")
-        ),
-
-        radioButtons("Change_categorical_data_into", "Change categorical data into",
-                     choices = c(Factor_Level = "Factor_Level1",
-                                 Dummy_Varaiables = "Dummy_Varaiables1")),br(),
-        checkboxInput("Normalization_use", "Use normalization", FALSE),
-        
-        checkboxInput("AddClusteringRow", "Add clustering methods for rows", FALSE),
-        
-        checkboxInput("AddClusteringCol", "Add clustering methods for columns", FALSE),
-        
-        conditionalPanel(
-          condition = "input.AddClusteringCol == 0",
-            checkboxInput("Use_decreasing1", "Use decreasing the columns", FALSE),
-          
-          conditionalPanel(
-            condition = "input.Use_decreasing1 == 1",
-              numericInput('Row_number_decreasing1', 'Column number for decreasing', "1"),
-          ),
-        ),
-      ),
-      
-      conditionalPanel(
-        condition = "input.analysis == 'Similarity_of_Variables_and_Categories1'",
-        
-        radioButtons("Similarity_of_Variables_and_Categories", "Method type",
-                     choices = c(Among_all_columns = "Among_all_columns1",
-                                 Between_label_column_and_others = "Between_label_column_and_others1"
-                     )
-        ),
-        
-        conditionalPanel(
-          condition = "input.Similarity_of_Variables_and_Categories == 'Among_all_columns1'",
-          radioButtons("Among_all_columns", "Method",
-                       choices = c(Line_graph = "Line_graph1",
-                                   Stratifeid_graph = "Stratifeid_graph1",
-                                   Variable_Network = "Variable_Network1",
-                                   Using_Dimension_reduction = "Using_MDS1",
-                                   Log_Linear = "Log_Linear1")
-          ),
           
           conditionalPanel(
             condition = "input.Among_all_columns == 'Using_MDS1'",
-            radioButtons("Using_MDS", "Analysis_of_variables",
+            selectInput("Using_MDS", "Analysis_of_variables",
                          choices = c(PCA = "PCA_MDS1",
                                      Factor_Analysis = "Factor_Analysis1",
                                      Correspondence_Analysis = "Correspondence_MDS_Categories1")),
             conditionalPanel(
               condition = "input.Using_MDS == 'Factor_Analysis1'",
               numericInput('Factors', 'Number of factors', "2"),
-              radioButtons("Factor_Rotation", "Rotation_Type",
+              selectInput("Factor_Rotation", "Rotation_Type",
                            choices = c(varimax = "varimax",
                                        quartimax = "quartimax",
                                        geominT = "geominT",
@@ -268,7 +224,7 @@ fluidPage(
                                        geominQ = "geominQ"))
             ),
             
-            radioButtons("Dimension_reduction6", "Dimension_reduction",
+            selectInput("Dimension_reduction6", "Dimension_reduction",
                          choices = c(MDS = "MDS6",
                                      tSNE = "tSNE6")),
             conditionalPanel(
@@ -280,14 +236,14 @@ fluidPage(
           ),
           conditionalPanel(
             condition = "input.Among_all_columns == 'Line_graph1'",
-            radioButtons("Line_graph", "Box_Type",
+            selectInput("Line_graph", "Box_Type",
                          choices = c(Box_Integrated = "Box_Integrated1",
                                      Box_Separated = "Box_Separated1"))
           ),
           
           conditionalPanel(
             condition = "input.Among_all_columns == 'Variable_Network1'",
-            radioButtons("Variable_Network", "Link Type",
+            selectInput("Variable_Network", "Link Type",
                          choices = c(Correlation_Network = "Correlation_Network1",
                                      Graphical_Lasso = "Graphical_Lasso1",
                                      Cramer_Network = "Cramer_Network1",
@@ -323,17 +279,40 @@ fluidPage(
               sliderInput("association_limit2",
                           "Choose set number for each evaluation (Confidense, Support and Lift)",
                           min = 0,  max = 100, value = 20, step = 1)
-            )
+            ),
+            conditionalPanel(
+              condition = "input.Among_all_columns == 'Variable_Network1'",
+              conditionalPanel(
+                condition = "input.Variable_Network == 'Bayesian_Network1'",
+                selectInput("Structure_Learning", "Structure_Learning",
+                            choices = c(stable_version  = "stable_version1",
+                                        Grow_Shrink = "Grow_Shrink1",
+                                        Incremental_Association_Markov_Blanket  = "Incremental_Association_Markov_Blanket1",
+                                        Fast_Incremental_Association  = "Fast_Incremental_Association1",
+                                        Interleaved_Incremental_Association = "Interleaved_Incremental_Association1",
+                                        Incremental_Association_with_FDR_Correction = "Incremental_Association_with_FDR_Correction1",
+                                        Max_Min_Parents_and_Children = "Max_Min_Parents_and_Children1",
+                                        Semi_Interleaved_Hiton_PC = "Semi_Interleaved_Hiton_PC1",
+                                        Hybrid_Parents_and_Children  = "Hybrid_Parents_and_Children1",
+                                        Hill_Climbing  = "Hill_Climbing1",
+                                        Tabu_Search = "Tabu_Search1",
+                                        Max_Min_Hill_Climbing = "Max_Min_Hill_Climbing1",
+                                        Hybrid_HPC = "Hybrid_HPC1",
+                                        General_2_Phase_Restricted_Maximization = "General_2_Phase_Restricted_Maximization1",
+                                        Chow_Liu = "Chow_Liu1",
+                                        ARACNE = "ARACNE1"))
+              ),
+            ),
+            
           ),
-          
-          
-          
         ),
         
+        
+            
         conditionalPanel(
           condition = "input.Similarity_of_Variables_and_Categories == 'Between_label_column_and_others1'",
           numericInput('Label_column', 'Column number for  label', "1"),
-          radioButtons("Between_label_column_and_others", "Method",
+          selectInput("Between_label_column_and_others", "Method",
                        choices = c(Scatter_plot = "Scatter_plot1",
                                    GLMM__Regression_analysis = "GLMM1",
                                    PCRA__Regression_analysis = "PCRA1",
@@ -344,7 +323,7 @@ fluidPage(
           
           conditionalPanel(
             condition = "input.Between_label_column_and_others == 'Decision_Tree1'",
-            radioButtons("Decision_Tree", "Tree_Method",
+            selectInput("Decision_Tree", "Tree_Method",
                          choices = c(C5.0 = "C501",
                                      RandomForest = "RandomForest1",
                                      C5.0_based_RandomForest = "C50_based_RandomForest1")),
@@ -366,7 +345,7 @@ fluidPage(
           ),
           conditionalPanel(
             condition = "input.Between_label_column_and_others == 'GLMM1'",
-            radioButtons("family_link", "family_link",
+            selectInput("family_link", "family_link",
                          choices = c(gaussian_identity = "gaussian_identity",
                                      poisson_log = "poisson_log",
                                      binomial_logit = "binomial_logit",
@@ -380,7 +359,7 @@ fluidPage(
           conditionalPanel(
             condition = "input.Between_label_column_and_others == 'One_class1'",
             
-            radioButtons("One_class", "Method",
+            selectInput("One_class", "Method",
                          choices = c(Basic_test_All_Varaiables = "Basic_test_All_Varaiables1",
                                      MT_All_Varaiables = "MT_All_Varaiables1",
                                      MT_Selected_Varaiables = "MT_Selected_Varaiables1",
@@ -397,8 +376,8 @@ fluidPage(
               condition = "input.One_class == 'Kernel_PCA_MT1'",
               sliderInput("kpar_value",
                           "kpar of Kernel_PCA",
-                          min = 0,  max = 10, value = 0.1, step = 0.1),
-              radioButtons("Kernel2", "Kernel",
+                          min = 0,  max = 2, value = 0.01, step = 0.01),
+              selectInput("Kernel2", "Kernel",
                            choices = c(anovadot= "anovadot",
                                        rbfdot= "rbfdot",
                                        laplacedot= "laplacedot",
@@ -414,7 +393,7 @@ fluidPage(
             ),
             conditionalPanel(
               condition = "input.One_class == 'One_Class_SVM_All_Varaiables1'",
-              radioButtons("Kernel4", "Kernel_library",
+              selectInput("Kernel4", "Kernel_library",
                            choices = c(anovadot= "anovadot",
                                        rbfdot= "rbfdot",
                                        polydot= "polydot",
@@ -432,7 +411,7 @@ fluidPage(
           
           conditionalPanel(
             condition = "input.Between_label_column_and_others == 'Hidden1'",
-            radioButtons("finder", "finder",
+            selectInput("finder", "finder",
                          choices = c(Hidden_PCA = "Hidden_PCA1",
                                      Hidden_ICA = "Hidden_ICA1"))
           ),
@@ -445,7 +424,7 @@ fluidPage(
       conditionalPanel(
         condition = "input.analysis == 'Similarity_of_Samples1'",
         
-        radioButtons("Dimension_for_clustering", "Dimension_for_clustering",
+        selectInput("Dimension_for_clustering", "Dimension_for_clustering",
                      choices = c(Dimension_2 = "Dimension_2",
                                  Dimension_All = "Dimension_All"),
         ),
@@ -453,7 +432,7 @@ fluidPage(
         
         conditionalPanel(
           condition = "input.Dimension_for_clustering == 'Dimension_2'",   
-          radioButtons("Dimension_Reduction", "Dimension Reduction",
+          selectInput("Dimension_Reduction", "Dimension Reduction",
                        choices = c(None = "None1",
                                    Factor = "Factor1",
                                     MDS = "MDS1",
@@ -480,7 +459,7 @@ fluidPage(
             numericInput('Xcol13', 'Column number for X axis', "1"),
             numericInput('Ycol13', 'Column number for Y axis', "2"),
             numericInput('Factors2', 'Number of factors', "2"),
-            radioButtons("Factor_Rotation2", "Rotation_Type",
+            selectInput("Factor_Rotation2", "Rotation_Type",
                          choices = c(varimax = "varimax",
                                      quartimax = "quartimax",
                                      geominT = "geominT",
@@ -503,7 +482,7 @@ fluidPage(
             condition = "input.Dimension_Reduction != 'nMDS1'",
             conditionalPanel(
               condition = "input.AddClustering == 0",
-              radioButtons("plot_type2", "Plot type",
+              selectInput("plot_type2", "Plot type",
                            choices = c(Name = "G11",
                                        Index = "G12",
                                        Plot_and_Name = "G13",
@@ -521,14 +500,14 @@ fluidPage(
                 conditionalPanel(
                   condition = "input.AddClustering == 1",
                     
-                  radioButtons("Clustering", "Clustering",
+                  selectInput("Clustering", "Clustering",
                                choices = c(k_Means = "clust3",
                                            GMM= "clust1",
                                            DBSCAN = "clust2",
                                            One_class_SVM_Clustering = "One_class_SVM_Clustering1"),
                                selected = "clust1"),
                   
-                  checkboxInput("Normalization_use2", "Use normalization", FALSE),
+                  checkboxInput("Normalization_use2", "Use normalization", TRUE),
                   conditionalPanel(
                     condition = "input.Clustering == 'clust3' || input.Clustering == 'clust1'",
                     numericInput('k', 'Number of Clusters', 2)
@@ -544,7 +523,7 @@ fluidPage(
                   
                   conditionalPanel(
                     condition = "input.Clustering == 'One_class_SVM_Clustering1'",
-                    radioButtons("Kernel_library", "Kernel_library",
+                    selectInput("Kernel_library", "Kernel_library",
                                  choices = c(anovadot_kernlab= "anovadot",
                                              rbfdot_kernlab= "rbfdot",
                                              polydot_kernlab= "polydot",
@@ -560,7 +539,7 @@ fluidPage(
                   ),
                   
                 
-                  radioButtons("plot_type", "Plot type",
+                  selectInput("plot_type", "Plot type",
                                choices = c(Name_and_Clusering= "G1",
                                            Index_and_Clusering1 = "G2",
                                            Index_and_Clusering2 = "G3",
@@ -583,8 +562,8 @@ fluidPage(
         conditionalPanel(
           condition = "input.Dimension_for_clustering == 'Dimension_All'",
           
-          checkboxInput("Normalization_use3", "Use normalization", FALSE),
-          radioButtons("Method_Dimension_All", "Method",
+          checkboxInput("Normalization_use3", "Use normalization", TRUE),
+          selectInput("Method_Dimension_All", "Method",
                        choices = c(hclust = "hclust1",
                                    DBSCAN = "DBSCAN1"),
                        selected = "hclust1"),
@@ -605,7 +584,7 @@ fluidPage(
       conditionalPanel(
         condition = "input.analysis == 'Similarity_of_Names_in_Rows_and_Columns1'",
         
-        radioButtons("Matrix_type", "Matrix type",
+        selectInput("Matrix_type", "Matrix type",
                      choices = c(A_B = "A_B",
                                  A_A = "A_A")),
         
@@ -613,7 +592,7 @@ fluidPage(
         a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-4.html"),
         conditionalPanel(
           condition = "input.Matrix_type == 'A_B'",
-          radioButtons("A_B_method", "Method",
+          selectInput("A_B_method", "Method",
                        choices = c(Using_other_variables = "Using_other_variables1",
                                    Bipartite_graph = "Bipartite_graph1",
                                    Independence_Test = "Independence_Test1",
@@ -622,7 +601,7 @@ fluidPage(
           conditionalPanel(
             condition = "input.A_B_method == 'Bipartite_graph1'",
             
-            radioButtons("Layout2", "Layout",
+            selectInput("Layout2", "Layout",
                          choices = c(layout_default = "layout_default1",
                                      layout_as_bipartite = "layout_as_bipartite1",
                                      layout_as_star = "layout_as_star1"),
@@ -635,11 +614,11 @@ fluidPage(
           ),
           conditionalPanel(
             condition = "input.A_B_method == 'Using_other_variables1'",
-            radioButtons("Make_variables", "Make variables",
+            selectInput("Make_variables", "Make variables",
                          choices = c(SVD = "SVD5",
                                      Correspondence = "Correspondence5")),
             
-            radioButtons("Dimension_reduction5", "Dimension_reduction",
+            selectInput("Dimension_reduction5", "Dimension_reduction",
                          choices = c(MDS = "MDS5",
                                      tSNE = "tSNE5")),
             conditionalPanel(
@@ -651,7 +630,7 @@ fluidPage(
           ),
           conditionalPanel(
             condition = "input.A_B_method == 'Two_way_GLM1'",
-            radioButtons("family_link3", "family_link",
+            selectInput("family_link3", "family_link",
                          choices = c(gaussian_identity = "gaussian_identity",
                                      poisson_log = "poisson_log"),
                          selected = "gaussian_identity"),
@@ -662,7 +641,7 @@ fluidPage(
         
         conditionalPanel(
           condition = "input.Matrix_type == 'A_A'",
-          radioButtons("A_A_method", "Method",
+          selectInput("A_A_method", "Method",
                        choices = c(Monopartite_graph = "Monopartite_graph1",
                                    MDS_sammon = "MDS_sammon1",
                                    Eigen_value = "Eigen_value1")),
@@ -766,14 +745,14 @@ fluidPage(
       conditionalPanel(
         condition = "input.analysis == 'Time_series1'",
         
-        radioButtons("Dimension_type", "Dimension_type",
+        selectInput("Dimension_type", "Dimension_type",
                      choices = c(Multi_variable = "Multi_variable",
                                  One_variable = "One_variable"
                      )
         ),
         conditionalPanel(
           condition = "input.Dimension_type == 'One_variable'",
-          radioButtons("Method4", "Method",
+          selectInput("Method4", "Method",
                        choices = c(Difference_previous = "Difference_previous",
                                    Auto_correlation = "Auto_correlation",
                                    fft = "fft",
@@ -789,7 +768,7 @@ fluidPage(
           
           conditionalPanel(
             condition = "input.Method4 == 'Quasi_periodic'",
-            radioButtons("Using_01variable_in_table", "Using_01variable_in_table",
+            selectInput("Using_01variable_in_table", "Using_01variable_in_table",
                          choices = c(Yes = "Using_01variable_in_table_Y",
                                      No = "Using_01variable_in_table_N"
                          )
@@ -813,7 +792,7 @@ fluidPage(
         
         conditionalPanel(
           condition = "input.Dimension_type == 'Multi_variable'",
-          radioButtons("Method5", "Method",
+          selectInput("Method5", "Method",
                        choices = c(Stratifeid_graph = "Stratifeid_graph3",
                                    Dimension_reduction = "Dimension_reduction3",
                                    Cross_correlation = "Cross_correlation")
@@ -822,11 +801,11 @@ fluidPage(
             
           conditionalPanel(
             condition = "input.Method5 == 'Dimension_reduction3'",
-            radioButtons("Line_graph2", "Box_Type",
+            selectInput("Line_graph2", "Box_Type",
                          choices = c(Box_Integrated = "Box_Integrated1",
                                      Box_Separated = "Box_Separated1")
             ),
-            radioButtons("Dimension_reduction_type3", "Dimension reduction type",
+            selectInput("Dimension_reduction_type3", "Dimension reduction type",
                          choices = c(None = "None3",
                                      PCA = "PCA3",
                                      ICA = "ICA3",
@@ -835,7 +814,7 @@ fluidPage(
             conditionalPanel(
               condition = "input.Dimension_reduction_type3 ==  'Factor3'",
               numericInput('Factors3', 'Number of factors', "2"),
-              radioButtons("Factor_Rotation3", "Rotation_Type",
+              selectInput("Factor_Rotation3", "Rotation_Type",
                            choices = c(varimax = "varimax",
                                        quartimax = "quartimax",
                                        geominT = "geominT",

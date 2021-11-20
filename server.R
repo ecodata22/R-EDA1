@@ -2158,12 +2158,12 @@ shinyServer(function(input, output) {
                   
                   OC <- ksvm(type~.,data=Data8,type='one-svc', kernel=input$Kernel_library, nu = input$nu1)
                   clust <- predict(OC,Data8)
-                  Data7 <- cbind(clust, Data6)
+                  Data7 <- cbind( Data6,clust)
                 }else {
                   Data8 <- transform(Data6[,1:2])
                   OC <- svm(x=Data8, y=NULL, type='one-classification', kernel=input$Kernel_library, nu = input$nu1)
                   clust <- predict(OC,Data8)
-                  Data7 <- cbind(clust, Data6)
+                  Data7 <- cbind(Data6, clust)
                 }
               }
               Data7$clust <- as.factor(Data7$clust)
