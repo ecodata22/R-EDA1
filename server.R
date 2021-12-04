@@ -67,14 +67,14 @@ shinyServer(function(input, output) {
         
       }
       Data4 <- as.matrix(Data3)
-      if(input$AddClusteringRow == 0){
-        if(input$AddClusteringCol == 0){
+      if(input$AddClusteringCol == 0){
+        if(input$AddClusteringRow == 0){
           heatmaply(Data4, Colv = NA, Rowv = NA)
         } else {
           heatmaply(Data4, Colv = NA)
         }
       } else {
-        if(input$AddClusteringCol == 0){
+        if(input$AddClusteringRow == 0){
           heatmaply(Data4, Rowv = NA)
         } else {
           heatmaply(Data4)
@@ -230,7 +230,7 @@ shinyServer(function(input, output) {
                 lm <- lm(Data1[,input$Lcol] ~ Data1[,input$Xcol], data=Data1)
                 Data0 <- predict(lm, Data1, interval="prediction", level = input$Prediction_Interval_Probability)
                 Data2 <- cbind(Data, Data0)
-                ggplot(data = Data2, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) +geom_point()+geom_line(aes(y=lwr), color = "red")+geom_line(aes(y=upr), color = "red")+geom_line(aes(y= fit), color = "blue")
+                gplot <- ggplot(data = Data2, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) +geom_point()+geom_line(aes(y=lwr), color = "red")+geom_line(aes(y=upr), color = "red")+geom_line(aes(y= fit), color = "blue")
               } else {
                 #if(input$Using_interactive_graph1 == 1){
                 #  #output$plot538 <- renderPlotly(plot_ly(Data1, x=~Data1[,input$Xcol], y=~Data1[,input$Lcol], type = 'scatter'))
@@ -1123,33 +1123,35 @@ shinyServer(function(input, output) {
   output$text113 <- renderPrint({
     if(input$analysis == "Similarity_of_Variables_and_Categories1"){
       if(input$Similarity_of_Variables_and_Categories == "Between_label_column_and_others1"){
-        if(input$Between_label_column_and_others == "GLMM1"){
-      
-          req(input$file1)
-          
-          if(input$sep2 == "Separator_Comma"){sep <- ","}
-          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
-          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
-          Data <- read.csv(input$file1$datapath, header=T,sep = sep)
-          if(input$DoNotUseFirst == 1){
-            Data[,1] <- NULL
+        if(input$Between_label_column_and_others == "Regression_analysis1"){
+          if(input$Regression_analysis == "GLMM1"){
+        
+            req(input$file1)
+            
+            if(input$sep2 == "Separator_Comma"){sep <- ","}
+            if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+            if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+            Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+            if(input$DoNotUseFirst == 1){
+              Data[,1] <- NULL
+            }
+            
+            library(MASS)
+            Data1 <- Data
+            Y <- names(Data1[input$Label_column])
+            Ydata <- Data1[,input$Label_column]
+            Data1[,input$Label_column]<-NULL
+            if(input$family_link == "gaussian_identity"){
+              anova(step(glm(Ydata~.^2, data=Data1, family= gaussian(link = "identity"))))
+            } else if(input$family_link == "poisson_log"){
+              anova(step(glm(Ydata~.^2, data=Data1, family= poisson(link = "log"))))
+            } else if(input$family_link == "binomial_logit"){
+              anova(step(glm(Ydata~.^2, data=Data1, family= binomial(link = "logit"))))
+            } else if(input$family_link == "binomial_probit"){
+              anova(step(glm(Ydata~.^2, data=Data1, family= binomial(link = "probit"))))
+            } 
+            
           }
-          
-          library(MASS)
-          Data1 <- Data
-          Y <- names(Data1[input$Label_column])
-          Ydata <- Data1[,input$Label_column]
-          Data1[,input$Label_column]<-NULL
-          if(input$family_link == "gaussian_identity"){
-            anova(step(glm(Ydata~.^2, data=Data1, family= gaussian(link = "identity"))))
-          } else if(input$family_link == "poisson_log"){
-            anova(step(glm(Ydata~.^2, data=Data1, family= poisson(link = "log"))))
-          } else if(input$family_link == "binomial_logit"){
-            anova(step(glm(Ydata~.^2, data=Data1, family= binomial(link = "logit"))))
-          } else if(input$family_link == "binomial_probit"){
-            anova(step(glm(Ydata~.^2, data=Data1, family= binomial(link = "probit"))))
-          } 
-          
         }
       }
     }
@@ -1159,47 +1161,49 @@ shinyServer(function(input, output) {
   output$text114 <- renderPrint({
     if(input$analysis == "Similarity_of_Variables_and_Categories1"){
       if(input$Similarity_of_Variables_and_Categories == "Between_label_column_and_others1"){
-        if(input$Between_label_column_and_others == "PCRA1"){
-          
-          req(input$file1)
-          
-          if(input$sep2 == "Separator_Comma"){sep <- ","}
-          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
-          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
-          Data <- read.csv(input$file1$datapath, header=T,sep = sep)
-          if(input$DoNotUseFirst == 1){
-            Data[,1] <- NULL
+        if(input$Between_label_column_and_others == "Regression_analysis1"){
+          if(input$Regression_analysis == "PCRA1"){
+            
+            req(input$file1)
+            
+            if(input$sep2 == "Separator_Comma"){sep <- ","}
+            if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+            if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+            Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+            if(input$DoNotUseFirst == 1){
+              Data[,1] <- NULL
+            }
+            
+            Data1 <- Data
+            Ydata <- Data[,input$Label_column]
+            Data1[,input$Label_column]<-NULL
+            pc <- prcomp(Data1, scale=TRUE, tol=0.01)
+            pcd <- as.data.frame(pc$x)
+            pcr <- lm(Ydata ~ . ,pcd)
+            
+            library(MASS)
+            pc2 <- sweep(pc$rotation, MARGIN=2, pc$sdev, FUN="*") 
+            
+            Data11 <- pc2
+            Data11_dist <- dist(Data11)
+            library(igraph) 
+            library(sigmoid) 
+            Data1p = Data11
+            colnames(Data1p) = paste(colnames(Data1p),"+",sep="")
+            DM.matp = apply(Data1p,c(1,2),relu)
+            Data1m = -Data11
+            colnames(Data1m) = paste(colnames(Data1m),"-",sep="")
+            DM.matm = apply(Data1m,c(1,2),relu)
+            DM.mat =cbind(DM.matp,DM.matm)
+            DM.mat <- DM.mat / max(DM.mat) * 3
+            DM.mat[DM.mat < 1] <- 0 
+            DM.g<-graph_from_incidence_matrix(DM.mat,weighted=T) 
+            V(DM.g)$color <- c("steel blue", "orange")[V(DM.g)$type+1] 
+            V(DM.g)$shape <- c("square", "circle")[V(DM.g)$type+1] 
+            output$plot18<-renderPlot(plot(DM.g, edge.width=E(DM.g)$weight))
+            
+            summary(pcr) 
           }
-          
-          Data1 <- Data
-          Ydata <- Data[,input$Label_column]
-          Data1[,input$Label_column]<-NULL
-          pc <- prcomp(Data1, scale=TRUE, tol=0.01)
-          pcd <- as.data.frame(pc$x)
-          pcr <- lm(Ydata ~ . ,pcd)
-          
-          library(MASS)
-          pc2 <- sweep(pc$rotation, MARGIN=2, pc$sdev, FUN="*") 
-          
-          Data11 <- pc2
-          Data11_dist <- dist(Data11)
-          library(igraph) 
-          library(sigmoid) 
-          Data1p = Data11
-          colnames(Data1p) = paste(colnames(Data1p),"+",sep="")
-          DM.matp = apply(Data1p,c(1,2),relu)
-          Data1m = -Data11
-          colnames(Data1m) = paste(colnames(Data1m),"-",sep="")
-          DM.matm = apply(Data1m,c(1,2),relu)
-          DM.mat =cbind(DM.matp,DM.matm)
-          DM.mat <- DM.mat / max(DM.mat) * 3
-          DM.mat[DM.mat < 1] <- 0 
-          DM.g<-graph_from_incidence_matrix(DM.mat,weighted=T) 
-          V(DM.g)$color <- c("steel blue", "orange")[V(DM.g)$type+1] 
-          V(DM.g)$shape <- c("square", "circle")[V(DM.g)$type+1] 
-          output$plot18<-renderPlot(plot(DM.g, edge.width=E(DM.g)$weight))
-          
-          summary(pcr) 
         }
       }
     }
@@ -1770,7 +1774,7 @@ shinyServer(function(input, output) {
                 
                 Data5 <- cbind(Data, clust)
                 Data6 <- subset(Data5, Data5[,input$Label_column] == 1)
-                Error_Number <- nrow(subset(Data6, Data6$clust == "FALSE"))
+                Error_Number <- nrow(subset(Data6, Data6$clust == "TRUE"))
                 Features <- paste(Kernel3,"_",colnames(Data1[i1]))
                 FeEr <- cbind(Features,Error_Number)
                 
@@ -1789,7 +1793,7 @@ shinyServer(function(input, output) {
                     
                     Data5 <- cbind(Data, clust)
                     Data6 <- subset(Data5, Data5[,input$Label_column] == 1)
-                    Error_Number <- nrow(subset(Data6, Data6$clust == "FALSE"))
+                    Error_Number <- nrow(subset(Data6, Data6$clust == "TRUE"))
                     Features <- paste(Kernel3,"_",colnames(Data1[i1]),"_",colnames(Data1[i2]))
                     FeEr <- cbind(Features,Error_Number)
                     
@@ -1811,7 +1815,7 @@ shinyServer(function(input, output) {
                         
                         Data5 <- cbind(Data, clust)
                         Data6 <- subset(Data5, Data5[,input$Label_column] == 1)
-                        Error_Number <- nrow(subset(Data6, Data6$clust == "FALSE"))
+                        Error_Number <- nrow(subset(Data6, Data6$clust == "TRUE"))
                         Features <- paste(Kernel3,"_",colnames(Data1[i1]),"_",colnames(Data1[i2]),"_",colnames(Data1[i3]))
                         FeEr <- cbind(Features,Error_Number)
                         

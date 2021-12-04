@@ -64,13 +64,13 @@ fluidPage(
                                  Dummy_Varaiables = "Dummy_Varaiables1")),br(),
         checkboxInput("Normalization_use", "Use normalization", FALSE),
         
+        checkboxInput("AddClusteringCol", "Add clustering methods for columns", FALSE),
         checkboxInput("AddClusteringRow", "Add clustering methods for rows", FALSE),
         
-        checkboxInput("AddClusteringCol", "Add clustering methods for columns", FALSE),
         
         conditionalPanel(
-          condition = "input.AddClusteringCol == 0",
-            checkboxInput("Use_decreasing1", "Use decreasing the columns", FALSE),
+          condition = "input.AddClusteringRow == 0",
+            checkboxInput("Use_decreasing1", "Use decreasing", FALSE),
           
           conditionalPanel(
             condition = "input.Use_decreasing1 == 1",
@@ -91,8 +91,7 @@ fluidPage(
         conditionalPanel(
           condition = "input.Similarity_of_Variables_and_Categories == 'Among_all_columns1'",
           selectInput("Among_all_columns", "Method",
-                       choices = c(Line_graph = "Line_graph1",
-                                   Stratifeid_graph = "Stratifeid_graph1",
+                       choices = c(Stratifeid_graph = "Stratifeid_graph1",
                                    Variable_Network = "Variable_Network1",
                                    Using_Dimension_reduction = "Using_MDS1",
                                    Log_Linear = "Log_Linear1")
@@ -113,7 +112,7 @@ fluidPage(
             conditionalPanel(
               condition = "input.Gtype != '3D-scatter'",
               
-              numericInput('Lcol', 'Column number for  label', "1"),
+              numericInput('Lcol', 'Column number for main variable', "1"),
               conditionalPanel(
                 condition = "input.Gtype != 'histgram'",
                 conditionalPanel(
@@ -314,16 +313,34 @@ fluidPage(
           numericInput('Label_column', 'Column number for  label', "1"),
           selectInput("Between_label_column_and_others", "Method",
                        choices = c(Scatter_plot = "Scatter_plot1",
-                                   GLMM__Regression_analysis = "GLMM1",
-                                   PCRA__Regression_analysis = "PCRA1",
+                                   Regression_analysis = "Regression_analysis1",
                                    Decision_Tree = "Decision_Tree1",
                                    One_class_classification = "One_class1",
                                    Hidden = "Hidden1")
           ),
           
           conditionalPanel(
+            condition = "input.Between_label_column_and_others == 'Regression_analysis1'",
+            selectInput("Regression_analysis", "Regression analysis Method",
+                        choices = c(GLMM = "GLMM1",
+                                    PCRA = "PCRA1")),
+            conditionalPanel(
+              condition = "input.Regression_analysis == 'GLMM1'",
+              selectInput("family_link", "family_link",
+                          choices = c(gaussian_identity = "gaussian_identity",
+                                      poisson_log = "poisson_log",
+                                      binomial_logit = "binomial_logit",
+                                      binomial_probit = "binomial_probit"),
+                          selected = "gaussian_identity"),
+              p("'gaussian_identity' = Simple mutli regression analysis"),
+              p("'poisson_log' = Regression analysis for count data of Y"),
+              p("'binomial_logit' = Logistic regression analysis")
+            ),
+          ),
+          
+          conditionalPanel(
             condition = "input.Between_label_column_and_others == 'Decision_Tree1'",
-            selectInput("Decision_Tree", "Tree_Method",
+            selectInput("Decision_Tree", "Tree Method",
                          choices = c(C5.0 = "C501",
                                      RandomForest = "RandomForest1",
                                      C5.0_based_RandomForest = "C50_based_RandomForest1")),
@@ -343,18 +360,6 @@ fluidPage(
               ),
             ),
           ),
-          conditionalPanel(
-            condition = "input.Between_label_column_and_others == 'GLMM1'",
-            selectInput("family_link", "family_link",
-                         choices = c(gaussian_identity = "gaussian_identity",
-                                     poisson_log = "poisson_log",
-                                     binomial_logit = "binomial_logit",
-                                     binomial_probit = "binomial_probit"),
-                         selected = "gaussian_identity"),
-            p("'gaussian_identity' = Simple mutli regression analysis"),
-            p("'poisson_log' = Regression analysis for count data of Y"),
-            p("'binomial_logit' = Logistic regression analysis")
-          ),
           
           conditionalPanel(
             condition = "input.Between_label_column_and_others == 'One_class1'",
@@ -368,8 +373,8 @@ fluidPage(
                                      Kernel_PCA_MT = "Kernel_PCA_MT1",
                                      One_Class_SVM_All_Varaiables = "One_Class_SVM_All_Varaiables1",
                                      One_Class_SVM_Selected_Varaiables = "One_Class_SVM_Selected_Varaiables1",
-                                     Minimum_Distance_All_Varaiables = "Minimum_Distance_All_Varaiables1",
-                                     Minimum_Distance_Selected_Varaiables = "Minimum_Distance_Selected_Varaiables1"),
+                                     One_Class_Minimum_Distance_All_Varaiables = "Minimum_Distance_All_Varaiables1",
+                                     One_Class_Minimum_Distance_Selected_Varaiables = "Minimum_Distance_Selected_Varaiables1"),
                          selected = "PCA_MT_All_Varaiables1"),
             
             conditionalPanel(
@@ -424,7 +429,7 @@ fluidPage(
       conditionalPanel(
         condition = "input.analysis == 'Similarity_of_Samples1'",
         
-        selectInput("Dimension_for_clustering", "Dimension_for_clustering",
+        selectInput("Dimension_for_clustering", "Dimension for analysis",
                      choices = c(Dimension_2 = "Dimension_2",
                                  Dimension_All = "Dimension_All"),
         ),
@@ -793,8 +798,8 @@ fluidPage(
         conditionalPanel(
           condition = "input.Dimension_type == 'Multi_variable'",
           selectInput("Method5", "Method",
-                       choices = c(Stratifeid_graph = "Stratifeid_graph3",
-                                   Dimension_reduction = "Dimension_reduction3",
+                       choices = c(Dimension_reduction = "Dimension_reduction3",
+                                   Stratifeid_graph = "Stratifeid_graph3",
                                    Cross_correlation = "Cross_correlation")
           ),
           
@@ -827,7 +832,7 @@ fluidPage(
           conditionalPanel(
             condition = "input.Method5 == 'Stratifeid_graph3'",
             
-            numericInput('Lcol3', 'Column number for label', "1"),
+            numericInput('Lcol3', 'Column number for main variable', "1"),
             numericInput('Ccol3', 'Column number for coloring (if "0" do not used colors)', "0"),
             numericInput('Scol3', 'Column number for area separate (if "0" not separate)', "0"),
             conditionalPanel(
@@ -1401,24 +1406,27 @@ fluidPage(
             a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-02.html")
           ),
           conditionalPanel(
-            condition = "input.Between_label_column_and_others == 'GLMM1'",
-            h3("Generalized Linear Mixed Model (Regression Analysis)"),
-            p("Features of interaction (product of two variables) are included. 
-              So this method could be Linear Mixed Effect model (LME) when categorical variables are included."),
-            p("Features in the model are automatically choosed using AIC."),
-            verbatimTextOutput("text113"),
-            a("About GLMM (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-1-4.html"),
-            a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-1-4.html")
-          ),
-          
-          conditionalPanel(
-            condition = "input.Between_label_column_and_others == 'PCRA1'",
-            h3("Principal Component Regression Analysis"),
+            condition = "input.Between_label_column_and_others == 'Regression_analysis1'",
+              conditionalPanel(
+                condition = "input.Regression_analysis == 'GLMM1'",
+              h3("Generalized Linear Mixed Model (Regression Analysis)"),
+              p("Features of interaction (product of two variables) are included. 
+                So this method could be Linear Mixed Effect model (LME) when categorical variables are included."),
+              p("Features in the model are automatically choosed using AIC."),
+              verbatimTextOutput("text113"),
+              a("About GLMM (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-1-4.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-1-4.html")
+            ),
             
-            verbatimTextOutput("text114"),
-            plotOutput("plot18"),
-            a("About PCRA (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-1-2-1-1.html"),
-            a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-1-2-1-1.html")
+            conditionalPanel(
+              condition = "input.Regression_analysis == 'PCRA1'",
+              h3("Principal Component Regression Analysis"),
+              
+              verbatimTextOutput("text114"),
+              plotOutput("plot18"),
+              a("About PCRA (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-1-2-1-1.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-1-2-1-1.html")
+            ),
           ),
           
           conditionalPanel(
