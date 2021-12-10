@@ -55,11 +55,14 @@ shinyServer(function(input, output) {
       }
       
       Data3 <- Data2
-      if(input$Normalization_use == 1){
+      if(input$Use_scale_transformation1 == "Normalization1"){
         n <- ncol(Data2)
         for (i in 1:n) {
           Data3[,i] <- (Data2[,i]-min(Data2[,i]))/(max(Data2[,i])-min(Data2[,i]))
         }
+      }
+      if(input$Use_scale_transformation1 == "Standardization1"){
+        Data3 <- scale(Data2)
       }
       
       if(input$Use_decreasing1 == 1){
@@ -1086,39 +1089,117 @@ shinyServer(function(input, output) {
   output$plot05 <- renderPlotly({
     if(input$analysis == "Similarity_of_Variables_and_Categories1"){
       if(input$Similarity_of_Variables_and_Categories == "Between_label_column_and_others1"){
-        if(input$Between_label_column_and_others == "Scatter_plot1"){
+        if(input$Between_label_column_and_others == "Hidden1"){
+          if(input$finder == "Hidden_None1"){
       
-          req(input$file1)
-          
-          if(input$sep2 == "Separator_Comma"){sep <- ","}
-          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
-          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
-          Data <- read.csv(input$file1$datapath, header=T,sep = sep)
-          if(input$DoNotUseFirst == 1){
-            Data[,1] <- NULL
+            req(input$file1)
+            
+            if(input$sep2 == "Separator_Comma"){sep <- ","}
+            if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+            if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+            Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+            if(input$DoNotUseFirst == 1){
+              Data[,1] <- NULL
+            }
+            
+            library(dummies)
+            library(ggplot2)
+            library(tidyr)
+            Data1 <- Data
+            Y <- names(Data1[input$Label_column])
+            Ydata <- Data1[,input$Label_column]
+            Data1[,input$Label_column] <- NULL
+            Data2 <- dummy.data.frame(Data1)
+            Data4 <- cbind(Ydata, Data2)
+            Data_long <- tidyr::gather(Data4, key="X", value = Xs, -Ydata)
+            if(class(Ydata) == "numeric") {
+              gplot <- ggplot(Data_long, aes(x=Xs,y=Data_long[,1])) + geom_point() + facet_wrap(~X,scales="free")+ labs(y=Y)
+            } else {
+              gplot <- ggplot(Data_long, aes(x=Data_long[,1],y=Xs)) + geom_jitter(size=1, position=position_jitter(0.1)) + facet_wrap(~X,scales="free")+ labs(x=Y)
+            }
+            ggplotly(gplot)
           }
-          
-          library(dummies)
-          library(ggplot2)
-          library(tidyr)
-          Data1 <- Data
-          Y <- names(Data1[input$Label_column])
-          Ydata <- Data1[,input$Label_column]
-          Data1[,input$Label_column] <- NULL
-          Data2 <- dummy.data.frame(Data1)
-          Data4 <- cbind(Ydata, Data2)
-          Data_long <- tidyr::gather(Data4, key="X", value = Xs, -Ydata)
-          if(class(Ydata) == "numeric") {
-            gplot <- ggplot(Data_long, aes(x=Xs,y=Data_long[,1])) + geom_point() + facet_wrap(~X,scales="free")+ labs(y=Y)
-          } else {
-            gplot <- ggplot(Data_long, aes(x=Data_long[,1],y=Xs)) + geom_jitter(size=1, position=position_jitter(0.1)) + facet_wrap(~X,scales="free")+ labs(x=Y)
-          }
-          ggplotly(gplot)
         }
       }
     }
   })
   
+  output$plot10 <- renderPlotly({
+    if(input$analysis == "Similarity_of_Variables_and_Categories1"){
+      if(input$Similarity_of_Variables_and_Categories == "Between_label_column_and_others1"){
+        if(input$Between_label_column_and_others == "Hidden1"){
+          if(input$finder == "Hidden_PCA1"){
+            
+            
+            if(input$sep2 == "Separator_Comma"){sep <- ","}
+            if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+            if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+            Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+            if(input$DoNotUseFirst == 1){
+              Data[,1] <- NULL
+            }
+            
+            library(dummies)
+            library(ggplot2)
+            library(tidyr)
+            Data1 <- Data
+            Y <- names(Data1[input$Label_column])
+            Ydata <- Data1[,input$Label_column]
+            Data1[,input$Label_column] <- NULL
+            Data2 <- dummy.data.frame(Data1)
+            pc <- prcomp(Data2, scale=TRUE)
+            Data4 <- cbind(Ydata, pc$x, Data2)
+            Data_long <- tidyr::gather(Data4, key="X", value = Xs, -Ydata)
+            if(class(Ydata) == "numeric") {
+              ggplotly(ggplot(Data_long, aes(x=Xs,y=Data_long[,1])) + geom_point() + facet_wrap(~X,scales="free")+ labs(y=Y))
+            } else {
+              ggplotly(ggplot(Data_long, aes(x=Data_long[,1],y=Xs)) + geom_jitter(size=1, position=position_jitter(0.1)) + facet_wrap(~X,scales="free")+ labs(x=Y))
+            }
+          }
+        }
+      }
+    }
+  })
+  
+  output$plot11 <- renderPlotly({
+    if(input$analysis == "Similarity_of_Variables_and_Categories1"){
+      if(input$Similarity_of_Variables_and_Categories == "Between_label_column_and_others1"){
+        if(input$Between_label_column_and_others == "Hidden1"){
+          if(input$finder == "Hidden_ICA1"){
+            
+            req(input$file1)
+            
+            if(input$sep2 == "Separator_Comma"){sep <- ","}
+            if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+            if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+            Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+            if(input$DoNotUseFirst == 1){
+              Data[,1] <- NULL
+            }
+            
+            library(fastICA)
+            library(dummies)
+            library(ggplot2)
+            library(tidyr)
+            Data1 <- Data
+            Y <- names(Data1[input$Label_column])
+            Ydata <- Data1[,input$Label_column]
+            Data1[,input$Label_column] <- NULL
+            Data2 <- dummy.data.frame(Data1)
+            pc <- prcomp(Data2, scale=TRUE, tol=0.01)
+            ic <- fastICA(Data2, ncol(pc$x))$S
+            Data4 <- cbind(Ydata, ic, Data2)
+            Data_long <- tidyr::gather(Data4, key="X", value = Xs, -Ydata)
+            if(class(Ydata) == "numeric") {
+              ggplotly(ggplot(Data_long, aes(x=Xs,y=Data_long[,1])) + geom_point() + facet_wrap(~X,scales="free")+ labs(y=Y))
+            } else {
+              ggplotly(ggplot(Data_long, aes(x=Data_long[,1],y=Xs)) + geom_jitter(size=1, position=position_jitter(0.1)) + facet_wrap(~X,scales="free")+ labs(x=Y))
+            }
+          }
+        }
+      }
+    }
+  })
   
   output$text113 <- renderPrint({
     if(input$analysis == "Similarity_of_Variables_and_Categories1"){
@@ -1427,448 +1508,171 @@ shinyServer(function(input, output) {
           library(kernlab)
           library(tidyr)
           
-          if(input$One_class == "MT_All_Varaiables1") {
-            Data1 <- Data
-          }else{
+          
+          if (input$Variables_type == "All_Varaiables1" && input$One_class11 == "MT_All_Varaiables1"){
+          
+            CCheck <- 0
+            for (i in 1:ncol(Data)) {
+              if(class(Data[,i]) == "character"){
+                CCheck <- 1
+              }
+            }
+            if(CCheck == 1){
+              Data1 <- dummy_cols(Data,remove_first_dummy = TRUE,remove_selected_columns = TRUE)
+            } else {
+              Data1 <- Data
+            }
+          } else {
             Data1 <- dummy.data.frame(Data)
           }
+          
           
           Data2 <- subset(Data1, Data1[,input$Label_column] == 0)
           Data2[,input$Label_column] <- NULL
           Data1[,input$Label_column] <- NULL
           
-          if (input$One_class == "Basic_test_All_Varaiables1"){
-            
-            t_test_var_equal <- data.frame()
-            for (i in 1:ncol(Data1)) {
-              p_value <- t.test(x=subset(Data1[,i], Data[,input$Label_column] == 0),y=subset(Data1[,i], Data[,input$Label_column] == 1),var.equal=T,paired=F)$p.value
-              FeEr <- cbind(colnames(Data1[i]),p_value)
-              t_test_var_equal <- rbind(t_test_var_equal,FeEr)
-            }
-            output$plot601<-renderPlot(ggplot(t_test_var_equal, aes(x=t_test_var_equal[,1],y=t_test_var_equal[,2])) + geom_bar(stat = "identity") +  labs(title="Check difference of means",subtitle="Student's t-Test:var.equal=T",x="Variables",y="p.value"))
-            
-            t_test_var_Notequal <- data.frame()
-            for (i in 1:ncol(Data1)) {
-              p_value <- t.test(x=subset(Data1[,i], Data[,input$Label_column] == 0),y=subset(Data1[,i], Data[,input$Label_column] == 1),var.equal=F,paired=F)$p.value
-              FeEr <- cbind(colnames(Data1[i]),p_value)
-              t_test_var_Notequal <- rbind(t_test_var_Notequal,FeEr)
-            }
-            output$plot602<-renderPlot(ggplot(t_test_var_Notequal, aes(x=t_test_var_Notequal[,1],y=t_test_var_Notequal[,2])) + geom_bar(stat = "identity") +  labs(title="Check difference of means",subtitle="Welch's t-Test:var.equal=F",x="Variables",y="p.value"))
-            
-            var_test <- data.frame()
-            for (i in 1:ncol(Data1)) {
-              p_value <- var.test(x=subset(Data1[,i], Data[,input$Label_column] == 0),y=subset(Data1[,i], Data[,input$Label_column] == 1))$p.value
-              FeEr <- cbind(colnames(Data1[i]),p_value)
-              var_test <- rbind(var_test,FeEr)
-            }
-            output$plot603<-renderPlot(ggplot(var_test, aes(x=var_test[,1],y=var_test[,2])) + geom_bar(stat = "identity") +  labs(title="Check difference of variance",subtitle="F-Test",x="Variables",y="p.value"))
-            
-            RowName <- colnames(Data[input$Label_column])
-            Data_long <- tidyr::gather(Data, key="Variable", value = val, -RowName)
-            ggplotly(ggplot(Data_long, aes(x=as.factor(Data_long[,1]),y=Data_long[,3])) + geom_boxplot() + facet_wrap(~Data_long[,2],scales="free")+ labs(x="Label",y="Value",subtitle = "Variables"))
-            
-            
-          } else if (input$One_class == "MT_All_Varaiables1"){
-            n <- nrow(Data2)
-            Ave1 <- colMeans(Data2)
-            Var1 <- var(Data2)*(n-1)/n
-            k <- ncol(Data2)
-            
-            Data3 <- Data1
-            Data4 <- Data2
-            
-            n <- nrow(Data4)
-            Ave1 <- colMeans(Data4)
-            Var1 <- var(Data4)*(n-1)/n
-            k <- ncol(Data4)
-            
-            MD <- mahalanobis(Data3, Ave1, Var1)/k
-            Data5 <- cbind(Data, MD)
-            
-            Data5[,input$Label_column] <- factor(Data5[,input$Label_column])
-            ggplotly(ggplot(Data5, aes(x=Data5[,input$Label_column], y=MD)) + geom_jitter(size=3, position=position_jitter(0.1))+labs(x="Label column", y="Distance from average of label='0' samples"))
-            
-          } else if (input$One_class == "MT_Selected_Varaiables1"){
-            k2 <- ncol(Data2)
-            n <- nrow(Data2)
-            Error_Analysis <- data.frame()
-            
-            for (i in 1:k2) {
-              Data3 <- Data1[,i]
-              Data4 <- Data2[,i]
-              Ave1 <- mean(Data4)
-              Var1 <- var(Data4)*(n-1)/n
-              MD <- ((Data3 - Ave1)^2)/Var1
-              Data5 <- cbind(Data, MD)
-              MaxMDinUnit <- max(subset(Data5, Data5[,input$Label_column] == 0)$MD)
-              Data6 <- subset(Data5, Data5[,input$Label_column] == 1)
-              Error_Number <- nrow(subset(Data6, Data6$MD < MaxMDinUnit))
-              Features <- colnames(Data1[i])
-              FeEr <- cbind(Features,Error_Number)
+          ######################################################
+          if (input$Variables_type == "All_Varaiables1"){
+            if (input$One_class11 == "Basic_test_All_Varaiables1"){
               
-              Error_Analysis <- rbind(Error_Analysis,FeEr)
-              
-            }
-            for (i1 in 1:k2) {
-              for (i2 in 1:k2) {
-                if(i2 > i1){
-                  Data3 <- cbind(Data1[i1],Data1[i2])
-                  Data4 <- cbind(Data2[i1],Data2[i2])
-                  Ave1 <- colMeans(Data4)
-                  Var1 <- var(Data4)*(n-1)/n
-                  k <- 2
-                  
-                  e<-try(mahalanobis(Data3, Ave1, Var1)/k, silent = FALSE)
-                  if( class(e) == "try-error") {
-                    MD <- 1
-                  }else{
-                    MD <- mahalanobis(Data3, Ave1, Var1)/k
-                  }
-                  #MD <- mahalanobis(Data3, Ave1, Var1)/k
-                  if (MD != 1){
-                    Data5 <- cbind(Data, MD)
-                    MaxMDinUnit <- max(subset(Data5, Data5[,input$Label_column] == 0)$MD)
-                    Data6 <- subset(Data5, Data5[,input$Label_column] == 1)
-                    Error_Number <- nrow(subset(Data6, Data6$MD < MaxMDinUnit))
-                    Features <- paste(colnames(Data1[i1]),"_",colnames(Data1[i2]))
-                    FeEr <- cbind(Features,Error_Number)
-                    
-                    Error_Analysis <- rbind(Error_Analysis,FeEr)
-                  }
-                }
+              t_test_var_equal <- data.frame()
+              for (i in 1:ncol(Data1)) {
+                p_value <- t.test(x=subset(Data1[,i], Data[,input$Label_column] == 0),y=subset(Data1[,i], Data[,input$Label_column] == 1),var.equal=T,paired=F)$p.value
+                FeEr <- cbind(colnames(Data1[i]),p_value)
+                t_test_var_equal <- rbind(t_test_var_equal,FeEr)
               }
-            }
-            for (i1 in 1:k2) {
-              for (i2 in 1:k2) {
-                if(i2 > i1){
-                  for (i3 in 1:k2) {
-                    if(i3 > i2){
-                      Data3 <- cbind(Data1[i1],Data1[i2],Data1[i3])
-                      Data4 <- cbind(Data2[i1],Data2[i2],Data2[i3])
-                      Ave1 <- colMeans(Data4)
-                      Var1 <- var(Data4)*(n-1)/n
-                      k <- 3
-                      e<-try(mahalanobis(Data3, Ave1, Var1)/k, silent = FALSE)
-                      if( class(e) == "try-error") {
-                        MD <- 1
-                      }else{
-                        MD <- mahalanobis(Data3, Ave1, Var1)/k
-                      }
-                      #MD <- mahalanobis(Data3, Ave1, Var1)/k
-                      if (MD != 1){
-                        Data5 <- cbind(Data, MD)
-                        MaxMDinUnit <- max(subset(Data5, Data5[,input$Label_column] == 0)$MD)
-                        Data6 <- subset(Data5, Data5[,input$Label_column] == 1)
-                        Error_Number <- nrow(subset(Data6, Data6$MD < MaxMDinUnit))
-                        Features <- paste(colnames(Data1[i1]),"_",colnames(Data1[i2]),"_",colnames(Data1[i3]))
-                        FeEr <- cbind(Features,Error_Number)
-                        
-                        Error_Analysis <- rbind(Error_Analysis,FeEr)
-                      }
-                    }
-                  }
-                }
-              }
-            }
-            Error_Analysis <- Error_Analysis[order(Error_Analysis$Error_Number, decreasing=F),]
-            output$Data_OutputMTselected <- renderDataTable(Error_Analysis)
-            Error_Analysis2 <- head(Error_Analysis,30)
-            Error_Analysis2[,2]<- as.numeric(Error_Analysis2[,2])
-            ggplotly(ggplot(Error_Analysis2, aes(x=Error_Analysis2[,2], y=reorder(Error_Analysis2[,1],-Error_Analysis2[,2]))) + geom_bar(stat = "identity") +labs(x="Error_Number (Samples of label='1' that distances are shorter than maximum of label='0')", y="Features (Set of variables used in the model)"))
-            
-          } else if (input$One_class == "PCA_MT_All_Varaiables1"){
-            n <- nrow(Data2)
-            Ave1 <- colMeans(Data2)
-            Var1 <- var(Data2)*(n-1)/n
-            k <- ncol(Data2)
-            
-            Data3 <- Data1
-            Data4 <- Data2
-            
-            model <- prcomp(Data2, scale=TRUE,tol = 0.0001)
-            Data3 <- predict(model, Data1)
-            Data4 <- subset(Data3, Data[,input$Label_column] == 0)
-            pc2 <- sweep(model$rotation, MARGIN=2, model$sdev, FUN="*")
-            output$Data_OutputPCAMT <- renderDataTable(cbind(colnames(Data2),round(pc2, digits = 3)))
-            #output$Data_OutputPCAMT <- renderDataTable(round(pc2, digits = 3))
-            
-            
-            n <- nrow(Data4)
-            Ave1 <- colMeans(Data4)
-            Var1 <- var(Data4)*(n-1)/n
-            k <- ncol(Data4)
-            
-            Var2 <- Ave1
-            
-            MD <- mahalanobis(Data3, Ave1, Var1)/k
-            
-            Data5 <- cbind(Data, MD,Data3)
-            for (i in 1:k) {
-              Var2[i] <- var(Data4[,i]*(n-1)/n)
-            }
-            Data6 <- Data3
-            for (i in 1:k) {
-              Data6[,i] <- (((Data3[,i] - Ave1[i])/sqrt(Var2[i]))^2)/k
-            }
-            Data7 <- cbind(Data[input$Label_column], Data6)
-            Data7[,1]<- as.character(Data7[,1])
-            
-            RowName <- colnames(Data7[1])
-            Data8 <- tidyr::gather(Data7, key="PC", value = Val, -RowName)
-            output$plotPCAMT <- renderPlotly(ggplotly(ggplot(Data8, aes(x=PC, y=Val)) + geom_jitter(size=3, position=position_jitter(0.1),aes(colour=as.factor(Data8[,1])))+labs(x="PC", y="Value",color=RowName)))
-            
-            Data5[,input$Label_column] <- factor(Data5[,input$Label_column])
-            ggplotly(ggplot(Data5, aes(x=Data5[,input$Label_column], y=MD)) + geom_jitter(size=3, position=position_jitter(0.1))+labs(x="Label column", y="Distance from average of label='0' samples"))
-            
-          } else if (input$One_class == "PCA_MT_Selected_Varaiables1"){
-            k2 <- ncol(Data2)
-            n <- nrow(Data2)
-            Error_Analysis <- data.frame()
-            
-            for (i in 1:k2) {
-              Data11 <- Data1[i]
-              Data12 <- Data2[i]
+              output$plot601<-renderPlot(ggplot(t_test_var_equal, aes(x=t_test_var_equal[,1],y=t_test_var_equal[,2])) + geom_bar(stat = "identity") +  labs(title="Check difference of means",subtitle="Student's t-Test:var.equal=T",x="Variables",y="p.value"))
               
-              model <- prcomp(Data12, scale=TRUE,tol = 0.0001)
-              Data3 <- predict(model, Data11)
-              Data4 <- subset(Data3, Data[,input$Label_column] == 0)
+              t_test_var_Notequal <- data.frame()
+              for (i in 1:ncol(Data1)) {
+                p_value <- t.test(x=subset(Data1[,i], Data[,input$Label_column] == 0),y=subset(Data1[,i], Data[,input$Label_column] == 1),var.equal=F,paired=F)$p.value
+                FeEr <- cbind(colnames(Data1[i]),p_value)
+                t_test_var_Notequal <- rbind(t_test_var_Notequal,FeEr)
+              }
+              output$plot602<-renderPlot(ggplot(t_test_var_Notequal, aes(x=t_test_var_Notequal[,1],y=t_test_var_Notequal[,2])) + geom_bar(stat = "identity") +  labs(title="Check difference of means",subtitle="Welch's t-Test:var.equal=F",x="Variables",y="p.value"))
+              
+              var_test <- data.frame()
+              for (i in 1:ncol(Data1)) {
+                p_value <- var.test(x=subset(Data1[,i], Data[,input$Label_column] == 0),y=subset(Data1[,i], Data[,input$Label_column] == 1))$p.value
+                FeEr <- cbind(colnames(Data1[i]),p_value)
+                var_test <- rbind(var_test,FeEr)
+              }
+              output$plot603<-renderPlot(ggplot(var_test, aes(x=var_test[,1],y=var_test[,2])) + geom_bar(stat = "identity") +  labs(title="Check difference of variance",subtitle="F-Test",x="Variables",y="p.value"))
+              
+              RowName <- colnames(Data[input$Label_column])
+              Data_long <- tidyr::gather(Data, key="Variable", value = val, -RowName)
+              ggplotly(ggplot(Data_long, aes(x=as.factor(Data_long[,1]),y=Data_long[,3])) + geom_boxplot() + facet_wrap(~Data_long[,2],scales="free")+ labs(x="Label",y="Value",subtitle = "Variables"))
+              
+              
+            } else if (input$One_class11 == "MT_All_Varaiables1"){
+              n <- nrow(Data2)
+              Ave1 <- colMeans(Data2)
+              Var1 <- var(Data2)*(n-1)/n
+              k <- ncol(Data2)
+              
+              Data3 <- Data1
+              Data4 <- Data2
+              
+              n <- nrow(Data4)
               Ave1 <- colMeans(Data4)
               Var1 <- var(Data4)*(n-1)/n
-              k <- 1
+              k <- ncol(Data4)
+              
+              MD <- mahalanobis(Data3, Ave1, Var1)/k
+              Data5 <- cbind(Data, MD)
+              
+              Data5[,input$Label_column] <- factor(Data5[,input$Label_column])
+              ggplotly(ggplot(Data5, aes(x=Data5[,input$Label_column], y=MD)) + geom_jitter(size=3, position=position_jitter(0.1))+labs(x="Label column", y="Distance from average of label='0' samples"))
+              
+            } else if (input$One_class11 == "PCA_MT_All_Varaiables1"){
+              n <- nrow(Data2)
+              Ave1 <- colMeans(Data2)
+              Var1 <- var(Data2)*(n-1)/n
+              k <- ncol(Data2)
+              
+              Data3 <- Data1
+              Data4 <- Data2
+              
+              model <- prcomp(Data2, scale=TRUE,tol = 0.0001)
+              Data3 <- predict(model, Data1)
+              Data4 <- subset(Data3, Data[,input$Label_column] == 0)
+              pc2 <- sweep(model$rotation, MARGIN=2, model$sdev, FUN="*")
+              output$Data_OutputPCAMT <- renderDataTable(cbind(colnames(Data2),round(pc2, digits = 3)))
+              #output$Data_OutputPCAMT <- renderDataTable(round(pc2, digits = 3))
+              
+              
+              n <- nrow(Data4)
+              Ave1 <- colMeans(Data4)
+              Var1 <- var(Data4)*(n-1)/n
+              k <- ncol(Data4)
+              
+              Var2 <- Ave1
               
               MD <- mahalanobis(Data3, Ave1, Var1)/k
               
-              Data5 <- cbind(Data, MD)
-              MaxMDinUnit <- max(subset(Data5, Data5[,input$Label_column] == 0)$MD)
-              Data6 <- subset(Data5, Data5[,input$Label_column] == 1)
-              Error_Number <- nrow(subset(Data6, Data6$MD < MaxMDinUnit))
-              Features <- colnames(Data1[i])
-              FeEr <- cbind(Features,Error_Number)
-              
-              Error_Analysis <- rbind(Error_Analysis,FeEr)
-              
-            }
-            for (i1 in 1:k2) {
-              for (i2 in 1:k2) {
-                if(i2 > i1){
-                  Data11 <- cbind(Data1[i1],Data1[i2])
-                  Data12 <- cbind(Data2[i1],Data2[i2])
-                  
-                  model <- prcomp(Data12, scale=TRUE,tol = 0.0001)
-                  Data3 <- predict(model, Data11)
-                  Data4 <- subset(Data3, Data[,input$Label_column] == 0)
-                  Ave1 <- colMeans(Data4)
-                  Var1 <- var(Data4)*(n-1)/n
-                  k <- 2
-                  MD <- mahalanobis(Data3, Ave1, Var1)/k
-                  Data5 <- cbind(Data, MD)
-                  MaxMDinUnit <- max(subset(Data5, Data5[,input$Label_column] == 0)$MD)
-                  Data6 <- subset(Data5, Data5[,input$Label_column] == 1)
-                  Error_Number <- nrow(subset(Data6, Data6$MD < MaxMDinUnit))
-                  Features <- paste(colnames(Data1[i1]),"_",colnames(Data1[i2]))
-                  FeEr <- cbind(Features,Error_Number)
-                  
-                  Error_Analysis <- rbind(Error_Analysis,FeEr)
-                }
+              Data5 <- cbind(Data, MD,Data3)
+              for (i in 1:k) {
+                Var2[i] <- var(Data4[,i]*(n-1)/n)
               }
-            }
-            for (i1 in 1:k2) {
-              for (i2 in 1:k2) {
-                if(i2 > i1){
-                  for (i3 in 1:k2) {
-                    if(i3 > i2){
-                      Data11 <- cbind(Data1[i1],Data1[i2],Data1[i3])
-                      Data12 <- cbind(Data2[i1],Data2[i2],Data2[i3])
-                      
-                      model <- prcomp(Data12, scale=TRUE,tol = 0.0001)
-                      Data3 <- predict(model, Data11)
-                      Data4 <- subset(Data3, Data[,input$Label_column] == 0)
-                      Ave1 <- colMeans(Data4)
-                      Var1 <- var(Data4)*(n-1)/n
-                      k <- 3
-                      MD <- mahalanobis(Data3, Ave1, Var1)/k
-                      Data5 <- cbind(Data, MD)
-                      MaxMDinUnit <- max(subset(Data5, Data5[,input$Label_column] == 0)$MD)
-                      Data6 <- subset(Data5, Data5[,input$Label_column] == 1)
-                      Error_Number <- nrow(subset(Data6, Data6$MD < MaxMDinUnit))
-                      Features <- paste(colnames(Data1[i1]),"_",colnames(Data1[i2]),"_",colnames(Data1[i3]))
-                      FeEr <- cbind(Features,Error_Number)
-                      
-                      Error_Analysis <- rbind(Error_Analysis,FeEr)
-                    }
-                  }
-                }
+              Data6 <- Data3
+              for (i in 1:k) {
+                Data6[,i] <- (((Data3[,i] - Ave1[i])/sqrt(Var2[i]))^2)/k
               }
-            }
-            Error_Analysis <- Error_Analysis[order(Error_Analysis$Error_Number, decreasing=F),]
-            output$Data_OutputPCAMTselected <- renderDataTable(Error_Analysis)
-            Error_Analysis2 <- head(Error_Analysis,30)
-            Error_Analysis2[,2]<- as.numeric(Error_Analysis2[,2])
-            ggplotly(ggplot(Error_Analysis2, aes(x=Error_Analysis2[,2], y=reorder(Error_Analysis2[,1],-Error_Analysis2[,2]))) + geom_bar(stat = "identity") +labs(x="Error_Number (Samples of label='1' that distances are shorter than maximum of label='0')", y="Features (Set of variables used in the model)"))
-            
-          } else if (input$One_class == "Kernel_PCA_MT1"){
-            n <- nrow(Data2)
-            Ave1 <- colMeans(Data2)
-            Var1 <- var(Data2)*(n-1)/n
-            k <- ncol(Data2)
-            
-            Data3 <- Data1
-            Data4 <- Data2
-            model <- kpca(as.matrix(Data2),kernel=input$Kernel2 ,kpar=list(sigma=input$kpar_value))
-            
-            Data3 <- predict(model, as.matrix(Data1))
-            Data4 <- subset(Data3, Data[,input$Label_column] == 0)
-            
-            
-            n <- nrow(Data4)
-            Ave1 <- colMeans(Data4)
-            Var1 <- var(Data4)*(n-1)/n
-            k <- ncol(Data4)
-            
-            Var2 <- Ave1
-            
-            MD <- mahalanobis(Data3, Ave1, Var1)/k
-            
-            Data5 <- cbind(Data, MD,Data3)
-            
-            Data5[,input$Label_column] <- factor(Data5[,input$Label_column])
-            ggplotly(ggplot(Data5, aes(x=Data5[,input$Label_column], y=MD)) + geom_jitter(size=3, position=position_jitter(0.1))+labs(x="First column", y="Distance from average of label='0' samples"))
-            
-          } else if (input$One_class == "One_Class_SVM_All_Varaiables1"){
-            k2 <- ncol(Data2)
-            n <- nrow(Data2)
-            
+              Data7 <- cbind(Data[input$Label_column], Data6)
+              Data7[,1]<- as.character(Data7[,1])
               
-            Data3 <- transform(Data1, type=1)
-            Data4 <- transform(Data2, type=1)
-            
-            
-            OC <- ksvm(type~.,data=Data4,type='one-svc', kernel=input$Kernel4, nu = input$nu4)
-            clust <- predict(OC,Data3)
-            Data5 <- cbind(Data, clust)
-            ggplotly(ggplot(Data5, aes(x=clust)) + geom_bar() + geom_text(stat='count', aes(label=..count..), vjust=-1) + facet_grid(. ~ as.factor(Data5[,input$Label_column]))+labs(x="Label column", y="Frequency"))
-            
-          } else if (input$One_class == "One_Class_SVM_Selected_Varaiables1"){
-            k2 <- ncol(Data2)
-            n <- nrow(Data2)
-            Error_Analysis <- data.frame()
-            nu1 <- input$nu2
-            
-            for (j1 in 1:8) {
-              if (j1 == 1) {Kernel3 <- "anovadot"}
-              if (j1 == 2) {Kernel3 <- "rbfdot"}
-              if (j1 == 3) {Kernel3 <- "polydot"}
-              if (j1 == 4) {Kernel3 <- "vanilladot"}
-              if (j1 == 5) {Kernel3 <- "tanhdot"}
-              if (j1 == 6) {Kernel3 <- "laplacedot"}
-              if (j1 == 7) {Kernel3 == "besseldot"}
-              if (j1 == 8) {Kernel3 <- "splinedot"}
+              RowName <- colnames(Data7[1])
+              Data8 <- tidyr::gather(Data7, key="PC", value = Val, -RowName)
+              output$plotPCAMT <- renderPlotly(ggplotly(ggplot(Data8, aes(x=PC, y=Val)) + geom_jitter(size=3, position=position_jitter(0.1),aes(colour=as.factor(Data8[,1])))+labs(x="PC", y="Value",color=RowName)))
               
-              for (i1 in 1:k2) {
-                Data3 <- transform(Data1[,i1], type=1)
-                Data4 <- transform(Data2[,i1], type=1)
-                
-                
-                OC <- ksvm(type~.,data=Data4,type='one-svc', kernel=Kernel3, nu = nu1)
-                clust <- predict(OC,Data3)
-                
-                Data5 <- cbind(Data, clust)
-                Data6 <- subset(Data5, Data5[,input$Label_column] == 1)
-                Error_Number <- nrow(subset(Data6, Data6$clust == "TRUE"))
-                Features <- paste(Kernel3,"_",colnames(Data1[i1]))
-                FeEr <- cbind(Features,Error_Number)
-                
-                Error_Analysis <- rbind(Error_Analysis,FeEr)
-                
-              }
-              for (i1 in 1:k2) {
-                for (i2 in 1:k2) {
-                  if(i2 > i1){
-                    Data3 <- transform(cbind(Data1[i1],Data1[i2]), type=1)
-                    Data4 <- transform(cbind(Data2[i1],Data2[i2]), type=1)
-                    
-                    
-                    OC <- ksvm(type~.,data=Data4,type='one-svc', kernel=Kernel3, nu = nu1)
-                    clust <- predict(OC,Data3)
-                    
-                    Data5 <- cbind(Data, clust)
-                    Data6 <- subset(Data5, Data5[,input$Label_column] == 1)
-                    Error_Number <- nrow(subset(Data6, Data6$clust == "TRUE"))
-                    Features <- paste(Kernel3,"_",colnames(Data1[i1]),"_",colnames(Data1[i2]))
-                    FeEr <- cbind(Features,Error_Number)
-                    
-                    Error_Analysis <- rbind(Error_Analysis,FeEr)
-                  }
-                }
-              }
-              for (i1 in 1:k2) {
-                for (i2 in 1:k2) {
-                  if(i2 > i1){
-                    for (i3 in 1:k2) {
-                      if(i3 > i2){
-                        Data3 <- transform(cbind(Data1[i1],Data1[i2],Data1[i3]), type=1)
-                        Data4 <- transform(cbind(Data2[i1],Data2[i2],Data2[i3]), type=1)
-                        
-                        
-                        OC <- ksvm(type~.,data=Data4,type='one-svc', kernel=Kernel3, nu = nu1)
-                        clust <- predict(OC,Data3)
-                        
-                        Data5 <- cbind(Data, clust)
-                        Data6 <- subset(Data5, Data5[,input$Label_column] == 1)
-                        Error_Number <- nrow(subset(Data6, Data6$clust == "TRUE"))
-                        Features <- paste(Kernel3,"_",colnames(Data1[i1]),"_",colnames(Data1[i2]),"_",colnames(Data1[i3]))
-                        FeEr <- cbind(Features,Error_Number)
-                        
-                      }
-                    }
-                  }
-                }
-              }
-            }
-            
-            Error_Analysis <- Error_Analysis[order(Error_Analysis$Error_Number, decreasing=F),]
-            output$Data_OutputOneClassSVMselected <- renderDataTable(Error_Analysis)
-            Error_Analysis2 <- head(Error_Analysis,30)
-            Error_Analysis2[,2]<- as.numeric(Error_Analysis2[,2])
-            ggplotly(ggplot(Error_Analysis2, aes(x=Error_Analysis2[,2], y=reorder(Error_Analysis2[,1],-Error_Analysis2[,2]))) + geom_bar(stat = "identity") +labs(x="Error_Number (Samples of label='1' that distances are shorter than maximum of label='0')", y="Features (Set of variables used in the model)"))
-            
-          
-          } else if (input$One_class == "Minimum_Distance_All_Varaiables1"){
-            model <- prcomp(Data2, scale=TRUE, tol=0.01)
-            Data3 <- predict(model, as.matrix(Data1))
-            std <- apply(model$x, 2, sd)
-            Data4 <- Data3
-            for (i in 1:ncol(Data3)) {
-              Data4[,i] <- Data3[,i]/std[i]
-            }
-            Data5 <- dist(Data4, diag = TRUE, upper = TRUE)
-            Data5 <-as.matrix(Data5)
-            diag(Data5) <- 1000 
-            Data5 <-as.data.frame(Data5)
-            Data5 <- data.frame(cbind(Data[,input$Label_column],Data5))
-            Data6 <- subset(Data5, Data5[,1] == 0)
-            Data6[,1] <- NULL
-            Data7 <- as.data.frame(t(Data6))
-            
-            min0 <- apply(Data7, 1,min)
-            Data8 <- as.data.frame(cbind(Data[,input$Label_column],min0))
-            Data8[,1] <- factor(Data8[,1])
-            ggplotly(ggplot(Data8, aes(x=Data8[,1], y=min0)) + geom_jitter(size=3, position=position_jitter(0.1))+labs(x="Label column", y="Distance from nearest label='0' sample"))
-            
-          } else {
-            
-            
-            
-            k2 <- ncol(Data2)
-            Error_Analysis <- data.frame()
-            
-            
-            for (i1 in 1:k2) {
-              Data101 <- cbind(Data1[i1])
-              Data201 <- cbind(Data2[i1])
+              Data5[,input$Label_column] <- factor(Data5[,input$Label_column])
+              ggplotly(ggplot(Data5, aes(x=Data5[,input$Label_column], y=MD)) + geom_jitter(size=3, position=position_jitter(0.1))+labs(x="Label column", y="Distance from average of label='0' samples"))
               
-              model <- prcomp(Data201, scale=TRUE, tol=0.01)
-              Data3 <- predict(model, as.matrix(Data101))
+            } else if (input$One_class11 == "Kernel_PCA_MT1"){
+              n <- nrow(Data2)
+              Ave1 <- colMeans(Data2)
+              Var1 <- var(Data2)*(n-1)/n
+              k <- ncol(Data2)
+              
+              Data3 <- Data1
+              Data4 <- Data2
+              model <- kpca(as.matrix(Data2),kernel=input$Kernel2 ,kpar=list(sigma=input$kpar_value))
+              
+              Data3 <- predict(model, as.matrix(Data1))
+              Data4 <- subset(Data3, Data[,input$Label_column] == 0)
+              
+              
+              n <- nrow(Data4)
+              Ave1 <- colMeans(Data4)
+              Var1 <- var(Data4)*(n-1)/n
+              k <- ncol(Data4)
+              
+              Var2 <- Ave1
+              
+              MD <- mahalanobis(Data3, Ave1, Var1)/k
+              
+              Data5 <- cbind(Data, MD,Data3)
+              
+              Data5[,input$Label_column] <- factor(Data5[,input$Label_column])
+              ggplotly(ggplot(Data5, aes(x=Data5[,input$Label_column], y=MD)) + geom_jitter(size=3, position=position_jitter(0.1))+labs(x="First column", y="Distance from average of label='0' samples"))
+              
+            } else if (input$One_class11 == "One_Class_SVM_All_Varaiables1"){
+              k2 <- ncol(Data2)
+              n <- nrow(Data2)
+              
+              
+              Data3 <- transform(Data1, type=1)
+              Data4 <- transform(Data2, type=1)
+              
+              
+              OC <- ksvm(type~.,data=Data4,type='one-svc', kernel=input$Kernel4, nu = input$nu4)
+              clust <- predict(OC,Data3)
+              Data5 <- cbind(Data, clust)
+              ggplotly(ggplot(Data5, aes(x=clust)) + geom_bar() + geom_text(stat='count', aes(label=..count..), vjust=-1) + facet_grid(. ~ as.factor(Data5[,input$Label_column]))+labs(x="Label column", y="Frequency"))
+ 
+           } else if (input$One_class11 == "Minimum_Distance_All_Varaiables1"){
+              model <- prcomp(Data2, scale=TRUE, tol=0.01)
+              Data3 <- predict(model, as.matrix(Data1))
               std <- apply(model$x, 2, sd)
               Data4 <- Data3
               for (i in 1:ncol(Data3)) {
@@ -1884,84 +1688,55 @@ shinyServer(function(input, output) {
               Data7 <- as.data.frame(t(Data6))
               
               min0 <- apply(Data7, 1,min)
-              Data8 <- as.data.frame(cbind(Data[input$Label_column],min0))
-              MaxMDinUnit <- max(subset(Data8, Data8[,1] == 0)$min0)
-              Data9 <- subset(Data8, Data8[,1] == 1)
-              
-              Error_Number <- nrow(subset(Data9, Data9$min0 < MaxMDinUnit))
-              Features <- paste(colnames(Data1[i1]))
-              FeEr <- cbind(Features,Error_Number)
-              
-              Error_Analysis <- rbind(Error_Analysis,FeEr)
-            }
+              Data8 <- as.data.frame(cbind(Data[,input$Label_column],min0))
+              Data8[,1] <- factor(Data8[,1])
+              ggplotly(ggplot(Data8, aes(x=Data8[,1], y=min0)) + geom_jitter(size=3, position=position_jitter(0.1))+labs(x="Label column", y="Distance from nearest label='0' sample"))
+           }
             
-            for (i1 in 1:k2) {
-              for (i2 in 1:k2) {
-                if(i2 > i1){
-                  Data101 <- cbind(Data1[i1],Data1[i2])
-                  Data201 <- cbind(Data2[i1],Data2[i2])
-                  
-                  model <- prcomp(Data201, scale=TRUE, tol=0.01)
-                  Data3 <- predict(model, as.matrix(Data101))
-                  std <- apply(model$x, 2, sd)
-                  Data4 <- Data3
-                  for (i in 1:ncol(Data3)) {
-                    Data4[,i] <- Data3[,i]/std[i]
-                  }
-                  Data5 <- dist(Data4, diag = TRUE, upper = TRUE)
-                  Data5 <-as.matrix(Data5)
-                  diag(Data5) <- 1000 
-                  Data5 <-as.data.frame(Data5)
-                  Data5 <- data.frame(cbind(Data[,input$Label_column],Data5))
-                  Data6 <- subset(Data5, Data5[,1] == 0)
-                  Data6[,1] <- NULL
-                  Data7 <- as.data.frame(t(Data6))
-                  
-                  min0 <- apply(Data7, 1,min)
-                  Data8 <- as.data.frame(cbind(Data[input$Label_column],min0))
-                  MaxMDinUnit <- max(subset(Data8, Data8[,1] == 0)$min0)
-                  Data9 <- subset(Data8, Data8[,1] == 1)
+          } else {
+            if (input$One_class12 == "MT_Selected_Varaiables1"){
+              k2 <- ncol(Data2)
+              n <- nrow(Data2)
+              Error_Analysis <- data.frame()
+              
+              for (i in 1:k2) {
+                Data3 <- Data1[,i]
+                Data4 <- Data2[,i]
+                Ave1 <- mean(Data4)
+                Var1 <- var(Data4)*(n-1)/n
+                MD <- ((Data3 - Ave1)^2)/Var1
+                Data5 <- cbind(Data, MD)
+                MaxMDinUnit <- max(subset(Data5, Data5[,input$Label_column] == 0)$MD)
+                Data6 <- subset(Data5, Data5[,input$Label_column] == 1)
+                Error_Number <- nrow(subset(Data6, Data6$MD < MaxMDinUnit))
+                Features <- colnames(Data1[i])
+                FeEr <- cbind(Features,Error_Number)
                 
-                  Error_Number <- nrow(subset(Data9, Data9$min0 < MaxMDinUnit))
-                  Features <- paste(colnames(Data1[i1]),"_",colnames(Data1[i2]))
-                  FeEr <- cbind(Features,Error_Number)
-                  
-                  Error_Analysis <- rbind(Error_Analysis,FeEr)
-                }
+                Error_Analysis <- rbind(Error_Analysis,FeEr)
+                
               }
-            }
-            
-            for (i1 in 1:k2) {
-              for (i2 in 1:k2) {
-                if(i2 > i1){
-                  for (i3 in 1:k2) {
-                    if(i3 > i2){
-                      Data101 <- cbind(Data1[i1],Data1[i2],Data1[i3])
-                      Data201 <- cbind(Data2[i1],Data2[i2],Data2[i3])
-                      
-                      model <- prcomp(Data201, scale=TRUE, tol=0.01)
-                      Data3 <- predict(model, as.matrix(Data101))
-                      std <- apply(model$x, 2, sd)
-                      Data4 <- Data3
-                      for (i in 1:ncol(Data3)) {
-                        Data4[,i] <- Data3[,i]/std[i]
-                      }
-                      Data5 <- dist(Data4, diag = TRUE, upper = TRUE)
-                      Data5 <-as.matrix(Data5)
-                      diag(Data5) <- 1000 
-                      Data5 <-as.data.frame(Data5)
-                      Data5 <- data.frame(cbind(Data[,input$Label_column],Data5))
-                      Data6 <- subset(Data5, Data5[,1] == 0)
-                      Data6[,1] <- NULL
-                      Data7 <- as.data.frame(t(Data6))
-                      
-                      min0 <- apply(Data7, 1,min)
-                      Data8 <- as.data.frame(cbind(Data[input$Label_column],min0))
-                      MaxMDinUnit <- max(subset(Data8, Data8[,1] == 0)$min0)
-                      Data9 <- subset(Data8, Data8[,1] == 1)
-                      
-                      Error_Number <- nrow(subset(Data9, Data9$min0 < MaxMDinUnit))
-                      Features <- paste(colnames(Data1[i1]),"_",colnames(Data1[i2]),"_",colnames(Data1[i3]))
+              for (i1 in 1:k2) {
+                for (i2 in 1:k2) {
+                  if(i2 > i1){
+                    Data3 <- cbind(Data1[i1],Data1[i2])
+                    Data4 <- cbind(Data2[i1],Data2[i2])
+                    Ave1 <- colMeans(Data4)
+                    Var1 <- var(Data4)*(n-1)/n
+                    k <- 2
+                    
+                    e<-try(mahalanobis(Data3, Ave1, Var1)/k, silent = FALSE)
+                    if( class(e) == "try-error") {
+                      MD <- 1
+                    }else{
+                      MD <- mahalanobis(Data3, Ave1, Var1)/k
+                    }
+                    #MD <- mahalanobis(Data3, Ave1, Var1)/k
+                    if (MD != 1){
+                      Data5 <- cbind(Data, MD)
+                      MaxMDinUnit <- max(subset(Data5, Data5[,input$Label_column] == 0)$MD)
+                      Data6 <- subset(Data5, Data5[,input$Label_column] == 1)
+                      Error_Number <- nrow(subset(Data6, Data6$MD < MaxMDinUnit))
+                      Features <- paste(colnames(Data1[i1]),"_",colnames(Data1[i2]))
                       FeEr <- cbind(Features,Error_Number)
                       
                       Error_Analysis <- rbind(Error_Analysis,FeEr)
@@ -1969,98 +1744,349 @@ shinyServer(function(input, output) {
                   }
                 }
               }
+              for (i1 in 1:k2) {
+                for (i2 in 1:k2) {
+                  if(i2 > i1){
+                    for (i3 in 1:k2) {
+                      if(i3 > i2){
+                        Data3 <- cbind(Data1[i1],Data1[i2],Data1[i3])
+                        Data4 <- cbind(Data2[i1],Data2[i2],Data2[i3])
+                        Ave1 <- colMeans(Data4)
+                        Var1 <- var(Data4)*(n-1)/n
+                        k <- 3
+                        e<-try(mahalanobis(Data3, Ave1, Var1)/k, silent = FALSE)
+                        if( class(e) == "try-error") {
+                          MD <- 1
+                        }else{
+                          MD <- mahalanobis(Data3, Ave1, Var1)/k
+                        }
+                        #MD <- mahalanobis(Data3, Ave1, Var1)/k
+                        if (MD != 1){
+                          Data5 <- cbind(Data, MD)
+                          MaxMDinUnit <- max(subset(Data5, Data5[,input$Label_column] == 0)$MD)
+                          Data6 <- subset(Data5, Data5[,input$Label_column] == 1)
+                          Error_Number <- nrow(subset(Data6, Data6$MD < MaxMDinUnit))
+                          Features <- paste(colnames(Data1[i1]),"_",colnames(Data1[i2]),"_",colnames(Data1[i3]))
+                          FeEr <- cbind(Features,Error_Number)
+                          
+                          Error_Analysis <- rbind(Error_Analysis,FeEr)
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              Error_Analysis <- Error_Analysis[order(Error_Analysis$Error_Number, decreasing=F),]
+              output$Data_OutputMTselected <- renderDataTable(Error_Analysis)
+              Error_Analysis2 <- head(Error_Analysis,30)
+              Error_Analysis2[,2]<- as.numeric(Error_Analysis2[,2])
+              ggplotly(ggplot(Error_Analysis2, aes(x=Error_Analysis2[,2], y=reorder(Error_Analysis2[,1],-Error_Analysis2[,2]))) + geom_bar(stat = "identity") +labs(x="Error_Number (Samples of label='1' that distances are shorter than maximum of label='0')", y="Features (Set of variables used in the model)"))
+              
+            } else if (input$One_class12 == "PCA_MT_Selected_Varaiables1"){
+              k2 <- ncol(Data2)
+              n <- nrow(Data2)
+              Error_Analysis <- data.frame()
+              
+              for (i in 1:k2) {
+                Data11 <- Data1[i]
+                Data12 <- Data2[i]
+                
+                model <- prcomp(Data12, scale=TRUE,tol = 0.0001)
+                Data3 <- predict(model, Data11)
+                Data4 <- subset(Data3, Data[,input$Label_column] == 0)
+                Ave1 <- colMeans(Data4)
+                Var1 <- var(Data4)*(n-1)/n
+                k <- 1
+                
+                MD <- mahalanobis(Data3, Ave1, Var1)/k
+                
+                Data5 <- cbind(Data, MD)
+                MaxMDinUnit <- max(subset(Data5, Data5[,input$Label_column] == 0)$MD)
+                Data6 <- subset(Data5, Data5[,input$Label_column] == 1)
+                Error_Number <- nrow(subset(Data6, Data6$MD < MaxMDinUnit))
+                Features <- colnames(Data1[i])
+                FeEr <- cbind(Features,Error_Number)
+                
+                Error_Analysis <- rbind(Error_Analysis,FeEr)
+                
+              }
+              for (i1 in 1:k2) {
+                for (i2 in 1:k2) {
+                  if(i2 > i1){
+                    Data11 <- cbind(Data1[i1],Data1[i2])
+                    Data12 <- cbind(Data2[i1],Data2[i2])
+                    
+                    model <- prcomp(Data12, scale=TRUE,tol = 0.0001)
+                    Data3 <- predict(model, Data11)
+                    Data4 <- subset(Data3, Data[,input$Label_column] == 0)
+                    Ave1 <- colMeans(Data4)
+                    Var1 <- var(Data4)*(n-1)/n
+                    k <- 2
+                    MD <- mahalanobis(Data3, Ave1, Var1)/k
+                    Data5 <- cbind(Data, MD)
+                    MaxMDinUnit <- max(subset(Data5, Data5[,input$Label_column] == 0)$MD)
+                    Data6 <- subset(Data5, Data5[,input$Label_column] == 1)
+                    Error_Number <- nrow(subset(Data6, Data6$MD < MaxMDinUnit))
+                    Features <- paste(colnames(Data1[i1]),"_",colnames(Data1[i2]))
+                    FeEr <- cbind(Features,Error_Number)
+                    
+                    Error_Analysis <- rbind(Error_Analysis,FeEr)
+                  }
+                }
+              }
+              for (i1 in 1:k2) {
+                for (i2 in 1:k2) {
+                  if(i2 > i1){
+                    for (i3 in 1:k2) {
+                      if(i3 > i2){
+                        Data11 <- cbind(Data1[i1],Data1[i2],Data1[i3])
+                        Data12 <- cbind(Data2[i1],Data2[i2],Data2[i3])
+                        
+                        model <- prcomp(Data12, scale=TRUE,tol = 0.0001)
+                        Data3 <- predict(model, Data11)
+                        Data4 <- subset(Data3, Data[,input$Label_column] == 0)
+                        Ave1 <- colMeans(Data4)
+                        Var1 <- var(Data4)*(n-1)/n
+                        k <- 3
+                        MD <- mahalanobis(Data3, Ave1, Var1)/k
+                        Data5 <- cbind(Data, MD)
+                        MaxMDinUnit <- max(subset(Data5, Data5[,input$Label_column] == 0)$MD)
+                        Data6 <- subset(Data5, Data5[,input$Label_column] == 1)
+                        Error_Number <- nrow(subset(Data6, Data6$MD < MaxMDinUnit))
+                        Features <- paste(colnames(Data1[i1]),"_",colnames(Data1[i2]),"_",colnames(Data1[i3]))
+                        FeEr <- cbind(Features,Error_Number)
+                        
+                        Error_Analysis <- rbind(Error_Analysis,FeEr)
+                      }
+                    }
+                  }
+                }
+              }
+              Error_Analysis <- Error_Analysis[order(Error_Analysis$Error_Number, decreasing=F),]
+              output$Data_OutputPCAMTselected <- renderDataTable(Error_Analysis)
+              Error_Analysis2 <- head(Error_Analysis,30)
+              Error_Analysis2[,2]<- as.numeric(Error_Analysis2[,2])
+              ggplotly(ggplot(Error_Analysis2, aes(x=Error_Analysis2[,2], y=reorder(Error_Analysis2[,1],-Error_Analysis2[,2]))) + geom_bar(stat = "identity") +labs(x="Error_Number (Samples of label='1' that distances are shorter than maximum of label='0')", y="Features (Set of variables used in the model)"))
+              
+            
+            } else if (input$One_class12 == "One_Class_SVM_Selected_Varaiables1"){
+              k2 <- ncol(Data2)
+              n <- nrow(Data2)
+              Error_Analysis <- data.frame()
+              nu1 <- input$nu2
+              
+              for (j1 in 1:8) {
+                if (j1 == 1) {Kernel3 <- "anovadot"}
+                if (j1 == 2) {Kernel3 <- "rbfdot"}
+                if (j1 == 3) {Kernel3 <- "polydot"}
+                if (j1 == 4) {Kernel3 <- "vanilladot"}
+                if (j1 == 5) {Kernel3 <- "tanhdot"}
+                if (j1 == 6) {Kernel3 <- "laplacedot"}
+                if (j1 == 7) {Kernel3 == "besseldot"}
+                if (j1 == 8) {Kernel3 <- "splinedot"}
+                
+                for (i1 in 1:k2) {
+                  Data3 <- transform(Data1[,i1], type=1)
+                  Data4 <- transform(Data2[,i1], type=1)
+                  
+                  
+                  OC <- ksvm(type~.,data=Data4,type='one-svc', kernel=Kernel3, nu = nu1)
+                  clust <- predict(OC,Data3)
+                  
+                  Data5 <- cbind(Data, clust)
+                  Data6 <- subset(Data5, Data5[,input$Label_column] == 1)
+                  Error_Number <- nrow(subset(Data6, Data6$clust == "TRUE"))
+                  Features <- paste(Kernel3,"_",colnames(Data1[i1]))
+                  FeEr <- cbind(Features,Error_Number)
+                  
+                  Error_Analysis <- rbind(Error_Analysis,FeEr)
+                  
+                }
+                for (i1 in 1:k2) {
+                  for (i2 in 1:k2) {
+                    if(i2 > i1){
+                      Data3 <- transform(cbind(Data1[i1],Data1[i2]), type=1)
+                      Data4 <- transform(cbind(Data2[i1],Data2[i2]), type=1)
+                      
+                      
+                      OC <- ksvm(type~.,data=Data4,type='one-svc', kernel=Kernel3, nu = nu1)
+                      clust <- predict(OC,Data3)
+                      
+                      Data5 <- cbind(Data, clust)
+                      Data6 <- subset(Data5, Data5[,input$Label_column] == 1)
+                      Error_Number <- nrow(subset(Data6, Data6$clust == "TRUE"))
+                      Features <- paste(Kernel3,"_",colnames(Data1[i1]),"_",colnames(Data1[i2]))
+                      FeEr <- cbind(Features,Error_Number)
+                      
+                      Error_Analysis <- rbind(Error_Analysis,FeEr)
+                    }
+                  }
+                }
+                for (i1 in 1:k2) {
+                  for (i2 in 1:k2) {
+                    if(i2 > i1){
+                      for (i3 in 1:k2) {
+                        if(i3 > i2){
+                          Data3 <- transform(cbind(Data1[i1],Data1[i2],Data1[i3]), type=1)
+                          Data4 <- transform(cbind(Data2[i1],Data2[i2],Data2[i3]), type=1)
+                          
+                          
+                          OC <- ksvm(type~.,data=Data4,type='one-svc', kernel=Kernel3, nu = nu1)
+                          clust <- predict(OC,Data3)
+                          
+                          Data5 <- cbind(Data, clust)
+                          Data6 <- subset(Data5, Data5[,input$Label_column] == 1)
+                          Error_Number <- nrow(subset(Data6, Data6$clust == "TRUE"))
+                          Features <- paste(Kernel3,"_",colnames(Data1[i1]),"_",colnames(Data1[i2]),"_",colnames(Data1[i3]))
+                          FeEr <- cbind(Features,Error_Number)
+                          
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              
+              Error_Analysis <- Error_Analysis[order(Error_Analysis$Error_Number, decreasing=F),]
+              output$Data_OutputOneClassSVMselected <- renderDataTable(Error_Analysis)
+              Error_Analysis2 <- head(Error_Analysis,30)
+              Error_Analysis2[,2]<- as.numeric(Error_Analysis2[,2])
+              ggplotly(ggplot(Error_Analysis2, aes(x=Error_Analysis2[,2], y=reorder(Error_Analysis2[,1],-Error_Analysis2[,2]))) + geom_bar(stat = "identity") +labs(x="Error_Number (Samples of label='1' that distances are shorter than maximum of label='0')", y="Features (Set of variables used in the model)"))
+              
+            
+            
+            } else {
+              
+              
+              
+              k2 <- ncol(Data2)
+              Error_Analysis <- data.frame()
+              
+              
+              for (i1 in 1:k2) {
+                Data101 <- cbind(Data1[i1])
+                Data201 <- cbind(Data2[i1])
+                
+                model <- prcomp(Data201, scale=TRUE, tol=0.01)
+                Data3 <- predict(model, as.matrix(Data101))
+                std <- apply(model$x, 2, sd)
+                Data4 <- Data3
+                for (i in 1:ncol(Data3)) {
+                  Data4[,i] <- Data3[,i]/std[i]
+                }
+                Data5 <- dist(Data4, diag = TRUE, upper = TRUE)
+                Data5 <-as.matrix(Data5)
+                diag(Data5) <- 1000 
+                Data5 <-as.data.frame(Data5)
+                Data5 <- data.frame(cbind(Data[,input$Label_column],Data5))
+                Data6 <- subset(Data5, Data5[,1] == 0)
+                Data6[,1] <- NULL
+                Data7 <- as.data.frame(t(Data6))
+                
+                min0 <- apply(Data7, 1,min)
+                Data8 <- as.data.frame(cbind(Data[input$Label_column],min0))
+                MaxMDinUnit <- max(subset(Data8, Data8[,1] == 0)$min0)
+                Data9 <- subset(Data8, Data8[,1] == 1)
+                
+                Error_Number <- nrow(subset(Data9, Data9$min0 < MaxMDinUnit))
+                Features <- paste(colnames(Data1[i1]))
+                FeEr <- cbind(Features,Error_Number)
+                
+                Error_Analysis <- rbind(Error_Analysis,FeEr)
+              }
+              
+              for (i1 in 1:k2) {
+                for (i2 in 1:k2) {
+                  if(i2 > i1){
+                    Data101 <- cbind(Data1[i1],Data1[i2])
+                    Data201 <- cbind(Data2[i1],Data2[i2])
+                    
+                    model <- prcomp(Data201, scale=TRUE, tol=0.01)
+                    Data3 <- predict(model, as.matrix(Data101))
+                    std <- apply(model$x, 2, sd)
+                    Data4 <- Data3
+                    for (i in 1:ncol(Data3)) {
+                      Data4[,i] <- Data3[,i]/std[i]
+                    }
+                    Data5 <- dist(Data4, diag = TRUE, upper = TRUE)
+                    Data5 <-as.matrix(Data5)
+                    diag(Data5) <- 1000 
+                    Data5 <-as.data.frame(Data5)
+                    Data5 <- data.frame(cbind(Data[,input$Label_column],Data5))
+                    Data6 <- subset(Data5, Data5[,1] == 0)
+                    Data6[,1] <- NULL
+                    Data7 <- as.data.frame(t(Data6))
+                    
+                    min0 <- apply(Data7, 1,min)
+                    Data8 <- as.data.frame(cbind(Data[input$Label_column],min0))
+                    MaxMDinUnit <- max(subset(Data8, Data8[,1] == 0)$min0)
+                    Data9 <- subset(Data8, Data8[,1] == 1)
+                  
+                    Error_Number <- nrow(subset(Data9, Data9$min0 < MaxMDinUnit))
+                    Features <- paste(colnames(Data1[i1]),"_",colnames(Data1[i2]))
+                    FeEr <- cbind(Features,Error_Number)
+                    
+                    Error_Analysis <- rbind(Error_Analysis,FeEr)
+                  }
+                }
+              }
+              
+              for (i1 in 1:k2) {
+                for (i2 in 1:k2) {
+                  if(i2 > i1){
+                    for (i3 in 1:k2) {
+                      if(i3 > i2){
+                        Data101 <- cbind(Data1[i1],Data1[i2],Data1[i3])
+                        Data201 <- cbind(Data2[i1],Data2[i2],Data2[i3])
+                        
+                        model <- prcomp(Data201, scale=TRUE, tol=0.01)
+                        Data3 <- predict(model, as.matrix(Data101))
+                        std <- apply(model$x, 2, sd)
+                        Data4 <- Data3
+                        for (i in 1:ncol(Data3)) {
+                          Data4[,i] <- Data3[,i]/std[i]
+                        }
+                        Data5 <- dist(Data4, diag = TRUE, upper = TRUE)
+                        Data5 <-as.matrix(Data5)
+                        diag(Data5) <- 1000 
+                        Data5 <-as.data.frame(Data5)
+                        Data5 <- data.frame(cbind(Data[,input$Label_column],Data5))
+                        Data6 <- subset(Data5, Data5[,1] == 0)
+                        Data6[,1] <- NULL
+                        Data7 <- as.data.frame(t(Data6))
+                        
+                        min0 <- apply(Data7, 1,min)
+                        Data8 <- as.data.frame(cbind(Data[input$Label_column],min0))
+                        MaxMDinUnit <- max(subset(Data8, Data8[,1] == 0)$min0)
+                        Data9 <- subset(Data8, Data8[,1] == 1)
+                        
+                        Error_Number <- nrow(subset(Data9, Data9$min0 < MaxMDinUnit))
+                        Features <- paste(colnames(Data1[i1]),"_",colnames(Data1[i2]),"_",colnames(Data1[i3]))
+                        FeEr <- cbind(Features,Error_Number)
+                        
+                        Error_Analysis <- rbind(Error_Analysis,FeEr)
+                      }
+                    }
+                  }
+                }
+              }
+              
+              Error_Analysis <- Error_Analysis[order(Error_Analysis$Error_Number, decreasing=F),]
+              output$Data_OutputMDselected <- renderDataTable(Error_Analysis)
+              Error_Analysis2 <- head(Error_Analysis,30)
+              Error_Analysis2[,2]<- as.numeric(Error_Analysis2[,2])
+              ggplotly(ggplot(Error_Analysis2, aes(x=Error_Analysis2[,2], y=reorder(Error_Analysis2[,1],-Error_Analysis2[,2]))) + geom_bar(stat = "identity") +labs(x="Error_Number (Samples of label='1' that distances are shorter than maximum of label='0')", y="Features (Set of variables used in the model)"))
+              
             }
-            
-            Error_Analysis <- Error_Analysis[order(Error_Analysis$Error_Number, decreasing=F),]
-            output$Data_OutputMDselected <- renderDataTable(Error_Analysis)
-            Error_Analysis2 <- head(Error_Analysis,30)
-            Error_Analysis2[,2]<- as.numeric(Error_Analysis2[,2])
-            ggplotly(ggplot(Error_Analysis2, aes(x=Error_Analysis2[,2], y=reorder(Error_Analysis2[,1],-Error_Analysis2[,2]))) + geom_bar(stat = "identity") +labs(x="Error_Number (Samples of label='1' that distances are shorter than maximum of label='0')", y="Features (Set of variables used in the model)"))
-            
           }
+          ######################################################
           
         }
       }
     }
   })
   
-  
-  output$plot10 <- renderPlotly({
-    if(input$analysis == "Similarity_of_Variables_and_Categories1"){
-      if(input$Similarity_of_Variables_and_Categories == "Between_label_column_and_others1"){
-        if(input$Between_label_column_and_others == "Hidden1"){
-          if(input$finder == "Hidden_PCA1"){
-      
-            
-            if(input$sep2 == "Separator_Comma"){sep <- ","}
-            if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
-            if(input$sep2 == "Separator_Tab"){sep <- "\t"}
-            Data <- read.csv(input$file1$datapath, header=T,sep = sep)
-            if(input$DoNotUseFirst == 1){
-              Data[,1] <- NULL
-            }
-            
-            library(dummies)
-            library(ggplot2)
-            library(tidyr)
-            Data1 <- Data
-            Y <- names(Data1[input$Label_column])
-            Ydata <- Data1[,input$Label_column]
-            Data1[,input$Label_column] <- NULL
-            Data2 <- dummy.data.frame(Data1)
-            pc <- prcomp(Data2, scale=TRUE)
-            Data4 <- cbind(Ydata, pc$x, Data2)
-            Data_long <- tidyr::gather(Data4, key="X", value = Xs, -Ydata)
-            if(class(Ydata) == "numeric") {
-              ggplotly(ggplot(Data_long, aes(x=Xs,y=Data_long[,1])) + geom_point() + facet_wrap(~X,scales="free")+ labs(y=Y))
-            } else {
-              ggplotly(ggplot(Data_long, aes(x=Data_long[,1],y=Xs)) + geom_jitter(size=1, position=position_jitter(0.1)) + facet_wrap(~X,scales="free")+ labs(x=Y))
-            }
-          }
-        }
-      }
-    }
-  })
-  
-  output$plot11 <- renderPlotly({
-    if(input$analysis == "Similarity_of_Variables_and_Categories1"){
-      if(input$Similarity_of_Variables_and_Categories == "Between_label_column_and_others1"){
-        if(input$Between_label_column_and_others == "Hidden1"){
-          if(input$finder == "Hidden_ICA1"){
-      
-            req(input$file1)
-            
-            if(input$sep2 == "Separator_Comma"){sep <- ","}
-            if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
-            if(input$sep2 == "Separator_Tab"){sep <- "\t"}
-            Data <- read.csv(input$file1$datapath, header=T,sep = sep)
-            if(input$DoNotUseFirst == 1){
-              Data[,1] <- NULL
-            }
-            
-            library(fastICA)
-            library(dummies)
-            library(ggplot2)
-            library(tidyr)
-            Data1 <- Data
-            Y <- names(Data1[input$Label_column])
-            Ydata <- Data1[,input$Label_column]
-            Data1[,input$Label_column] <- NULL
-            Data2 <- dummy.data.frame(Data1)
-            pc <- prcomp(Data2, scale=TRUE, tol=0.01)
-            ic <- fastICA(Data2, ncol(pc$x))$S
-            Data4 <- cbind(Ydata, ic, Data2)
-            Data_long <- tidyr::gather(Data4, key="X", value = Xs, -Ydata)
-            if(class(Ydata) == "numeric") {
-              ggplotly(ggplot(Data_long, aes(x=Xs,y=Data_long[,1])) + geom_point() + facet_wrap(~X,scales="free")+ labs(y=Y))
-            } else {
-              ggplotly(ggplot(Data_long, aes(x=Data_long[,1],y=Xs)) + geom_jitter(size=1, position=position_jitter(0.1)) + facet_wrap(~X,scales="free")+ labs(x=Y))
-            }
-          }
-        }
-      }
-    }
-  })
+
   
   
   
@@ -2420,8 +2446,13 @@ shinyServer(function(input, output) {
         }
         
         Data2 <- dummy.data.frame(Data)
+        if(input$PCA_use4 == 1){
+          pc <- prcomp(Data2, scale=TRUE,tol=0.01)
+          Data2 <- as.data.frame(pc$x)
+        }
         Data3 <- Data2
-        if(input$Normalization_use3 == 1){
+        if(input$Normalization_use4 == 1){
+          
           for (i in 1:ncol(Data2)) {
             Data3[,i] <- (Data2[,i]-min(Data2[,i]))/(max(Data2[,i])-min(Data2[,i]))
           }
@@ -2432,7 +2463,7 @@ shinyServer(function(input, output) {
           library(ggdendro)
           
           Data11_dist <- dist(Data3)
-          hc <- hclust(Data11_dist, "ward.D2")
+          hc <- hclust(Data11_dist, input$hclust_type1)
           ggplotly(ggdendrogram(hc, segments = TRUE, labels = TRUE, leaf_labels = TRUE, rotate = FALSE, theme_dendro = TRUE))
           
         } else{

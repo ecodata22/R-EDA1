@@ -61,9 +61,13 @@ fluidPage(
 
         selectInput("Change_categorical_data_into", "Change categorical data into",
                      choices = c(Factor_Level = "Factor_Level1",
-                                 Dummy_Varaiables = "Dummy_Varaiables1")),br(),
-        checkboxInput("Normalization_use", "Use normalization", FALSE),
+                                 Dummy_Varaiables = "Dummy_Varaiables1")),
+        #checkboxInput("Normalization_use", "Use normalization", FALSE),
         
+        selectInput("Use_scale_transformation1", "Use transformation",
+                    choices = c(None = "None1",
+                                Normalization = "Normalization1",
+                                Standardization = "Standardization1")),
         checkboxInput("AddClusteringCol", "Add clustering methods for columns", FALSE),
         checkboxInput("AddClusteringRow", "Add clustering methods for rows", FALSE),
         
@@ -312,11 +316,18 @@ fluidPage(
           condition = "input.Similarity_of_Variables_and_Categories == 'Between_label_column_and_others1'",
           numericInput('Label_column', 'Column number for  label', "1"),
           selectInput("Between_label_column_and_others", "Method",
-                       choices = c(Scatter_plot = "Scatter_plot1",
+                       choices = c(Scatter_plot = "Hidden1",
                                    Regression_analysis = "Regression_analysis1",
                                    Decision_Tree = "Decision_Tree1",
-                                   One_class_classification = "One_class1",
-                                   Hidden = "Hidden1")
+                                   One_class_classification = "One_class1")
+          ),
+          
+          conditionalPanel(
+            condition = "input.Between_label_column_and_others == 'Hidden1'",
+            selectInput("finder", "finder",
+                        choices = c(None = "Hidden_None1",
+                                    With_PCA = "Hidden_PCA1",
+                                    With_ICA = "Hidden_ICA1"))
           ),
           
           conditionalPanel(
@@ -364,62 +375,70 @@ fluidPage(
           conditionalPanel(
             condition = "input.Between_label_column_and_others == 'One_class1'",
             
-            selectInput("One_class", "Method",
-                         choices = c(Basic_test_All_Varaiables = "Basic_test_All_Varaiables1",
-                                     MT_All_Varaiables = "MT_All_Varaiables1",
-                                     MT_Selected_Varaiables = "MT_Selected_Varaiables1",
-                                     PCA_MT_All_Varaiables = "PCA_MT_All_Varaiables1",
-                                     PCA_MT_Selected_Varaiables = "PCA_MT_Selected_Varaiables1",
-                                     Kernel_PCA_MT = "Kernel_PCA_MT1",
-                                     One_Class_SVM_All_Varaiables = "One_Class_SVM_All_Varaiables1",
-                                     One_Class_SVM_Selected_Varaiables = "One_Class_SVM_Selected_Varaiables1",
-                                     One_Class_Minimum_Distance_All_Varaiables = "Minimum_Distance_All_Varaiables1",
-                                     One_Class_Minimum_Distance_Selected_Varaiables = "Minimum_Distance_Selected_Varaiables1"),
-                         selected = "PCA_MT_All_Varaiables1"),
+            selectInput("Variables_type", "Variables type",
+                        choices = c(All_Varaiables = "All_Varaiables1",
+                                    Selected_Varaiables = "Selected_Varaiables1")
+                                    ),
+            conditionalPanel(
+              condition = "input.Variables_type == 'All_Varaiables1'",
+              selectInput("One_class11", "Method",
+                           choices = c(Basic_test = "Basic_test_All_Varaiables1",
+                                       MT = "MT_All_Varaiables1",
+                                       PCA_MT = "PCA_MT_All_Varaiables1",
+                                       Kernel_PCA_MT = "Kernel_PCA_MT1",
+                                       One_Class_SVM = "One_Class_SVM_All_Varaiables1",
+                                       One_Class_Minimum_Distance = "Minimum_Distance_All_Varaiables1")),
+              
+              conditionalPanel(
+                condition = "input.One_class11 == 'Kernel_PCA_MT1'",
+                sliderInput("kpar_value",
+                            "kpar of Kernel_PCA",
+                            min = 0,  max = 2, value = 0.01, step = 0.01),
+                selectInput("Kernel2", "Kernel",
+                            choices = c(anovadot= "anovadot",
+                                        rbfdot= "rbfdot",
+                                        laplacedot= "laplacedot",
+                                        besseldot= "besseldot"),
+                            selected = "rbfdot")
+                
+              ),
+              
+              conditionalPanel(
+                condition = "input.One_class11 == 'One_Class_SVM_All_Varaiables1'",
+                selectInput("Kernel4", "Kernel_library",
+                            choices = c(anovadot= "anovadot",
+                                        rbfdot= "rbfdot",
+                                        polydot= "polydot",
+                                        vanilladot= "vanilladot",
+                                        tanhdot= "tanhdot",
+                                        laplacedot= "laplacedot",
+                                        besseldot= "besseldot",
+                                        splinedot= "splinedot"),
+                            selected = "rbfdot"),
+                sliderInput("nu4",
+                            "nu (Adjust outliers)",
+                            min = 0.0001,  max = 1, value = 0.1, step = 0.0001)
+              )
+            ),
+              
             
             conditionalPanel(
-              condition = "input.One_class == 'Kernel_PCA_MT1'",
-              sliderInput("kpar_value",
-                          "kpar of Kernel_PCA",
-                          min = 0,  max = 2, value = 0.01, step = 0.01),
-              selectInput("Kernel2", "Kernel",
-                           choices = c(anovadot= "anovadot",
-                                       rbfdot= "rbfdot",
-                                       laplacedot= "laplacedot",
-                                       besseldot= "besseldot"),
-                           selected = "rbfdot")
+              condition = "input.Variables_type == 'Selected_Varaiables1'",
+              selectInput("One_class12", "Method",
+                          choices = c(MT = "MT_Selected_Varaiables1",
+                                      One_Class_SVM = "One_Class_SVM_Selected_Varaiables1",
+                                      One_Class_Minimum_Distance = "Minimum_Distance_Selected_Varaiables1")
+                          ),
               
+              conditionalPanel(
+                condition = "input.One_class12 == 'One_Class_SVM_Selected_Varaiables1'",
+                sliderInput("nu2",
+                            "nu (Adjust outliers)",
+                            min = 0.0001,  max = 1, value = 0.1, step = 0.0001)
+              ),
             ),
-            conditionalPanel(
-              condition = "input.One_class == 'One_Class_SVM_Selected_Varaiables1'",
-              sliderInput("nu2",
-                          "nu (Adjust outliers)",
-                          min = 0.0001,  max = 1, value = 0.1, step = 0.0001)
-            ),
-            conditionalPanel(
-              condition = "input.One_class == 'One_Class_SVM_All_Varaiables1'",
-              selectInput("Kernel4", "Kernel_library",
-                           choices = c(anovadot= "anovadot",
-                                       rbfdot= "rbfdot",
-                                       polydot= "polydot",
-                                       vanilladot= "vanilladot",
-                                       tanhdot= "tanhdot",
-                                       laplacedot= "laplacedot",
-                                       besseldot= "besseldot",
-                                       splinedot= "splinedot"),
-                           selected = "rbfdot"),
-              sliderInput("nu4",
-                          "nu (Adjust outliers)",
-                          min = 0.0001,  max = 1, value = 0.1, step = 0.0001)
-            )
           ),
           
-          conditionalPanel(
-            condition = "input.Between_label_column_and_others == 'Hidden1'",
-            selectInput("finder", "finder",
-                         choices = c(Hidden_PCA = "Hidden_PCA1",
-                                     Hidden_ICA = "Hidden_ICA1"))
-          ),
         ),
       ),
       
@@ -566,13 +585,22 @@ fluidPage(
         
         conditionalPanel(
           condition = "input.Dimension_for_clustering == 'Dimension_All'",
-          
-          checkboxInput("Normalization_use3", "Use normalization", TRUE),
+          checkboxInput("PCA_use4", "Use PCA", TRUE),
+          checkboxInput("Normalization_use4", "Use normalization", TRUE),
+          #selectInput("Pre_processting4", "Pre processting",
+          #            choices = c(PCA = "PCA4",
+          #                        Normalization = "Normalization_use4",
+          #                        None = "None4")),
           selectInput("Method_Dimension_All", "Method",
-                       choices = c(hclust = "hclust1",
+                       choices = c(Hierarchical = "hclust1",
                                    DBSCAN = "DBSCAN1"),
                        selected = "hclust1"),
-        
+            conditionalPanel(
+              condition = "input.Method_Dimension_All == 'hclust1'", 
+              selectInput("hclust_type1", "Type",
+                          choices = c(ward = "ward.D2",
+                                      single = "single")),
+            ),
         
         
           conditionalPanel(
@@ -888,8 +916,8 @@ fluidPage(
         #plotOutput("plot03"),
         plotlyOutput("plot03"),
         
-        a("Code (English)",href="http://data-science.tokyo/R-E/R-E1-01.html"),
-        a(" (Japanese)",href="http://data-science.tokyo/R-J/R-J1-01.html"),br(),
+        a("Code (English)",href="http://data-science.tokyo/R-E/R-E5-05.html"),
+        a(" (Japanese)",href="http://data-science.tokyo/R-J/R-J5-05.html"),br(),
         a("About Heat map(English)",href="http://data-science.tokyo/ed-e/ede1-4-3-2.html"),
         a("(Japanese)",href="http://data-science.tokyo/ed/edj1-4-3-2.html"),
         
@@ -1393,17 +1421,58 @@ fluidPage(
         ),  
         conditionalPanel(
           condition = "input.Similarity_of_Variables_and_Categories == 'Between_label_column_and_others1'",
+          
+          
           conditionalPanel(
-            condition = "input.Between_label_column_and_others == 'Scatter_plot1'",
-            h3("Scatter plot (label column vs Others)"),
-            p("Similarity among Variables"),
-            plotlyOutput("plot05"),
-            p("Categorical data is changed into dummy variables"),
-            p("If label column is numerical, 2 dimension scatter plot. 
+            condition = "input.Between_label_column_and_others == 'Hidden1'",
+            conditionalPanel(
+              condition = "input.finder == 'Hidden_None1'",
+              h3("Scatter plot (label column vs Others)"),
+              p("Similarity among Variables"),
+              plotlyOutput("plot05"),
+              p("Categorical data is changed into dummy variables"),
+              p("If label column is numerical, 2 dimension scatter plot. 
               If label column is categorical, 1 dimension scatter plot stratidied by categories."),
-            p("Categorical variables except label column are changed into dummy variables"),
-            a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-02.html"),
-            a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-02.html")
+              p("Categorical variables except label column are changed into dummy variables"),
+              a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-02.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-02.html")
+            ),
+            conditionalPanel(
+              condition = "input.finder == 'Hidden_PCA1'",
+              h3("Label column vs (Other variables and Principal components)"),
+              
+              plotlyOutput("plot10"),
+              
+              h4("Algorithm"),
+              p("1. All categorical variables except label column are changed into dummy variables"),
+              p("2. Principal  components are calculated except the label column variable"),
+              p("to find hidden factor."),
+              br(),
+              p("If label column is numerical, 2 dimension scatter plot. 
+                If label column is categorical, 1 dimension scatter plot stratidied by categories."),
+              a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-05.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-05.html"),br(),
+              a("About hidden variable (English)   ",href="http://data-science.tokyo/ed-e/ede1-9-1-2-1-1.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-9-1-2-1-1.html")
+            ),
+            conditionalPanel(
+              condition = "input.finder == 'Hidden_ICA1'",
+              h3("Label column vs (Other variables and Independent components)"),
+              plotlyOutput("plot11"),
+              h4("Algorithm"),
+              p("1. All categorical variables except label column are changed into dummy variables"),
+              p("2. Independent components are calculated except the label column variable"),
+              p("to find hidden factor."),
+              br(),
+              p("If label column is numerical, 2 dimension scatter plot. 
+                If label column is categorical, 1 dimension scatter plot stratidied by categories."),
+              a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-05.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-05.html"),br(),
+              a("Abput hidden variable (English)   ",href="http://data-science.tokyo/ed-e/ede1-9-1-2-1-1.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-9-1-2-1-1.html"),br(),
+              a("Abput ICA (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-4-2.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-4-2.html")
+            ),
           ),
           conditionalPanel(
             condition = "input.Between_label_column_and_others == 'Regression_analysis1'",
@@ -1455,123 +1524,84 @@ fluidPage(
           
           conditionalPanel(
             condition = "input.Between_label_column_and_others == 'One_class1'",
-            conditionalPanel(
-              condition = "input.One_class != 'Basic_test_All_Varaiables1'",
-              h3("One class classification to evaluate outliers"),
-            ),
-            conditionalPanel(
-              condition = "input.One_class == 'Basic_test_All_Varaiables1'",
-              h3("Check differences between label'0' and label'1'"),
-            ),
+            
             plotlyOutput("plot301"),
             conditionalPanel(
-              condition = "input.One_class == 'Basic_test_All_Varaiables1'",
-              plotOutput("plot601"),
-              plotOutput("plot602"),
-              plotOutput("plot603"),
+              condition = "input.Variables_type == 'All_Varaiables1'",
+              conditionalPanel(
+                condition = "input.One_class11 == 'Basic_test_All_Varaiables1'",
+                h3("Check differences between label'0' and label'1'"),
+              ),
+              conditionalPanel(
+                condition = "input.One_class11 == 'Basic_test_All_Varaiables1'",
+                plotOutput("plot601"),
+                plotOutput("plot602"),
+                plotOutput("plot603"),
+              ),
+              conditionalPanel(
+                condition = "input.One_class11 == 'MT_All_Varaiables1'",
+                p("If there is multicollinearity among variables, MT does not work."),
+                h4("Algorithm"),
+                p("1. All categorical variables are changed into dummy variables"),
+                p("2. Make model with the samples of label = 0 in the label column"),
+                p("3. Calculate distance from the average of label = 0 samples"),
+                a("About MT method (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-2-4.html"),
+                a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-2-4.html"),br(),
+              ),
+              conditionalPanel(
+                condition = "input.One_class11 == 'PCA_MT_All_Varaiables1'",
+                plotlyOutput("plotPCAMT"),
+                h3("Factor loading (Correlation coefficient between variables and PCs)"),
+                dataTableOutput("Data_OutputPCAMT"),
+                a("About Principal Component MT (English)   ",href="http://data-science.tokyo/ed/edj1-2-2-4-3-2.html"),
+                a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-2-4-3-2.html"),br(),
+              ),
+              conditionalPanel(
+                condition = "input.One_class11 == 'Kernel_PCA_MT1'",
+                a("About Kernel Principal Component MT (English)   ",href="http://data-science.tokyo/ed/edj1-2-2-4-3-3.html"),
+                a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-2-4-3-3.html"),br(),
+              ),
+              conditionalPanel(
+                condition = "input.One_class11 == 'One_Class_SVM_All_Varaiables1'",
+                a("About One-Class SVM (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-2-3-2.html"),
+                a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-2-3-2.html"),br(),
+              ),
+              conditionalPanel(
+                condition = "input.One_class11 == 'Minimum_Distance_All_Varaiables1'",
+                h4("Algorithm"),
+                p("1. All categorical variables are changed into dummy variables (except MT)"),
+                p("2. PCA for dimension reduction"),
+                p("3. Calculate distance from the nearest sample of label = 0 samples"),
+                a("About One Class Minimum Distance method (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-5-3.html"),
+                a("(Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-5-3.html"),
+              ),
             ),
             conditionalPanel(
-              condition = "input.One_class == 'PCA_MT_All_Varaiables1'",
-              plotlyOutput("plotPCAMT"),
-              h3("Factor loading (Correlation coefficient between variables and PCs)"),
-              dataTableOutput("Data_OutputPCAMT"),
-            ),
-            conditionalPanel(
-              condition = "input.One_class == 'MT_Selected_Varaiables1'",
-              dataTableOutput("Data_OutputMTselected"),
-            ),
-            conditionalPanel(
-              condition = "input.One_class == 'PCA_MT_Selected_Varaiables1'",
-              dataTableOutput("Data_OutputPCAMTselected"),
-            ),
-            conditionalPanel(
-              condition = "input.One_class == 'One_Class_SVM_Selected_Varaiables1'",
-              dataTableOutput("Data_OutputOneClassSVMselected"),
-            ),
-            conditionalPanel(
-              condition = "input.One_class == 'Minimum_Distance_Selected_Varaiables1'",
-              dataTableOutput("Data_OutputMDselected"),
-            ),
-            conditionalPanel(
-              condition = "input.One_class == 'MT_All_Varaiables1'",
-              p("If there is multicollinearity among variables, MT does not work.")
+              condition = "input.Variables_type != 'All_Varaiables1'",
+              conditionalPanel(
+                condition = "input.One_class12 == 'MT_Selected_Varaiables1'",
+                dataTableOutput("Data_OutputMTselected"),
+              ),
+              conditionalPanel(
+                condition = "input.One_class12 == 'PCA_MT_Selected_Varaiables1'",
+                dataTableOutput("Data_OutputPCAMTselected"),
+              ),
+              conditionalPanel(
+                condition = "input.One_class12 == 'One_Class_SVM_Selected_Varaiables1'",
+                dataTableOutput("Data_OutputOneClassSVMselected"),
+              ),
+              conditionalPanel(
+                condition = "input.One_class12 == 'Minimum_Distance_Selected_Varaiables1'",
+                dataTableOutput("Data_OutputMDselected"),
+              ),
+              
             ),
             a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E3-01.html"),
             a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J3-01.html"),br(),
             a("About one-class model (English)   ",href="http://data-science.tokyo/ed-e/ede1-6-4-2.html"),
             a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-6-4-2.html"),
-            
-            conditionalPanel(
-              condition = "input.One_class != 'Minimum_Distance_All_Varaiables1'",
-              
-              conditionalPanel(
-                condition = "input.One_class != 'Minimum_Distance_Selected_Varaiables1'",
-                conditionalPanel(
-                  condition = "input.One_class != 'Basic_test_All_Varaiables1'",
-                  h4("Algorithm"),
-                  p("1. All categorical variables are changed into dummy variables (except MT)"),
-                  p("2. Make model with the samples of label = 0 in the label column"),
-                  p("3. Calculate distance from the average of label = 0 samples"),
-                  a("About MT method (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-2-4.html"),
-                  a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-2-4.html"),br(),
-                  conditionalPanel(
-                    condition = "input.One_class != 'PCA_MT1'",
-                    a("About the reason to use PCA before MT method (English)   ",href="http://data-science.tokyo/ed/edj1-2-2-4-3-2.html"),
-                    a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-2-4-3-2.html"),br(),
-                  ),
-                ),
-              ),
-            ),
-            conditionalPanel(
-              condition = "input.One_class == 'Minimum_Distance_All_Varaiables1'",
-              h4("Algorithm"),
-              p("1. All categorical variables are changed into dummy variables (except MT)"),
-              p("2. PCA for dimension reduction"),
-              p("3. Calculate distance from the nearest sample of label = 0 samples"),
-              a("About Minimum Distance method (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-5-3.html"),
-              a("(Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-5-3.html"),
-            ),
           ),
           
-          conditionalPanel(
-            condition = "input.Between_label_column_and_others == 'Hidden1'",
-            conditionalPanel(
-              condition = "input.finder == 'Hidden_PCA1'",
-              h3("Label column vs (Other variables and Principal components)"),
-              
-              plotlyOutput("plot10"),
-              
-              h4("Algorithm"),
-              p("1. All categorical variables except label column are changed into dummy variables"),
-              p("2. Principal  components are calculated except the label column variable"),
-              p("to find hidden factor."),
-              br(),
-              p("If label column is numerical, 2 dimension scatter plot. 
-                If label column is categorical, 1 dimension scatter plot stratidied by categories."),
-              a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-05.html"),
-              a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-05.html"),br(),
-              a("About hidden variable (English)   ",href="http://data-science.tokyo/ed-e/ede1-9-1-2-1-1.html"),
-              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-9-1-2-1-1.html")
-            ),
-            conditionalPanel(
-              condition = "input.finder == 'Hidden_ICA1'",
-              h3("Label column vs (Other variables and Independent components)"),
-              plotlyOutput("plot11"),
-              h4("Algorithm"),
-              p("1. All categorical variables except label column are changed into dummy variables"),
-              p("2. Independent components are calculated except the label column variable"),
-              p("to find hidden factor."),
-              br(),
-              p("If label column is numerical, 2 dimension scatter plot. 
-                If label column is categorical, 1 dimension scatter plot stratidied by categories."),
-              a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-05.html"),
-              a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-05.html"),br(),
-              a("Abput hidden variable (English)   ",href="http://data-science.tokyo/ed-e/ede1-9-1-2-1-1.html"),
-              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-9-1-2-1-1.html"),br(),
-              a("Abput ICA (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-4-2.html"),
-              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-4-2.html")
-            ),
-          ),
         ),
       ),
       
