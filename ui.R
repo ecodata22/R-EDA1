@@ -229,7 +229,8 @@ fluidPage(
             
             selectInput("Dimension_reduction6", "Dimension_reduction",
                          choices = c(MDS = "MDS6",
-                                     tSNE = "tSNE6")),
+                                     tSNE = "tSNE6",
+                                     UMAP = "UMAP6")),
             conditionalPanel(
               condition = "input.Dimension_reduction6 == 'tSNE6'",
               sliderInput("perplexity_value6",
@@ -254,27 +255,42 @@ fluidPage(
                                      Association_rules = "Association1")),
                                      #LiNGAM = "LiNGAM1")),
             
-            
             conditionalPanel(
-              condition = "input.Variable_Network == 'Correlation_Network1'",
-              sliderInput("correlation_limit",
-                          "Use absolute value of correlation coefficient more than",
-                          min = 0,  max = 1, value = 0.9, step = 0.1)
+              condition = "input.Variable_Network != 'Bayesian_Network1'",
+              conditionalPanel(
+                condition = "input.Variable_Network != 'Association1'",
+                selectInput("Graph_type1", "Graph type",
+                            choices = c(scatter_plot = "scatter_plot1",
+                                        network = "network1")),
+              ),
             ),
             conditionalPanel(
+              condition = "input.Graph_type1 == 'network1'",
+              conditionalPanel(
+                condition = "input.Variable_Network == 'Correlation_Network1'",
+                sliderInput("correlation_limit",
+                            "Use absolute value of correlation coefficient more than",
+                            min = 0,  max = 1, value = 0.9, step = 0.1)
+              ),
+              conditionalPanel(
+                condition = "input.Variable_Network == 'Graphical_Lasso1'",
+                sliderInput("inverse_covarianve_limit",
+                            "Use absolute value of estimated inverse covariance more than",
+                            min = 0,  max = 1, value = 0.9, step = 0.1),
+              ),
+              conditionalPanel(
+                condition = "input.Variable_Network == 'Cramer_Network1'",
+                sliderInput("association_limit",
+                            "Use absolute value of Cramer's coefficient of association more than",
+                            min = 0,  max = 1, value = 0.9, step = 0.1)
+              ),
+            ),
+            
+            conditionalPanel(
               condition = "input.Variable_Network == 'Graphical_Lasso1'",
-              sliderInput("inverse_covarianve_limit",
-                          "Use absolute value of estimated inverse covariance more than",
-                          min = 0,  max = 1, value = 0.9, step = 0.1),
               sliderInput("RHO",
                           "RHO (regularization)",
                           min = 0,  max = 1, value = 0.2, step = 0.01)
-            ),
-            conditionalPanel(
-              condition = "input.Variable_Network == 'Cramer_Network1'",
-              sliderInput("association_limit",
-                          "Use absolute value of Cramer's coefficient of association more than",
-                          min = 0,  max = 1, value = 0.9, step = 0.1)
             ),
             
             conditionalPanel(
@@ -284,29 +300,25 @@ fluidPage(
                           min = 0,  max = 100, value = 20, step = 1)
             ),
             conditionalPanel(
-              condition = "input.Among_all_columns == 'Variable_Network1'",
-              conditionalPanel(
-                condition = "input.Variable_Network == 'Bayesian_Network1'",
-                selectInput("Structure_Learning", "Structure_Learning",
-                            choices = c(stable_version  = "stable_version1",
-                                        Grow_Shrink = "Grow_Shrink1",
-                                        Incremental_Association_Markov_Blanket  = "Incremental_Association_Markov_Blanket1",
-                                        Fast_Incremental_Association  = "Fast_Incremental_Association1",
-                                        Interleaved_Incremental_Association = "Interleaved_Incremental_Association1",
-                                        Incremental_Association_with_FDR_Correction = "Incremental_Association_with_FDR_Correction1",
-                                        Max_Min_Parents_and_Children = "Max_Min_Parents_and_Children1",
-                                        Semi_Interleaved_Hiton_PC = "Semi_Interleaved_Hiton_PC1",
-                                        Hybrid_Parents_and_Children  = "Hybrid_Parents_and_Children1",
-                                        Hill_Climbing  = "Hill_Climbing1",
-                                        Tabu_Search = "Tabu_Search1",
-                                        Max_Min_Hill_Climbing = "Max_Min_Hill_Climbing1",
-                                        Hybrid_HPC = "Hybrid_HPC1",
-                                        General_2_Phase_Restricted_Maximization = "General_2_Phase_Restricted_Maximization1",
-                                        Chow_Liu = "Chow_Liu1",
-                                        ARACNE = "ARACNE1"))
-              ),
+              condition = "input.Variable_Network == 'Bayesian_Network1'",
+              selectInput("Structure_Learning", "Structure_Learning",
+                          choices = c(stable_version  = "stable_version1",
+                                      Grow_Shrink = "Grow_Shrink1",
+                                      Incremental_Association_Markov_Blanket  = "Incremental_Association_Markov_Blanket1",
+                                      Fast_Incremental_Association  = "Fast_Incremental_Association1",
+                                      Interleaved_Incremental_Association = "Interleaved_Incremental_Association1",
+                                      Incremental_Association_with_FDR_Correction = "Incremental_Association_with_FDR_Correction1",
+                                      Max_Min_Parents_and_Children = "Max_Min_Parents_and_Children1",
+                                      Semi_Interleaved_Hiton_PC = "Semi_Interleaved_Hiton_PC1",
+                                      Hybrid_Parents_and_Children  = "Hybrid_Parents_and_Children1",
+                                      Hill_Climbing  = "Hill_Climbing1",
+                                      Tabu_Search = "Tabu_Search1",
+                                      Max_Min_Hill_Climbing = "Max_Min_Hill_Climbing1",
+                                      Hybrid_HPC = "Hybrid_HPC1",
+                                      General_2_Phase_Restricted_Maximization = "General_2_Phase_Restricted_Maximization1",
+                                      Chow_Liu = "Chow_Liu1",
+                                      ARACNE = "ARACNE1"))
             ),
-            
           ),
         ),
         
@@ -461,6 +473,7 @@ fluidPage(
                                    Factor = "Factor1",
                                     MDS = "MDS1",
                                    tSNE = "MDS2",
+                                   UMAP = "UMAP1",
                                    NetworkMDS = "nMDS1"),
                        selected = "None1"),
           
@@ -528,8 +541,9 @@ fluidPage(
                                choices = c(k_Means = "clust3",
                                            GMM= "clust1",
                                            DBSCAN = "clust2",
-                                           One_class_SVM_Clustering = "One_class_SVM_Clustering1"),
-                               selected = "clust1"),
+                                           HDBSCAN = "HDBSCAN1",
+                                           One_class_SVM_Clustering = "One_class_SVM_Clustering1")
+                              ),
                   
                   checkboxInput("Normalization_use2", "Use normalization", TRUE),
                   conditionalPanel(
@@ -543,6 +557,10 @@ fluidPage(
                     #sliderInput("eps_value",
                     #            "eps of DBSCAN",
                     #            min = 0,  max = 1, value = 0.1, step = 0.01)
+                  ),
+                  conditionalPanel(
+                    condition = "input.Clustering == 'HDBSCAN1'",
+                    numericInput('minPts1', 'minPts of HDBSCAN', 10),
                   ),
                   
                   conditionalPanel(
@@ -593,13 +611,15 @@ fluidPage(
           #                        None = "None4")),
           selectInput("Method_Dimension_All", "Method",
                        choices = c(Hierarchical = "hclust1",
-                                   DBSCAN = "DBSCAN1"),
+                                   DBSCAN = "DBSCAN1",
+                                   HDBSCAN = "HDBSCAN2"),
                        selected = "hclust1"),
             conditionalPanel(
               condition = "input.Method_Dimension_All == 'hclust1'", 
               selectInput("hclust_type1", "Type",
                           choices = c(ward = "ward.D2",
                                       single = "single")),
+              numericInput('k2', 'Number of Clusters', 2)
             ),
         
         
@@ -609,6 +629,11 @@ fluidPage(
             #sliderInput("eps_value2",
             #            "eps of DBSCAN",
             #            min = 0,  max = 1, value = 0.1, step = 0.01)
+          ),
+          
+          conditionalPanel(
+            condition = "input.Method_Dimension_All == 'HDBSCAN2'",
+            numericInput('minPts2', 'minPts of HDBSCAN', 10),
           ),
         ),
       ),
@@ -653,7 +678,8 @@ fluidPage(
             
             selectInput("Dimension_reduction5", "Dimension_reduction",
                          choices = c(MDS = "MDS5",
-                                     tSNE = "tSNE5")),
+                                     tSNE = "tSNE5",
+                                     UMAP = "UMAP5")),
             conditionalPanel(
               condition = "input.Dimension_reduction5 == 'tSNE5'",
               sliderInput("perplexity_value5",
@@ -1167,15 +1193,23 @@ fluidPage(
             
             conditionalPanel(
               condition = "input.Variable_Network == 'Correlation_Network1'",
-              h3("Correlation Coefficient --> Network graph"),
-              selectInput("network_library1", "Library of network",  choices = c("igraph", "networkD3")),
+              h3("Correlation coefficient analysis"),
               conditionalPanel(
-                condition = "input.network_library1 == 'igraph'",
-                plotOutput("plot06"),
+                condition = "input.Graph_type1 == 'scatter_plot1'",
+                
+                plotlyOutput("plot06c"),
               ),
               conditionalPanel(
-                condition = "input.network_library1 == 'networkD3'",
-                simpleNetworkOutput("plot06b"),
+                condition = "input.Graph_type1 != 'scatter_plot1'",
+                selectInput("network_library1", "Library of network",  choices = c("igraph", "networkD3")),
+                conditionalPanel(
+                  condition = "input.network_library1 == 'igraph'",
+                  plotOutput("plot06"),
+                ),
+                conditionalPanel(
+                  condition = "input.network_library1 == 'networkD3'",
+                  simpleNetworkOutput("plot06b"),
+                ),
               ),
               dataTableOutput("Data_Output2"),
               
@@ -1184,6 +1218,7 @@ fluidPage(
               h4("Algorithm"),
               p("1. All categorical variables are changed into dummy variables"),
               p("2. Calculate correlation coefficient"),
+              p("3. Calculate positions using correlation coefficient as distance"),
               a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-02.html"),
               a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-02.html"),br(),
               a("About Correlation of variables (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-3.html"),
@@ -1194,21 +1229,30 @@ fluidPage(
             
             conditionalPanel(
               condition = "input.Variable_Network == 'Graphical_Lasso1'",
-              h3("Graphical Lasso"),
-              selectInput("network_library2", "Library of network",  choices = c("igraph", "networkD3")),
+              h3("Graphical Lasso analysis"),
               conditionalPanel(
-                condition = "input.network_library2 == 'igraph'",
-                plotOutput("plot07"),
+                condition = "input.Graph_type1 == 'scatter_plot1'",
+                
+                plotlyOutput("plot07c"),
               ),
               conditionalPanel(
-                condition = "input.network_library2 == 'networkD3'",
-                simpleNetworkOutput("plot07b"),
+                condition = "input.Graph_type1 != 'scatter_plot1'",
+                selectInput("network_library2", "Library of network",  choices = c("igraph", "networkD3")),
+                conditionalPanel(
+                  condition = "input.network_library2 == 'igraph'",
+                  plotOutput("plot07"),
+                ),
+                conditionalPanel(
+                  condition = "input.network_library2 == 'networkD3'",
+                  simpleNetworkOutput("plot07b"),
+                ),
               ),
               dataTableOutput("Data_Output3"),
               downloadButton("downloadData3", "Download analyzed data"),
               h4("Algorithm"),
               p("1. All categorical variables are changed into dummy variables"),
-              p("2. Graphical lasso"),
+              p("2. Calculate graphical lasso"),
+              p("3. Calculate positions using graphical lasso as distance"),
               a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-02.html"),
               a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-02.html"),br(),
               a("About Correlation of variables (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-3.html"),
@@ -1219,15 +1263,23 @@ fluidPage(
             
             conditionalPanel(
               condition = "input.Variable_Network == 'Cramer_Network1'",
-              h3("Cramer's coefficient of association --> Network graph"),
-              selectInput("network_library3", "Library of network",  choices = c("igraph", "networkD3")),
+              h3("Cramer's coefficient of association analysis"),
               conditionalPanel(
-                condition = "input.network_library3 == 'igraph'",
-                plotOutput("plot09"),
+                condition = "input.Graph_type1 == 'scatter_plot1'",
+                
+                plotlyOutput("plot09c"),
               ),
               conditionalPanel(
-                condition = "input.network_library3 == 'networkD3'",
-                simpleNetworkOutput("plot09b"),
+                condition = "input.Graph_type1 != 'scatter_plot1'",
+                selectInput("network_library3", "Library of network",  choices = c("igraph", "networkD3")),
+                conditionalPanel(
+                  condition = "input.network_library3 == 'igraph'",
+                  plotOutput("plot09"),
+                ),
+                conditionalPanel(
+                  condition = "input.network_library3 == 'networkD3'",
+                  simpleNetworkOutput("plot09b"),
+                ),
               ),
               dataTableOutput("Data_Output4"),
               downloadButton("downloadData4", "Download analyzed data"),
@@ -1236,6 +1288,7 @@ fluidPage(
               h4("Algorithm"),
               p("1. All numerical variables are changed into categorical variables"),
               p("2. Calculate Cramer's coefficient of association of all sets"),
+              p("3. Calculate positions using Cramer's coefficient as distance"),
               a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-02.html"),
               a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-02.html"),br(),
               a("About Correlation of categorical variables (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-3.html"),
@@ -1666,6 +1719,10 @@ fluidPage(
                 condition = "input.Clustering == 'clust2'",
                 p("If DBSCAN is used, clust name 0 is the samples judged as outliers")
               ),
+              conditionalPanel(
+                condition = "input.Clustering == 'HDBSCAN1'",
+                p("If HDBSCAN is used, clust name 0 is the samples judged as outliers")
+              ),
               p("Download analyzed data for the next step.
               For example, if clust column is put on the first (left side) column,
               we can analyze with the function 'Similarity_of_Variables_and_Categories'"),
@@ -1693,12 +1750,17 @@ fluidPage(
         conditionalPanel(
           condition = "input.Dimension_for_clustering == 'Dimension_All'", 
           h3("Similarity of samples"),
-          plotlyOutput("plot202"),   
-          p("Categorical variables are changed into dummy variables"),
-          p("Numerical variables are normalized after dummy changed"),
+          plotlyOutput("plot202"),
           p("Clust name 0 is the samples judged as outliers"),
           conditionalPanel(
-            condition = "input.Method_Dimension_All == 'dbscan1'", 
+            condition = "input.Method_Dimension_All == 'hclust1'", 
+            p("Download analyzed data for the next step.
+                For example, if clust column is put on the first (left side) column,
+                we can analyze with the function 'Similarity_of_Variables_and_Categories'"),
+            downloadButton("downloadData51", "Download analyzed data")
+          ),
+          conditionalPanel(
+            condition = "input.Method_Dimension_All != 'hclust1'", 
             p("Download analyzed data for the next step.
                 For example, if clust column is put on the first (left side) column,
                 we can analyze with the function 'Similarity_of_Variables_and_Categories'"),

@@ -445,16 +445,38 @@ shinyServer(function(input, output) {
             library(igraph)
             library(networkD3)
             library(tidyr)
+            library(MASS)
             Data1 <- dummy.data.frame(Data)
             DataM <- as.matrix(Data1)
             GM1 <- cor(DataM)
-            diag(GM1) <- 0
-            GM2 <- abs(GM1)
-            GM2[GM2<input$correlation_limit] <- 0
-            GM3 <- GM2*10
-            GM4 <- graph.adjacency(GM3,weighted=T, mode = "undirected")
             
-            
+            if(input$Graph_type1 == 'scatter_plot1'){
+              GM2 <- abs(GM1)
+              sn <- sammon(1.01-GM2)
+              Data5 <- sn$points
+              Data6 <- as.data.frame(Data5)
+              Ydata <- row.names(Data6)
+              for (i in 1:ncol(Data5)) {
+                Data6[,i] <- (Data5[,i] - min(Data5[,i]))/(max(Data5[,i]) - min(Data5[,i]))
+              }
+              output$plot06c <- renderPlotly(ggplotly(ggplot(Data6, aes(x=Data6[,1], y=Data6[,2],label=Ydata)) + geom_text() + labs(y="axis2",x="axis1")))
+              
+            } else {
+              GM2 <- abs(GM1)
+              diag(GM2) <- 0
+              GM2[GM2<input$correlation_limit] <- 0
+              GM3 <- GM2*10
+              GM4 <- graph.adjacency(GM3,weighted=T, mode = "undirected")
+              
+              
+              
+              if(input$network_library1 == 'igraph'){
+                output$plot06 <- renderPlot(plot(GM4, edge.width=E(GM4)$weight))
+              }else{
+                DM.g2 <- data.frame(as_edgelist(GM4))
+                output$plot06b <- renderSimpleNetwork(simpleNetwork(DM.g2, fontSize = 14, nodeColour = "0000A2", opacity = 1, fontFamily = "Meiryo UI") )
+              }
+            }
             GM1_DF <- as.data.frame(GM1)
             Name <- row.names(GM1_DF)
             GM1_DF2 <- cbind(Name, GM1_DF)
@@ -470,14 +492,7 @@ shinyServer(function(input, output) {
                 write.csv(Data_Output1, file, row.names = FALSE)
               }
             )
-            if(input$network_library1 == 'igraph'){
-              output$plot06 <- renderPlot(plot(GM4, edge.width=E(GM4)$weight))
-            }else{
-              DM.g2 <- data.frame(as_edgelist(GM4))
-              output$plot06b <- renderSimpleNetwork(simpleNetwork(DM.g2, fontSize = 14, nodeColour = "0000A2", opacity = 1, fontFamily = "Meiryo UI") )
-            }
             Data_Output1
-            
           }
         }
       }  
@@ -503,19 +518,39 @@ shinyServer(function(input, output) {
             library(dummies)
             library(glasso)
             library(igraph)
+            library(MASS)
             Data1 <- dummy.data.frame(Data)
             DataM <- as.matrix(Data1)
             COR <- cor(DataM)
             GM1 <- glasso(COR,input$RHO)$wi
             rownames(GM1) <- rownames(COR)
             colnames(GM1) <- colnames(COR)
-            diag(GM1) <- 0
-            GM2 <- abs(GM1)
-            GM2[GM2<input$inverse_covarianve_limit] <- 0
-            GM3 <- GM2*10
-            GM4 <- graph.adjacency(GM3,weighted=T, mode = "undirected")
-            
-            
+            if(input$Graph_type1 == 'scatter_plot1'){
+              GM2 <- abs(GM1)
+              sn <- sammon(1.0001-GM2)
+              Data5 <- sn$points
+              Data6 <- as.data.frame(Data5)
+              Ydata <- row.names(Data6)
+              for (i in 1:ncol(Data5)) {
+                Data6[,i] <- (Data5[,i] - min(Data5[,i]))/(max(Data5[,i]) - min(Data5[,i]))
+              }
+              output$plot07c <- renderPlotly(ggplotly(ggplot(Data6, aes(x=Data6[,1], y=Data6[,2],label=Ydata)) + geom_text() + labs(y="axis2",x="axis1")))
+              
+            } else {
+              GM2 <- abs(GM1)
+              diag(GM2) <- 0
+              GM2[GM2<input$inverse_covarianve_limit] <- 0
+              GM3 <- GM2*10
+              GM4 <- graph.adjacency(GM3,weighted=T, mode = "undirected")
+              
+              
+              if(input$network_library2 == 'igraph'){
+                output$plot07 <- renderPlot(plot(GM4, edge.width=E(GM4)$weight))
+              }else{
+                DM.g2 <- data.frame(as_edgelist(GM4))
+                output$plot07b <- renderSimpleNetwork(simpleNetwork(DM.g2, fontSize = 14, nodeColour = "0000A2", opacity = 1, fontFamily = "Meiryo UI") )
+              }
+            }
             GM1_DF <- as.data.frame(GM1)
             Name <- row.names(GM1_DF)
             GM1_DF2 <- cbind(Name, GM1_DF)
@@ -532,16 +567,6 @@ shinyServer(function(input, output) {
                 write.csv(Data_Output1, file, row.names = FALSE)
               }
             )
-            
-            
-            
-            
-            if(input$network_library2 == 'igraph'){
-              output$plot07 <- renderPlot(plot(GM4, edge.width=E(GM4)$weight))
-            }else{
-              DM.g2 <- data.frame(as_edgelist(GM4))
-              output$plot07b <- renderSimpleNetwork(simpleNetwork(DM.g2, fontSize = 14, nodeColour = "0000A2", opacity = 1, fontFamily = "Meiryo UI") )
-            }
             Data_Output1
           }
         }
@@ -569,7 +594,7 @@ shinyServer(function(input, output) {
             
             library(igraph)
             library(vcd)
-            
+            library(MASS)
             Data1 <- Data
             n <- ncol(Data1)
             for (i in 1:n) {
@@ -590,13 +615,33 @@ shinyServer(function(input, output) {
             rownames(GM2)<-colnames(Data1)
             colnames(GM2)<-colnames(Data1)
             GM_Out <- GM2
-            GM2[GM2<input$association_limit] <- 0
-            GM3 <- GM2*10
-            GM4 <- graph.adjacency(GM3,weighted=T, mode = "undirected")
-            
-            
-            
-            
+            if(input$Graph_type1 == 'scatter_plot1'){
+              diag(GM2) <- 1
+              GM2 <- abs(GM2)
+              sn <- sammon(max(GM2)+0.0001-GM2)
+              Data5 <- sn$points
+              Data6 <- as.data.frame(Data5)
+              Ydata <- row.names(Data6)
+              for (i in 1:ncol(Data5)) {
+                Data6[,i] <- (Data5[,i] - min(Data5[,i]))/(max(Data5[,i]) - min(Data5[,i]))
+              }
+              output$plot09c <- renderPlotly(ggplotly(ggplot(Data6, aes(x=Data6[,1], y=Data6[,2],label=Ydata)) + geom_text() + labs(y="axis2",x="axis1")))
+              
+            } else {
+              GM2[GM2<input$association_limit] <- 0
+              GM3 <- GM2*10
+              GM4 <- graph.adjacency(GM3,weighted=T, mode = "undirected")
+              
+              
+              
+              
+              if(input$network_library3 == 'igraph'){
+                output$plot09 <- renderPlot(plot(GM4, edge.width=E(GM4)$weight))
+              }else{
+                DM.g2 <- data.frame(as_edgelist(GM4))
+                output$plot09b <- renderSimpleNetwork(simpleNetwork(DM.g2, fontSize = 14, nodeColour = "0000A2", opacity = 1, fontFamily = "Meiryo UI") )
+              }
+            }
             GM1_DF <- as.data.frame(GM_Out)
             Name <- row.names(GM1_DF)
             GM1_DF2 <- cbind(Name, GM1_DF)
@@ -611,12 +656,6 @@ shinyServer(function(input, output) {
                 write.csv(Data_Output1, file, row.names = FALSE)
               }
             )
-            if(input$network_library3 == 'igraph'){
-              output$plot09 <- renderPlot(plot(GM4, edge.width=E(GM4)$weight))
-            }else{
-              DM.g2 <- data.frame(as_edgelist(GM4))
-              output$plot09b <- renderSimpleNetwork(simpleNetwork(DM.g2, fontSize = 14, nodeColour = "0000A2", opacity = 1, fontFamily = "Meiryo UI") )
-            }
             Data_Output1
             
           }
@@ -648,7 +687,9 @@ shinyServer(function(input, output) {
               for (i in 1:ncol(Data)) {
                 if (class(Data[,i]) == "numeric" || class(Data[,i]) == "integer") {
                   Data[,i] <- droplevels(cut(Data[,i], breaks = input$NumericalToCategorcalB, include.lowest = TRUE))
+                  
                 }
+                Data[,i] <- as.factor(Data[,i])
               }
             }
             if(input$Structure_Learning == "stable_version1"){
@@ -915,6 +956,12 @@ shinyServer(function(input, output) {
               ts <- Rtsne(Data11, perplexity = input$perplexity_value6)
               Data2 <- ts$Y
               Data2 <- cbind.data.frame(Data2 ,name1)
+            }else if(input$Dimension_reduction6 == "UMAP6"){
+              library(Rcpp)
+              library(umap)
+              UMAP_out62 <- umap(Data11)
+              Data2 <- UMAP_out62$layout
+              Data2 <- cbind.data.frame(Data2 ,name1)
             }
             ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=name1)) + geom_text()+ labs(y="axis2",x="axis1"))
           }
@@ -974,6 +1021,12 @@ shinyServer(function(input, output) {
               library(Rtsne)
               ts <- Rtsne(Data11, perplexity = input$perplexity_value6)
               Data2 <- ts$Y
+              Data2 <- cbind.data.frame(Data2 ,name1)
+            }else if(input$Dimension_reduction6 == "UMAP6"){
+              library(Rcpp)
+              library(umap)
+              UMAP_out60 <- umap(Data11)
+              Data2 <- UMAP_out60$layout
               Data2 <- cbind.data.frame(Data2 ,name1)
             }
             ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=name1)) + geom_text()+ labs(y="axis2",x="axis1"))
@@ -1039,6 +1092,12 @@ shinyServer(function(input, output) {
               library(Rtsne)
               ts <- Rtsne(Data11, perplexity = input$perplexity_value6)
               Data2 <- ts$Y
+              Data2 <- cbind.data.frame(Data2 ,name1)
+            }else if(input$Dimension_reduction6 == "UMAP6"){
+              library(Rcpp)
+              library(umap)
+              UMAP_out61 <- umap(Data11)
+              Data2 <- UMAP_out61$layout
               Data2 <- cbind.data.frame(Data2 ,name1)
             }
             output$plot408 <- renderPlotly(ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=name1)) + geom_text()+ labs(y="axis2",x="axis1")))
@@ -2094,7 +2153,7 @@ shinyServer(function(input, output) {
   output$plot201 <- renderPlotly({
     if(input$analysis == "Similarity_of_Samples1"){
       if(input$Dimension_for_clustering == "Dimension_2"){
-        if(input$Dimension_Reduction == "MDS1" || input$Dimension_Reduction == "MDS2" || input$Dimension_Reduction == "nMDS1") {
+        if(input$Dimension_Reduction == "MDS1" || input$Dimension_Reduction == "MDS2"  || input$Dimension_Reduction == "UMAP1"|| input$Dimension_Reduction == "nMDS1") {
         
       
           req(input$file1)
@@ -2119,6 +2178,8 @@ shinyServer(function(input, output) {
           library(dbscan)
           library(e1071)
           library(kernlab)
+          library(Rcpp)
+          library(umap)
           
           Data1 <- Data
           if(input$Use_one_column_as_sample_name2 == 1){
@@ -2145,9 +2206,12 @@ shinyServer(function(input, output) {
               Data4 <- dist(Data3)
               sn <- sammon(Data4)
               Data5 <- sn$points
-            }else{
+            }else if(input$Dimension_Reduction == "MDS2") {
               ts <- Rtsne(Data3, perplexity = input$perplexity_value)
               Data5 <- ts$Y
+            }else  {
+              UMAP_out <- umap(Data3)
+              Data5 <-UMAP_out$layout
             }
             Data51 <- Data5
             for (i in 1:ncol(Data5)) {
@@ -2177,6 +2241,9 @@ shinyServer(function(input, output) {
                 Data7 <- transform(Data6 ,clust = mc$classification)
               }else if(input$Clustering == "clust2"){
                 dbs <- dbscan(Data6[,1:2], eps = input$eps_value)
+                Data7 <- transform(Data6 ,clust = dbs$cluster)
+              }else if(input$Clustering == "HDBSCAN1"){
+                dbs <- hdbscan(Data6[,1:2], minPts = input$minPts1)
                 Data7 <- transform(Data6 ,clust = dbs$cluster)
               }else if(input$Clustering == "clust3"){
                 km <- kmeans(Data6[,1:2],input$k)
@@ -2464,12 +2531,25 @@ shinyServer(function(input, output) {
           
           Data11_dist <- dist(Data3)
           hc <- hclust(Data11_dist, input$hclust_type1)
+          Data7 <- transform(clust = cutree(hc,k=input$k2), Data)
+          output$downloadData51 <- downloadHandler(
+            filename = function() {
+              paste("cluster_data", ".csv", sep = "")
+            },
+            content = function(file) {
+              write.csv(Data7, file, row.names = TRUE)
+            }
+          )
           ggplotly(ggdendrogram(hc, segments = TRUE, labels = TRUE, leaf_labels = TRUE, rotate = FALSE, theme_dendro = TRUE))
           
         } else{
           library(dbscan)
           
-          dbs <- dbscan(Data3, eps = input$eps_value2)
+          if(input$Method_Dimension_All == "DBSCAN1"){
+            dbs <- dbscan(Data3, eps = input$eps_value2)
+          } else {
+            dbs <- hdbscan(Data3, minPts = input$minPts2)
+          }
           Data7 <- transform(clust = dbs$cluster, Data)
           
           
@@ -2483,7 +2563,9 @@ shinyServer(function(input, output) {
           )
           
           Data7$clust <- as.factor(Data7$clust)
+          
           ggplotly(ggplot(Data7, aes(x=clust, y=clust)) + geom_bar(stat = "identity") +labs(x="Cluster name", y="Frequency"))
+        
         }
       }
     }
@@ -2597,6 +2679,15 @@ shinyServer(function(input, output) {
             Data2 <- cbind(output, Data1)
             gplot <- ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=Name1)) + geom_text(aes(colour=Name2)) + labs(y="axis2",x="axis1"))
           
+          }else if(input$Dimension_reduction5 == "UMAP5"){
+            
+            library(Rcpp)
+            library(umap)
+            UMAP_out <- umap(Data1[,1:n1])
+            output <- UMAP_out$layout
+            Data2 <- cbind(output, Data1)
+            gplot <- ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=Name1)) + geom_text(aes(colour=Name2)) + labs(y="axis2",x="axis1"))
+            
           }
           gplot
         }
