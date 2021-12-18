@@ -2192,6 +2192,10 @@ shinyServer(function(input, output) {
           }
           
           Data2 <- dummy.data.frame(Data1)
+          if(input$PCA_use2 == 1){
+            pc <- prcomp(Data2, scale=TRUE,tol=0.001)
+            Data2 <- as.data.frame(pc$x)
+          }
           Data3 <- Data2
           n <- ncol(Data2)
           if(input$Normalization_use2 == 1){

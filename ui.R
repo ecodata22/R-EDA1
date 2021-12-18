@@ -478,6 +478,15 @@ fluidPage(
                        selected = "None1"),
           
           conditionalPanel(
+            condition = "input.Dimension_Reduction != 'None1'",
+            conditionalPanel(
+              condition = "input.Dimension_Reduction != 'Factor1'",
+              checkboxInput("PCA_use2", "Use PCA", TRUE),
+              checkboxInput("Normalization_use2", "Use normalization", TRUE),
+            ),
+          ),
+          
+          conditionalPanel(
             condition = "input.Dimension_Reduction == 'None1'",
             numericInput('Xcol11', 'Column number for X axis', "1"),
             numericInput('Ycol11', 'Column number for Y axis', "2"),
@@ -545,7 +554,6 @@ fluidPage(
                                            One_class_SVM_Clustering = "One_class_SVM_Clustering1")
                               ),
                   
-                  checkboxInput("Normalization_use2", "Use normalization", TRUE),
                   conditionalPanel(
                     condition = "input.Clustering == 'clust3' || input.Clustering == 'clust1'",
                     numericInput('k', 'Number of Clusters', 2)
