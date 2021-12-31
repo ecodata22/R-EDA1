@@ -62,7 +62,10 @@ shinyServer(function(input, output) {
         }
       }
       if(input$Use_scale_transformation1 == "Standardization1"){
-        Data3 <- scale(Data2)
+        n <- ncol(Data2)
+        for (i in 1:n) {
+          Data3[,i] <- (Data2[,i]-mean(Data2[,i]))/(sd(Data2[,i]))
+        }
       }
       
       if(input$Use_decreasing1 == 1){
@@ -1160,6 +1163,29 @@ shinyServer(function(input, output) {
             if(input$DoNotUseFirst == 1){
               Data[,1] <- NULL
             }
+            if(input$Change_class2 == 1){
+              if(input$Na_analysis2 == "NA_or_numeric2"){
+                if(input$Variable_for2 == "Only_label2"){
+                  Data[,input$Label_column][!is.na(Data[,input$Label_column])] <- "Numeric_data"
+                  Data[,input$Label_column][is.na(Data[,input$Label_column])] <- "NA_data"
+                } else {
+                  Data[!is.na(Data)] <- "Numeric_data"
+                  Data[is.na(Data)] <-  "NA_data"
+                }
+                Data[,input$Label_column] <- as.factor(Data[,input$Label_column])
+                
+              } else { 
+                if(input$Variable_for2 == "Only_label2"){
+                  Data[,input$Label_column] <- droplevels(cut(Data[,input$Label_column], breaks = input$NumericalToCategorcalD, include.lowest = TRUE))
+                } else {
+                  for (i in 1:n) {
+                    if (class(Data[,i]) == "numeric" || class(Data[,i]) == "integer") {
+                      Data[,i] <- droplevels(cut(Data[,i], breaks = input$NumericalToCategorcalD, include.lowest = TRUE))
+                    }
+                  }
+                }
+              }
+            }
             
             library(dummies)
             library(ggplot2)
@@ -1198,6 +1224,29 @@ shinyServer(function(input, output) {
               Data[,1] <- NULL
             }
             
+            if(input$Change_class2 == 1){
+              if(input$Na_analysis2 == "NA_or_numeric2"){
+                if(input$Variable_for2 == "Only_label2"){
+                  Data[,input$Label_column][!is.na(Data[,input$Label_column])] <-  "Numeric_data"
+                  Data[,input$Label_column][is.na(Data[,input$Label_column])] <- "NA_data"
+                } else {
+                  Data[!is.na(Data)] <- "Numeric_data"
+                  Data[is.na(Data)] <-  "NA_data"
+                }
+                Data[,input$Label_column] <- as.factor(Data[,input$Label_column])
+                
+              } else { 
+                if(input$Variable_for2 == "Only_label2"){
+                  Data[,input$Label_column] <- droplevels(cut(Data[,input$Label_column], breaks = input$NumericalToCategorcalD, include.lowest = TRUE))
+                } else {
+                  for (i in 1:n) {
+                    if (class(Data[,i]) == "numeric" || class(Data[,i]) == "integer") {
+                      Data[,i] <- droplevels(cut(Data[,i], breaks = input$NumericalToCategorcalD, include.lowest = TRUE))
+                    }
+                  }
+                }
+              }
+            }
             library(dummies)
             library(ggplot2)
             library(tidyr)
@@ -1236,6 +1285,29 @@ shinyServer(function(input, output) {
               Data[,1] <- NULL
             }
             
+            if(input$Change_class2 == 1){
+              if(input$Na_analysis2 == "NA_or_numeric2"){
+                if(input$Variable_for2 == "Only_label2"){
+                  Data[,input$Label_column][!is.na(Data[,input$Label_column])] <-  "Numeric_data"
+                  Data[,input$Label_column][is.na(Data[,input$Label_column])] <- "NA_data"
+                } else {
+                  Data[!is.na(Data)] <- "Numeric_data"
+                  Data[is.na(Data)] <-  "NA_data"
+                }
+                Data[,input$Label_column] <- as.factor(Data[,input$Label_column])
+                
+              } else { 
+                if(input$Variable_for2 == "Only_label2"){
+                  Data[,input$Label_column] <- droplevels(cut(Data[,input$Label_column], breaks = input$NumericalToCategorcalD, include.lowest = TRUE))
+                } else {
+                  for (i in 1:n) {
+                    if (class(Data[,i]) == "numeric" || class(Data[,i]) == "integer") {
+                      Data[,i] <- droplevels(cut(Data[,i], breaks = input$NumericalToCategorcalD, include.lowest = TRUE))
+                    }
+                  }
+                }
+              }
+            }
             library(fastICA)
             library(dummies)
             library(ggplot2)
@@ -1365,6 +1437,30 @@ shinyServer(function(input, output) {
             if(input$DoNotUseFirst == 1){
               Data[,1] <- NULL
             }
+            
+            if(input$Change_class2 == 1){
+              if(input$Na_analysis2 == "NA_or_numeric2"){
+                if(input$Variable_for2 == "Only_label2"){
+                  Data[,input$Label_column][!is.na(Data[,input$Label_column])] <-  "Numeric_data"
+                  Data[,input$Label_column][is.na(Data[,input$Label_column])] <- "NA_data"
+                } else {
+                  Data[!is.na(Data)] <- "Numeric_data"
+                  Data[is.na(Data)] <-  "NA_data"
+                }
+                Data[,input$Label_column] <- as.factor(Data[,input$Label_column])
+                
+              } else { 
+                if(input$Variable_for2 == "Only_label2"){
+                  Data[,input$Label_column] <- droplevels(cut(Data[,input$Label_column], breaks = input$NumericalToCategorcalD, include.lowest = TRUE))
+                } else {
+                  for (i in 1:n) {
+                    if (class(Data[,i]) == "numeric" || class(Data[,i]) == "integer") {
+                      Data[,i] <- droplevels(cut(Data[,i], breaks = input$NumericalToCategorcalD, include.lowest = TRUE))
+                    }
+                  }
+                }
+              }
+            }
             library(C50)
             library(partykit)
             library(randomForest) 
@@ -1419,6 +1515,30 @@ shinyServer(function(input, output) {
             DataR <- Data
             if(input$DoNotUseFirst == 1){
               Data[,1] <- NULL
+            }
+            
+            if(input$Change_class2 == 1){
+              if(input$Na_analysis2 == "NA_or_numeric2"){
+                if(input$Variable_for2 == "Only_label2"){
+                  Data[,input$Label_column][!is.na(Data[,input$Label_column])] <-  "Numeric_data"
+                  Data[,input$Label_column][is.na(Data[,input$Label_column])] <- "NA_data"
+                } else {
+                  Data[!is.na(Data)] <- "Numeric_data"
+                  Data[is.na(Data)] <-  "NA_data"
+                }
+                Data[,input$Label_column] <- as.factor(Data[,input$Label_column])
+                
+              } else { 
+                if(input$Variable_for2 == "Only_label2"){
+                  Data[,input$Label_column] <- droplevels(cut(Data[,input$Label_column], breaks = input$NumericalToCategorcalD, include.lowest = TRUE))
+                } else {
+                  for (i in 1:n) {
+                    if (class(Data[,i]) == "numeric" || class(Data[,i]) == "integer") {
+                      Data[,i] <- droplevels(cut(Data[,i], breaks = input$NumericalToCategorcalD, include.lowest = TRUE))
+                    }
+                  }
+                }
+              }
             }
             library(C50)
             library(partykit)
@@ -1561,6 +1681,16 @@ shinyServer(function(input, output) {
             Data[,1] <- NULL
           }
           
+          if(input$Change_NA1 == 1){
+            if(input$Variable_for1 == "Only_label1"){
+              Data[,input$Label_column][!is.na(Data[,input$Label_column])] <-  0
+              Data[,input$Label_column][is.na(Data[,input$Label_column])] <- 1
+            } else {
+              Data[!is.na(Data)] <- 0
+              Data[is.na(Data)] <- 1
+            }
+          }
+          
           library(ggplot2)
           library(fastDummies)
           library(dummies)
@@ -1584,7 +1714,6 @@ shinyServer(function(input, output) {
           } else {
             Data1 <- dummy.data.frame(Data)
           }
-          
           
           Data2 <- subset(Data1, Data1[,input$Label_column] == 0)
           Data2[,input$Label_column] <- NULL
@@ -1730,13 +1859,36 @@ shinyServer(function(input, output) {
               ggplotly(ggplot(Data5, aes(x=clust)) + geom_bar() + geom_text(stat='count', aes(label=..count..), vjust=-1) + facet_grid(. ~ as.factor(Data5[,input$Label_column]))+labs(x="Label column", y="Frequency"))
  
            } else if (input$One_class11 == "Minimum_Distance_All_Varaiables1"){
-              model <- prcomp(Data2, scale=TRUE, tol=0.01)
-              Data3 <- predict(model, as.matrix(Data1))
-              std <- apply(model$x, 2, sd)
-              Data4 <- Data3
-              for (i in 1:ncol(Data3)) {
-                Data4[,i] <- Data3[,i]/std[i]
+              #model <- prcomp(Data2, scale=TRUE, tol=0.01)
+              #Data3 <- predict(model, as.matrix(Data1))
+              #std <- apply(model$x, 2, sd)
+              #Data4 <- Data3
+              #for (i in 1:ncol(Data3)) {
+              #  Data4[,i] <- Data3[,i]/std[i]
+              #}
+              
+              if(input$Dimension_reduction_type6 == "PCA6"){
+                pc <- prcomp(Data2, scale=TRUE,tol=0.01)
+                Data3 <- predict(pc, as.matrix(Data1))
+              } else {
+                Data3 <-Data1
               }
+              Data4 <- Data3
+              if(input$Use_scale_transformation6 == "Normalization3"){
+                n <- ncol(Data3)
+                for (i in 1:n) {
+                  Data4[,i] <- (Data3[,i]-min(Data3[,i]))/(max(Data3[,i])-min(Data3[,i]))
+                }
+              }
+              if(input$Use_scale_transformation3 == "Standardization3"){
+                n <- ncol(Data3)
+                for (i in 1:n) {
+                  Data4[,i] <- (Data3[,i]-mean(Data3[,i]))/(sd(Data3[,i]))
+                }
+              }
+              
+              
+              
               Data5 <- dist(Data4, diag = TRUE, upper = TRUE)
               Data5 <-as.matrix(Data5)
               diag(Data5) <- 1000 
@@ -2026,12 +2178,32 @@ shinyServer(function(input, output) {
                 Data101 <- cbind(Data1[i1])
                 Data201 <- cbind(Data2[i1])
                 
-                model <- prcomp(Data201, scale=TRUE, tol=0.01)
-                Data3 <- predict(model, as.matrix(Data101))
-                std <- apply(model$x, 2, sd)
+                #model <- prcomp(Data201, scale=TRUE, tol=0.01)
+                #Data3 <- predict(model, as.matrix(Data101))
+                #std <- apply(model$x, 2, sd)
+                #Data4 <- Data3
+                #for (i in 1:ncol(Data3)) {
+                #  Data4[,i] <- Data3[,i]/std[i]
+                #}
+                
+                if(input$Dimension_reduction_type5 == "PCA5"){
+                  pc <- prcomp(Data201, scale=TRUE,tol=0.01)
+                  Data3 <- predict(pc, as.matrix(Data101))
+                } else {
+                  Data3 <-Data1
+                }
                 Data4 <- Data3
-                for (i in 1:ncol(Data3)) {
-                  Data4[,i] <- Data3[,i]/std[i]
+                if(input$Use_scale_transformation5 == "Normalization5"){
+                  n <- ncol(Data3)
+                  for (i in 1:n) {
+                    Data4[,i] <- (Data3[,i]-min(Data3[,i]))/(max(Data3[,i])-min(Data3[,i]))
+                  }
+                }
+                if(input$Use_scale_transformation5 == "Standardization5"){
+                  n <- ncol(Data3)
+                  for (i in 1:n) {
+                    Data4[,i] <- (Data3[,i]-mean(Data3[,i]))/(sd(Data3[,i]))
+                  }
                 }
                 Data5 <- dist(Data4, diag = TRUE, upper = TRUE)
                 Data5 <-as.matrix(Data5)
@@ -2060,12 +2232,31 @@ shinyServer(function(input, output) {
                     Data101 <- cbind(Data1[i1],Data1[i2])
                     Data201 <- cbind(Data2[i1],Data2[i2])
                     
-                    model <- prcomp(Data201, scale=TRUE, tol=0.01)
-                    Data3 <- predict(model, as.matrix(Data101))
-                    std <- apply(model$x, 2, sd)
+                    #model <- prcomp(Data201, scale=TRUE, tol=0.01)
+                    #Data3 <- predict(model, as.matrix(Data101))
+                    #std <- apply(model$x, 2, sd)
+                    #Data4 <- Data3
+                    #for (i in 1:ncol(Data3)) {
+                    #  Data4[,i] <- Data3[,i]/std[i]
+                    #}
+                    if(input$Dimension_reduction_type5 == "PCA5"){
+                      pc <- prcomp(Data201, scale=TRUE,tol=0.01)
+                      Data3 <- predict(pc, as.matrix(Data101))
+                    } else {
+                      Data3 <-Data1
+                    }
                     Data4 <- Data3
-                    for (i in 1:ncol(Data3)) {
-                      Data4[,i] <- Data3[,i]/std[i]
+                    if(input$Use_scale_transformation5 == "Normalization5"){
+                      n <- ncol(Data3)
+                      for (i in 1:n) {
+                        Data4[,i] <- (Data3[,i]-min(Data3[,i]))/(max(Data3[,i])-min(Data3[,i]))
+                      }
+                    }
+                    if(input$Use_scale_transformation5 == "Standardization5"){
+                      n <- ncol(Data3)
+                      for (i in 1:n) {
+                        Data4[,i] <- (Data3[,i]-mean(Data3[,i]))/(sd(Data3[,i]))
+                      }
                     }
                     Data5 <- dist(Data4, diag = TRUE, upper = TRUE)
                     Data5 <-as.matrix(Data5)
@@ -2098,12 +2289,31 @@ shinyServer(function(input, output) {
                         Data101 <- cbind(Data1[i1],Data1[i2],Data1[i3])
                         Data201 <- cbind(Data2[i1],Data2[i2],Data2[i3])
                         
-                        model <- prcomp(Data201, scale=TRUE, tol=0.01)
-                        Data3 <- predict(model, as.matrix(Data101))
-                        std <- apply(model$x, 2, sd)
+                        #model <- prcomp(Data201, scale=TRUE, tol=0.01)
+                        #Data3 <- predict(model, as.matrix(Data101))
+                        #std <- apply(model$x, 2, sd)
+                        #Data4 <- Data3
+                        #for (i in 1:ncol(Data3)) {
+                        #  Data4[,i] <- Data3[,i]/std[i]
+                        #}
+                        if(input$Dimension_reduction_type5 == "PCA5"){
+                          pc <- prcomp(Data201, scale=TRUE,tol=0.01)
+                          Data3 <- predict(pc, as.matrix(Data101))
+                        } else {
+                          Data3 <-Data1
+                        }
                         Data4 <- Data3
-                        for (i in 1:ncol(Data3)) {
-                          Data4[,i] <- Data3[,i]/std[i]
+                        if(input$Use_scale_transformation5 == "Normalization5"){
+                          n <- ncol(Data3)
+                          for (i in 1:n) {
+                            Data4[,i] <- (Data3[,i]-min(Data3[,i]))/(max(Data3[,i])-min(Data3[,i]))
+                          }
+                        }
+                        if(input$Use_scale_transformation5 == "Standardization5"){
+                          n <- ncol(Data3)
+                          for (i in 1:n) {
+                            Data4[,i] <- (Data3[,i]-mean(Data3[,i]))/(sd(Data3[,i]))
+                          }
                         }
                         Data5 <- dist(Data4, diag = TRUE, upper = TRUE)
                         Data5 <-as.matrix(Data5)
@@ -2192,17 +2402,26 @@ shinyServer(function(input, output) {
           }
           
           Data2 <- dummy.data.frame(Data1)
-          if(input$PCA_use2 == 1){
+          if(input$Dimension_reduction_type7 == "PCA7"){
             pc <- prcomp(Data2, scale=TRUE,tol=0.001)
             Data2 <- as.data.frame(pc$x)
           }
           Data3 <- Data2
           n <- ncol(Data2)
-          if(input$Normalization_use2 == 1){
+          if(input$Use_scale_transformation2 == "Normalization2"){
+            n <- ncol(Data2)
             for (i in 1:n) {
               Data3[,i] <- (Data2[,i]-min(Data2[,i]))/(max(Data2[,i])-min(Data2[,i]))
             }
           }
+          if(input$Use_scale_transformation2 == "Standardization2"){
+            Data3 <- scale(Data2)
+          }
+          #if(input$Normalization_use2 == 1){
+          #  for (i in 1:n) {
+          #    Data3[,i] <- (Data2[,i]-min(Data2[,i]))/(max(Data2[,i])-min(Data2[,i]))
+          #  }
+          #}
           
           
           if(input$Dimension_Reduction != "nMDS1") {
@@ -2394,108 +2613,7 @@ shinyServer(function(input, output) {
     }
   })
     
-  output$plot205 <- renderPlotly({
-    if(input$analysis == "Similarity_of_Samples1"){
-      if(input$Dimension_for_clustering == "Dimension_2"){
-        if(input$Dimension_Reduction == "Factor1") {
-          
-          
-          req(input$file1)
-          
-          if(input$sep2 == "Separator_Comma"){sep <- ","}
-          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
-          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
-          
-          
-          Data <- read.csv(input$file1$datapath, header=T,sep = sep)
-          #if(input$DoNotUseFirst == 1){
-          #  Data[,1] <- NULL
-          #}
-          
-          library(psych)
-          library(GPArotation)
-          library(heatmaply)
-          library(fastDummies) 
-          library(psych)
-          library(ggplot2)
-          library(MASS)
-          
-          
-          
-          
-          #Y <- names(Data[1])
-          #Ydata <- Data[,1]
-          #Data[,1] <- NULL
-          
-          #Data1 <- Data
-          if(input$Use_one_column_as_sample_name2 == 1){
-            Y <- names(Data[input$sample_row2])
-            Ydata <- Data[,input$sample_row2]
-            Data[,input$sample_row2] <- NULL
-          } else {
-            Y <- "Index_No"
-            Ydata <- row.names(Data)
-          }
-          
-          
-          Check_variable <- "0"
-          for (i in 1:ncol(Data)) {
-            if (class(Data[,i]) != "numeric") {
-              if (class(Data[,i]) != "integer") {
-                Check_variable <- "1"
-              }
-            }  
-          }
-          if(Check_variable == "1"){
-            Data1 <- dummy_cols(Data,remove_first_dummy = TRUE,remove_selected_columns = TRUE)
-          } else {
-            Data1 <- Data
-          }
-          
-          fa_result <- fa(Data1, nfactors = input$Factors2, fm = "ml", rotate = input$Factor_Rotation2)
-          output$plot407 <- renderPlotly(heatmaply(fa_result$loadings, scale="none"))
-          output$text407 <- renderPrint(fa_result$loadings)
-          
-          
-          fa_loadings <- fa_result$loadings[,1:input$Factors2]
-          Data11 <- as.data.frame(fa_loadings)
-          Data11_dist <- dist(Data11)
-          sn <- sammon(Data11_dist)
-          Data2 <- sn$points
-          name1 <-  row.names(Data11)
-          Data2 <- cbind.data.frame(Data2 ,name1)
-          output$plot409 <- renderPlotly(ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=name1)) + geom_text()+ labs(y="axis2",x="axis1")))
-          
-          
-          
-          Data1 <- fa_result$scores
-          Data1 <- as.data.frame(Data1)
-          Data1$Index = row.names(Data1)
-          
-          if(input$Xcol13 > 0){Xname <- names(Data1[input$Xcol13])} else {Xname <- "None"}
-          if(input$Ycol13 > 0){Lname <- names(Data1[input$Ycol13])} else {Lname <- "None"}
-          
-          
-          if(input$plot_type2 == "G11") {
-            gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol13],y=Data1[,input$Ycol13],label=Ydata)) + geom_text()  + labs(x=Xname,y=Lname)
-          } else if(input$plot_type2 == "G12") {
-            gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol13],y=Data1[,input$Ycol13],label=Index)) + geom_text() + labs(x=Xname,y=Lname)
-          } else if(input$plot_type2 == "G13") {
-            Data1$Index <- as.numeric(Data1$Index)
-            gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol13],y=Data1[,input$Ycol13])) + geom_point(aes(colour=Ydata)) + labs(x=Xname,y=Lname)
-          } else if(input$plot_type2 == "G14") {
-            Data1$Index <- as.numeric(Data1$Index)
-            gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol13],y=Data1[,input$Ycol13])) + geom_point(aes(colour=Index))  + scale_color_viridis_c(option = "D")+ labs(x=Xname,y=Lname)
-          } else {
-            gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol13],y=Data1[,input$Ycol13])) + geom_point() + labs(x=Xname,y=Lname)
-          }
-          
-          ggplotly(gplot)
-          
-        }
-      }
-    }
-  })
+  
     
   output$plot202 <- renderPlotly({
     if(input$analysis == "Similarity_of_Samples1"){
@@ -2517,17 +2635,25 @@ shinyServer(function(input, output) {
         }
         
         Data2 <- dummy.data.frame(Data)
-        if(input$PCA_use4 == 1){
+        if(input$Dimension_reduction_type8 == "PCA8"){
           pc <- prcomp(Data2, scale=TRUE,tol=0.01)
           Data2 <- as.data.frame(pc$x)
         }
         Data3 <- Data2
-        if(input$Normalization_use4 == 1){
-          
-          for (i in 1:ncol(Data2)) {
+        if(input$Use_scale_transformation3 == "Normalization3"){
+          n <- ncol(Data2)
+          for (i in 1:n) {
             Data3[,i] <- (Data2[,i]-min(Data2[,i]))/(max(Data2[,i])-min(Data2[,i]))
           }
         }
+        if(input$Use_scale_transformation3 == "Standardization3"){
+          Data3 <- scale(Data2)
+        }
+        #if(input$Normalization_use4 == 1){
+        #  for (i in 1:ncol(Data2)) {
+        #    Data3[,i] <- (Data2[,i]-min(Data2[,i]))/(max(Data2[,i])-min(Data2[,i]))
+        #  }
+        #}
         
         if(input$Method_Dimension_All == "hclust1"){
           
@@ -2588,10 +2714,15 @@ shinyServer(function(input, output) {
           if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
           if(input$sep2 == "Separator_Tab"){sep <- "\t"}
           
+          if(input$Use_one_column_as_sample_name3 == 1){
+            Data <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=input$sample_row3)
+          } else {
+            Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+            row.names(Data)<-as.factor(row.names(Data))
+          }
           
-          
-          DM <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=input$sample_row2)
-          
+          #DM <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=input$sample_row2)
+          DM <- Data
           
           DM.mat = as.matrix(DM)/max(DM)*5
           DM.mat[DM.mat<input$Minimum_value_of_width_of_edge1] <- 0
@@ -2615,85 +2746,209 @@ shinyServer(function(input, output) {
     if(input$analysis == "Similarity_of_Names_in_Rows_and_Columns1"){
       if(input$Matrix_type == 'A_B') {
         if(input$A_B_method == 'Using_other_variables1') {
+          if(input$Make_variables != "Factor1") {
       
-          req(input$file1)
-          
-          if(input$sep2 == "Separator_Comma"){sep <- ","}
-          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
-          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
-          
-          Data <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=1)
-          
-          library(MASS)
-          library(ggplot2)
-          
-          
-          
-          if(input$Make_variables == "Correspondence5"){
-            pc <- corresp(Data,nf=min(ncol(Data),nrow(Data)))
-            pc1 <- data.frame(pc$cscore)
-            pc1 <- transform(pc1 ,Name1 = rownames(pc1), Name2 = "col")
-            pc2 <- data.frame(pc$rscore)
-            pc2 <- transform(pc2 ,Name1 = rownames(pc2), Name2 = "row")
-            Data1 <- rbind(pc1,pc2)
+            req(input$file1)
             
-            ei1 <- round(pc$cor^2/sum(pc$cor^2),2)
-            output$text4051 <- renderText(ei1)
-            for (i in 1: length(ei1)){
-              if(ei1[i] > 0.001){
-                n1 <- i
+            if(input$sep2 == "Separator_Comma"){sep <- ","}
+            if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+            if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+            
+            if(input$Use_one_column_as_sample_name3 == 1){
+              Data <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=input$sample_row3)
+            } else {
+              Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+              row.names(Data)<-as.factor(row.names(Data))
+            }
+            
+            if(input$Make_variables == "Correspondence5"){
+              pc <- corresp(Data,nf=min(ncol(Data),nrow(Data)))
+              pc1 <- data.frame(pc$cscore)
+              pc1 <- transform(pc1 ,Name1 = rownames(pc1), Name2 = "col")
+              pc2 <- data.frame(pc$rscore)
+              pc2 <- transform(pc2 ,Name1 = rownames(pc2), Name2 = "row")
+              Data1 <- rbind(pc1,pc2)
+              
+              ei1 <- round(pc$cor^2/sum(pc$cor^2),2)
+              output$text4051 <- renderText(ei1)
+              for (i in 1: length(ei1)){
+                if(ei1[i] > 0.001){
+                  n1 <- i
+                }
               }
+              output$text4052 <- renderText(n1)
+            } else if(input$Make_variables == "SVD5"){
+              Data1 = as.matrix(Data)
+              Pt <- svd(Data1)
+              PtB = Pt$u
+              PtA = Pt$v
+              A = data.frame(PtA)
+              n1 <- ncol(A)
+              A$Name1 <-colnames(Data1)
+              A$Name2 <- "col"
+              B = data.frame(PtB)
+              B$Name1 <-rownames(Data1)
+              B$Name2 <- "row"
+              Data1 <- rbind(A,B)
             }
-            output$text4052 <- renderText(n1)
-          } else if(input$Make_variables == "SVD5"){
-            Data1 = as.matrix(Data)
-            Pt <- svd(Data1)
-            PtB = Pt$u
-            PtA = Pt$v
-            A = data.frame(PtA)
-            n1 <- ncol(A)
-            A$Name1 <-colnames(Data1)
-            A$Name2 <- "col"
-            B = data.frame(PtB)
-            B$Name1 <-rownames(Data1)
-            B$Name2 <- "row"
-            Data1 <- rbind(A,B)
-          }
-          
-          
-          output$downloadData6 <- downloadHandler(
-            filename = function() {
-              paste("row_column_analysis_data", ".csv", sep = "")
-            },
-            content = function(file) {
-              write.csv(Data1, file, row.names = FALSE)
+            
+            
+            output$downloadData6 <- downloadHandler(
+              filename = function() {
+                paste("row_column_analysis_data", ".csv", sep = "")
+              },
+              content = function(file) {
+                write.csv(Data1, file, row.names = FALSE)
+              }
+            )
+            if(input$Dimension_reduction5 == "MDS5"){
+              Data11 <- Data1[,1:n1]
+              Data11_dist <- dist(Data11)
+              sn <- sammon(Data11_dist)
+              output <- sn$points
+              Data2 <- cbind(output, Data1)
+              gplot <- ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=Name1)) + geom_text(aes(colour=Name2)) + labs(y="axis2",x="axis1"))
+            }else if(input$Dimension_reduction5 == "tSNE5"){
+              library(Rtsne)
+              ts <- Rtsne(Data1[,1:n1], perplexity = input$perplexity_value5)
+              output <- ts$Y
+              Data2 <- cbind(output, Data1)
+              gplot <- ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=Name1)) + geom_text(aes(colour=Name2)) + labs(y="axis2",x="axis1"))
+            
+            }else if(input$Dimension_reduction5 == "UMAP5"){
+              
+              library(Rcpp)
+              library(umap)
+              UMAP_out <- umap(Data1[,1:n1])
+              output <- UMAP_out$layout
+              Data2 <- cbind(output, Data1)
+              gplot <- ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=Name1)) + geom_text(aes(colour=Name2)) + labs(y="axis2",x="axis1"))
+              
             }
-          )
-          if(input$Dimension_reduction5 == "MDS5"){
-            Data11 <- Data1[,1:n1]
-            Data11_dist <- dist(Data11)
-            sn <- sammon(Data11_dist)
-            output <- sn$points
-            Data2 <- cbind(output, Data1)
-            gplot <- ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=Name1)) + geom_text(aes(colour=Name2)) + labs(y="axis2",x="axis1"))
-          }else if(input$Dimension_reduction5 == "tSNE5"){
-            library(Rtsne)
-            ts <- Rtsne(Data1[,1:n1], perplexity = input$perplexity_value5)
-            output <- ts$Y
-            Data2 <- cbind(output, Data1)
-            gplot <- ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=Name1)) + geom_text(aes(colour=Name2)) + labs(y="axis2",x="axis1"))
-          
-          }else if(input$Dimension_reduction5 == "UMAP5"){
+            gplot
+          }
+        }
+      }
+    }
+  })
+  output$plot205 <- renderPlotly({
+    if(input$analysis == "Similarity_of_Names_in_Rows_and_Columns1"){
+      if(input$Matrix_type == 'A_B') {
+        if(input$A_B_method == 'Using_other_variables1') {
+          if(input$Make_variables == "Factor1") {
             
-            library(Rcpp)
-            library(umap)
-            UMAP_out <- umap(Data1[,1:n1])
-            output <- UMAP_out$layout
-            Data2 <- cbind(output, Data1)
-            gplot <- ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=Name1)) + geom_text(aes(colour=Name2)) + labs(y="axis2",x="axis1"))
+            
+            req(input$file1)
+            
+            if(input$sep2 == "Separator_Comma"){sep <- ","}
+            if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+            if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+            
+            
+            Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+            #if(input$DoNotUseFirst == 1){
+            #  Data[,1] <- NULL
+            #}
+            
+            library(psych)
+            library(GPArotation)
+            library(heatmaply)
+            library(fastDummies) 
+            library(psych)
+            library(ggplot2)
+            library(MASS)
+            
+            
+            
+            
+            #Y <- names(Data[1])
+            #Ydata <- Data[,1]
+            #Data[,1] <- NULL
+            
+            #Data1 <- Data
+            if(input$Use_one_column_as_sample_name3 == 1){
+              Y <- names(Data[input$sample_row3])
+              Ydata <- Data[,input$sample_row3]
+              Data[,input$sample_row2] <- NULL
+            } else {
+              Y <- "Index_No"
+              Ydata <- row.names(Data)
+            }
+            
+            
+            Check_variable <- "0"
+            for (i in 1:ncol(Data)) {
+              if (class(Data[,i]) != "numeric") {
+                if (class(Data[,i]) != "integer") {
+                  Check_variable <- "1"
+                }
+              }  
+            }
+            if(Check_variable == "1"){
+              Data1 <- dummy_cols(Data,remove_first_dummy = TRUE,remove_selected_columns = TRUE)
+            } else {
+              Data1 <- Data
+            }
+            
+            fa_result <- fa(Data1, nfactors = input$Factors2, fm = "ml", rotate = input$Factor_Rotation2)
+            output$plot407 <- renderPlotly(heatmaply(fa_result$loadings, scale="none"))
+            output$text407 <- renderPrint(fa_result$loadings)
+            
+            
+            fa_loadings <- fa_result$loadings[,1:input$Factors2]
+            Data11 <- as.data.frame(fa_loadings)
+            
+            
+            
+            if(input$Dimension_reduction7 == "MDS7"){
+              Data11_dist <- dist(Data11)
+              sn <- sammon(Data11_dist)
+              Data2 <- sn$points
+            }else if(input$Dimension_reduction7 == "tSNE7"){
+              library(Rtsne)
+              ts <- Rtsne(Data11, perplexity = input$perplexity_value6)
+              Data2 <- ts$Y
+              
+            }else if(input$Dimension_reduction7 == "UMAP7"){
+              
+              library(Rcpp)
+              library(umap)
+              UMAP_out <- umap(Data11)
+              Data2 <- UMAP_out$layout
+              
+            }
+            
+            name1 <-  row.names(Data11)
+            Data2 <- cbind.data.frame(Data2 ,name1)
+            output$plot409 <- renderPlotly(ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=name1)) + geom_text()+ labs(y="axis2",x="axis1")))
+            
+            
+            
+            Data1 <- fa_result$scores
+            Data1 <- as.data.frame(Data1)
+            Data1$Index = row.names(Data1)
+            
+            if(input$Xcol13 > 0){Xname <- names(Data1[input$Xcol13])} else {Xname <- "None"}
+            if(input$Ycol13 > 0){Lname <- names(Data1[input$Ycol13])} else {Lname <- "None"}
+            
+            
+            if(input$plot_type3 == "G111") {
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol13],y=Data1[,input$Ycol13],label=Ydata)) + geom_text()  + labs(x=Xname,y=Lname)
+            } else if(input$plot_type3 == "G121") {
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol13],y=Data1[,input$Ycol13],label=Index)) + geom_text() + labs(x=Xname,y=Lname)
+            } else if(input$plot_type3 == "G131") {
+              Data1$Index <- as.numeric(Data1$Index)
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol13],y=Data1[,input$Ycol13])) + geom_point(aes(colour=Ydata)) + labs(x=Xname,y=Lname)
+            } else if(input$plot_type3 == "G141") {
+              Data1$Index <- as.numeric(Data1$Index)
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol13],y=Data1[,input$Ycol13])) + geom_point(aes(colour=Index))  + scale_color_viridis_c(option = "D")+ labs(x=Xname,y=Lname)
+            } else {
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol13],y=Data1[,input$Ycol13])) + geom_point() + labs(x=Xname,y=Lname)
+            }
+            
+            ggplotly(gplot)
             
           }
-          gplot
         }
       }
     }
@@ -2931,12 +3186,32 @@ shinyServer(function(input, output) {
           library(ggplot2)
           library(tidyr)
           library(dummies)
+          library(fastDummies)
           library(fastICA)
           library(psych)
           library(GPArotation)
           
+          
+          if (input$Dimension_reduction_type3 == "Factor3"){
+            
+            CCheck <- 0
+            for (i in 1:ncol(Data)) {
+              if(class(Data[,i]) == "character"){
+                CCheck <- 1
+              }
+            }
+            if(CCheck == 1){
+              Data <- dummy_cols(Data,remove_first_dummy = TRUE,remove_selected_columns = TRUE)
+            } else {
+              Data <- Data
+            }
+          } else {
+            Data <- dummy.data.frame(Data)
+          }
+          
           if(input$Dimension_reduction_type3 == "None3"){
-            Data2 <- dummy.data.frame(Data)
+            #Data2 <- dummy.data.frame(Data)
+            Data2 <- Data
           } else if(input$Dimension_reduction_type3 == "PCA3"){
             pc <- prcomp(Data, scale=TRUE,tol=0.01)
             Data2 <- as.data.frame(pc$x)
@@ -2953,6 +3228,21 @@ shinyServer(function(input, output) {
             Data2 <- as.data.frame(fa_result$scores)
             output$text702 <- renderPrint(fa_result$loadings)
           }
+          
+          if(input$Use_scale_transformation4 == "Normalization4"){
+            n <- ncol(Data2)
+            for (i in 1:n) {
+              Data2[,i] <- (Data2[,i]-min(Data2[,i]))/(max(Data2[,i])-min(Data2[,i]))
+            }
+          }
+          if(input$Use_scale_transformation4 == "Standardization4"){
+            #Data2 <- scale(Data2)
+            n <- ncol(Data2)
+            for (i in 1:n) {
+              Data2[,i] <- (Data2[,i]-mean(Data2[,i]))/(sd(Data2[,i]))
+            }
+          }
+          
           Data2$No <-as.numeric(row.names(Data2))
           
           output$downloadData714 <- downloadHandler(

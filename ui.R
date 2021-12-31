@@ -18,6 +18,21 @@ fluidPage(
     sidebarPanel(
       
       fileInput("file1", "Choose CSV File", multiple = TRUE,accept = c("text/csv", "text/comma-separated-values,text/plain",".csv")),
+      
+      conditionalPanel(
+        condition = "input.analysis == 'Heat_map1'",
+        checkboxInput("Use_one_column_as_sample_name1", "Use one of the column as sample name", FALSE),
+        
+        conditionalPanel(
+          condition = "input.Use_one_column_as_sample_name1 == 1",
+          numericInput('sample_row1', 'Column number for  sample name', "1"),
+        ),
+        conditionalPanel(
+          condition = "input.Use_one_column_as_sample_name1 == 0",
+          p("Index is used as sample name.")
+        ),
+      ),
+      
       conditionalPanel(
         condition = "input.analysis == 'Similarity_of_Samples1'",
         
@@ -34,7 +49,34 @@ fluidPage(
         ),
       ),
       
+      conditionalPanel(
+        condition = "input.analysis == 'Similarity_of_Names_in_Rows_and_Columns1'",
+        
+        checkboxInput("Use_one_column_as_sample_name3", "Use one of the column as sample name", FALSE),
+        
+        conditionalPanel(
+          condition = "input.Use_one_column_as_sample_name3 == 1",
+          numericInput('sample_row3', 'Column number for  sample name', "1"),
+        ),
+        
+        conditionalPanel(
+          condition = "input.Use_one_column_as_sample_name3 == 0",
+          p("Index is used as sample name.")
+        ),
+      ),
       
+      
+      conditionalPanel(
+        condition = "input.analysis != 'Similarity_of_Samples1'",
+        
+        conditionalPanel(
+          condition = "input.analysis != 'Similarity_of_Names_in_Rows_and_Columns1'",
+          conditionalPanel(
+            condition = "input.analysis != 'Heat_map1'",
+            checkboxInput("DoNotUseFirst", "Do not use the first column of CSV", FALSE),
+          ),
+        ),
+      ),
       
       
       selectInput("analysis", "Analysis",
@@ -48,23 +90,14 @@ fluidPage(
       
       conditionalPanel(
         condition = "input.analysis == 'Heat_map1'",
-        checkboxInput("Use_one_column_as_sample_name1", "Use one of the column as sample name", FALSE),
         
-        conditionalPanel(
-          condition = "input.Use_one_column_as_sample_name1 == 1",
-          numericInput('sample_row1', 'Column number for  sample name', "1"),
-        ),
-        conditionalPanel(
-          condition = "input.Use_one_column_as_sample_name1 == 0",
-          p("Index is used as sample name.")
-        ),
 
         selectInput("Change_categorical_data_into", "Change categorical data into",
                      choices = c(Factor_Level = "Factor_Level1",
                                  Dummy_Varaiables = "Dummy_Varaiables1")),
         #checkboxInput("Normalization_use", "Use normalization", FALSE),
         
-        selectInput("Use_scale_transformation1", "Use transformation",
+        selectInput("Use_scale_transformation1", "Scaling",
                     choices = c(None = "None1",
                                 Normalization = "Normalization1",
                                 Standardization = "Standardization1")),
@@ -227,15 +260,16 @@ fluidPage(
                                        geominQ = "geominQ"))
             ),
             
-            selectInput("Dimension_reduction6", "Dimension_reduction",
+            selectInput("Dimension_reduction6", "Change into 2 dimension data",
                          choices = c(MDS = "MDS6",
                                      tSNE = "tSNE6",
                                      UMAP = "UMAP6")),
             conditionalPanel(
               condition = "input.Dimension_reduction6 == 'tSNE6'",
-              sliderInput("perplexity_value6",
-                          "perplexity of t-SNE",
-                          min = 1,  max = 100, value = 1, step = 1)
+              numericInput('perplexity_value6', 'perplexity of t-SNE', "1"),
+              #sliderInput("perplexity_value6",
+              #            "perplexity of t-SNE",
+              #            min = 1,  max = 100, value = 1, step = 1)
             ),
           ),
           conditionalPanel(
@@ -327,6 +361,43 @@ fluidPage(
         conditionalPanel(
           condition = "input.Similarity_of_Variables_and_Categories == 'Between_label_column_and_others1'",
           numericInput('Label_column', 'Column number for  label', "1"),
+          
+            
+          conditionalPanel(
+            condition = "input.Between_label_column_and_others != 'Regression_analysis1'",
+            
+            conditionalPanel(
+              condition = "input.Between_label_column_and_others != 'One_class1'",
+              checkboxInput("Change_class2", "Change classes into numeric to category", FALSE),
+              
+              conditionalPanel(
+                condition = "input.Change_class2 == 1",
+                selectInput("Variable_for2", "Variable for changing categorical data",
+                            choices = c(Only_label = "Only_label2",
+                                        All_variables = "All_variables2")),
+              
+                selectInput("Na_analysis2", "2 categories, NA and numeric",
+                            choices = c(NA_or_numeric = "NA_or_numeric2",
+                                        More_than_2 = "More_than_2_2")),
+                
+                conditionalPanel(
+                  condition = "input.Na_analysis2 == 'More_than_2_2'",
+                  numericInput('NumericalToCategorcalD', 'No of ranges', "3"),
+                ),
+              ),
+            ),
+            
+            conditionalPanel(
+              condition = "input.Between_label_column_and_others == 'One_class1'",
+              checkboxInput("Change_NA1", "Change NA into 1 and others into 0", FALSE),
+              conditionalPanel(
+                condition = "input.Change_NA1 == 1",
+                selectInput("Variable_for1", "Variable for changing 0/1 data",
+                            choices = c(Only_label = "Only_label1",
+                                        All_variables = "All_variables1")),
+              ),
+            ),
+          ),
           selectInput("Between_label_column_and_others", "Method",
                        choices = c(Scatter_plot = "Hidden1",
                                    Regression_analysis = "Regression_analysis1",
@@ -391,6 +462,8 @@ fluidPage(
                         choices = c(All_Varaiables = "All_Varaiables1",
                                     Selected_Varaiables = "Selected_Varaiables1")
                                     ),
+            
+            
             conditionalPanel(
               condition = "input.Variables_type == 'All_Varaiables1'",
               selectInput("One_class11", "Method",
@@ -430,7 +503,19 @@ fluidPage(
                 sliderInput("nu4",
                             "nu (Adjust outliers)",
                             min = 0.0001,  max = 1, value = 0.1, step = 0.0001)
-              )
+              ),
+              
+              conditionalPanel(
+                condition = "input.One_class11 == 'Minimum_Distance_All_Varaiables1'",
+                selectInput("Dimension_reduction_type6", "Component type",
+                            choices = c(None = "None6",
+                                        PCA = "PCA6"),
+                ),
+                selectInput("Use_scale_transformation6", "Scaling",
+                            choices = c(None = "None6",
+                                        Normalization = "Normalization6",
+                                        Standardization = "Standardization6")),
+              ),
             ),
               
             
@@ -448,6 +533,20 @@ fluidPage(
                             "nu (Adjust outliers)",
                             min = 0.0001,  max = 1, value = 0.1, step = 0.0001)
               ),
+              conditionalPanel(
+                condition = "input.One_class12 == 'Minimum_Distance_Selected_Varaiables1'",
+                selectInput("Dimension_reduction_type5", "Component type",
+                            choices = c(None = "None5",
+                                        PCA = "PCA3"),
+                ),
+                selectInput("Use_scale_transformation5", "Scaling",
+                            choices = c(None = "None5",
+                                        Normalization = "Normalization5",
+                                        Standardization = "Standardization5")),
+              ),
+              
+              
+              
             ),
           ),
           
@@ -468,9 +567,8 @@ fluidPage(
         
         conditionalPanel(
           condition = "input.Dimension_for_clustering == 'Dimension_2'",   
-          selectInput("Dimension_Reduction", "Dimension Reduction",
+          selectInput("Dimension_Reduction", "Change into 2 dimension data",
                        choices = c(None = "None1",
-                                   Factor = "Factor1",
                                     MDS = "MDS1",
                                    tSNE = "MDS2",
                                    UMAP = "UMAP1",
@@ -479,11 +577,17 @@ fluidPage(
           
           conditionalPanel(
             condition = "input.Dimension_Reduction != 'None1'",
-            conditionalPanel(
-              condition = "input.Dimension_Reduction != 'Factor1'",
-              checkboxInput("PCA_use2", "Use PCA", TRUE),
-              checkboxInput("Normalization_use2", "Use normalization", TRUE),
+            #checkboxInput("PCA_use2", "Use PCA", TRUE),
+            selectInput("Dimension_reduction_type7", "Component type",
+                        choices = c(None = "None7",
+                                    PCA = "PCA7"),
             ),
+            #checkboxInput("Normalization_use2", "Use normalization", TRUE),
+            selectInput("Use_scale_transformation2", "Scaling",
+                        choices = c(None = "None2",
+                                    Normalization = "Normalization2",
+                                    Standardization = "Standardization2")),
+            
           ),
           
           conditionalPanel(
@@ -500,27 +604,14 @@ fluidPage(
               numericInput('NumericalToCategorcalS11', 'No of ranges', "3"),
             ),
           ),
-          conditionalPanel(
-            condition = "input.Dimension_Reduction ==  'Factor1'",
-            numericInput('Xcol13', 'Column number for X axis', "1"),
-            numericInput('Ycol13', 'Column number for Y axis', "2"),
-            numericInput('Factors2', 'Number of factors', "2"),
-            selectInput("Factor_Rotation2", "Rotation_Type",
-                         choices = c(varimax = "varimax",
-                                     quartimax = "quartimax",
-                                     geominT = "geominT",
-                                     promax = "promax",
-                                     cluster = "cluster",
-                                     oblimin = "oblimin",
-                                     geominQ = "geominQ"))
-          ),
           
           
           conditionalPanel(
             condition = "input.Dimension_Reduction == 'MDS2'",
-            sliderInput("perplexity_value",
-                        "perplexity of t-SNE",
-                        min = 1,  max = 1000, value = 1, step = 1)
+            numericInput('perplexity_value', 'perplexity of t-SNE', "1"),
+            #sliderInput("perplexity_value",
+            #            "perplexity of t-SNE",
+            #            min = 1,  max = 1000, value = 1, step = 1)
           ),
         
           
@@ -538,66 +629,64 @@ fluidPage(
             ),
             conditionalPanel(
               condition = "input.Dimension_Reduction != 'None1'",
+              checkboxInput("AddClustering", "Add clustering methods", FALSE),
+              
+            
               conditionalPanel(
-                condition = "input.Dimension_Reduction != 'Facotr1'",
-                checkboxInput("AddClustering", "Add clustering methods", FALSE),
+                condition = "input.AddClustering == 1",
+                  
+                selectInput("Clustering", "Clustering",
+                             choices = c(k_Means = "clust3",
+                                         GMM= "clust1",
+                                         DBSCAN = "clust2",
+                                         HDBSCAN = "HDBSCAN1",
+                                         One_class_SVM_Clustering = "One_class_SVM_Clustering1")
+                            ),
+                
+                conditionalPanel(
+                  condition = "input.Clustering == 'clust3' || input.Clustering == 'clust1'",
+                  numericInput('k', 'Number of Clusters', 2)
+                ),
+                
+                conditionalPanel(
+                  condition = "input.Clustering == 'clust2'",
+                  numericInput('eps_value', 'eps of DBSCAN', 0.1),
+                  #sliderInput("eps_value",
+                  #            "eps of DBSCAN",
+                  #            min = 0,  max = 1, value = 0.1, step = 0.01)
+                ),
+                conditionalPanel(
+                  condition = "input.Clustering == 'HDBSCAN1'",
+                  numericInput('minPts1', 'minPts of HDBSCAN', 10),
+                ),
+                
+                conditionalPanel(
+                  condition = "input.Clustering == 'One_class_SVM_Clustering1'",
+                  selectInput("Kernel_library", "Kernel_library",
+                               choices = c(anovadot_kernlab= "anovadot",
+                                           rbfdot_kernlab= "rbfdot",
+                                           polydot_kernlab= "polydot",
+                                           vanilladot_kernlab= "vanilladot",
+                                           tanhdot_kernlab= "tanhdot",
+                                           laplacedot_kernlab= "laplacedot",
+                                           besseldot_kernlab= "besseldot",
+                                           splinedot_kernlab= "splinedot"),
+                               selected = "rbfdot"),
+                  sliderInput("nu1",
+                              "nu (Adjust outliers)",
+                              min = 0.001,  max = 1, value = 0.2, step = 0.001)
+                ),
                 
               
-                conditionalPanel(
-                  condition = "input.AddClustering == 1",
-                    
-                  selectInput("Clustering", "Clustering",
-                               choices = c(k_Means = "clust3",
-                                           GMM= "clust1",
-                                           DBSCAN = "clust2",
-                                           HDBSCAN = "HDBSCAN1",
-                                           One_class_SVM_Clustering = "One_class_SVM_Clustering1")
-                              ),
-                  
-                  conditionalPanel(
-                    condition = "input.Clustering == 'clust3' || input.Clustering == 'clust1'",
-                    numericInput('k', 'Number of Clusters', 2)
-                  ),
-                  
-                  conditionalPanel(
-                    condition = "input.Clustering == 'clust2'",
-                    numericInput('eps_value', 'eps of DBSCAN', 0.1),
-                    #sliderInput("eps_value",
-                    #            "eps of DBSCAN",
-                    #            min = 0,  max = 1, value = 0.1, step = 0.01)
-                  ),
-                  conditionalPanel(
-                    condition = "input.Clustering == 'HDBSCAN1'",
-                    numericInput('minPts1', 'minPts of HDBSCAN', 10),
-                  ),
-                  
-                  conditionalPanel(
-                    condition = "input.Clustering == 'One_class_SVM_Clustering1'",
-                    selectInput("Kernel_library", "Kernel_library",
-                                 choices = c(anovadot_kernlab= "anovadot",
-                                             rbfdot_kernlab= "rbfdot",
-                                             polydot_kernlab= "polydot",
-                                             vanilladot_kernlab= "vanilladot",
-                                             tanhdot_kernlab= "tanhdot",
-                                             laplacedot_kernlab= "laplacedot",
-                                             besseldot_kernlab= "besseldot",
-                                             splinedot_kernlab= "splinedot"),
-                                 selected = "rbfdot"),
-                    sliderInput("nu1",
-                                "nu (Adjust outliers)",
-                                min = 0.001,  max = 1, value = 0.2, step = 0.001)
-                  ),
-                  
+                selectInput("plot_type", "Plot type",
+                             choices = c(Name_and_Clusering= "G1",
+                                         Index_and_Clusering1 = "G2",
+                                         Index_and_Clusering2 = "G3",
+                                         Only_Clustering = "G4"),
+                             selected = "G4"),
                 
-                  selectInput("plot_type", "Plot type",
-                               choices = c(Name_and_Clusering= "G1",
-                                           Index_and_Clusering1 = "G2",
-                                           Index_and_Clusering2 = "G3",
-                                           Only_Clustering = "G4"),
-                               selected = "G4"),
-                  
-                ),
               ),
+              
             ),
           ),
           
@@ -611,8 +700,16 @@ fluidPage(
         
         conditionalPanel(
           condition = "input.Dimension_for_clustering == 'Dimension_All'",
-          checkboxInput("PCA_use4", "Use PCA", TRUE),
-          checkboxInput("Normalization_use4", "Use normalization", TRUE),
+          #checkboxInput("PCA_use4", "Use PCA", TRUE),
+          selectInput("Dimension_reduction_type8", "Component type",
+                      choices = c(None = "None8",
+                                  PCA = "PCA8"),
+          ),
+          #checkboxInput("Normalization_use4", "Use normalization", TRUE),
+          selectInput("Use_scale_transformation3", "Scaling",
+                      choices = c(None = "None3",
+                                  Normalization = "Normalization3",
+                                  Standardization = "Standardization3")),
           #selectInput("Pre_processting4", "Pre processting",
           #            choices = c(PCA = "PCA4",
           #                        Normalization = "Normalization_use4",
@@ -682,17 +779,56 @@ fluidPage(
             condition = "input.A_B_method == 'Using_other_variables1'",
             selectInput("Make_variables", "Make variables",
                          choices = c(SVD = "SVD5",
-                                     Correspondence = "Correspondence5")),
+                                     Correspondence = "Correspondence5",
+                                     Factor = "Factor1")),
             
-            selectInput("Dimension_reduction5", "Dimension_reduction",
-                         choices = c(MDS = "MDS5",
-                                     tSNE = "tSNE5",
-                                     UMAP = "UMAP5")),
             conditionalPanel(
-              condition = "input.Dimension_reduction5 == 'tSNE5'",
-              sliderInput("perplexity_value5",
-                          "perplexity of t-SNE",
-                          min = 1,  max = 1000, value = 1, step = 1)
+              condition = "input.Make_variables ==  'Factor1'",
+              numericInput('Xcol13', 'Column number for X axis', "1"),
+              numericInput('Ycol13', 'Column number for Y axis', "2"),
+              numericInput('Factors2', 'Number of factors', "2"),
+              selectInput("Factor_Rotation2", "Rotation_Type",
+                          choices = c(varimax = "varimax",
+                                      quartimax = "quartimax",
+                                      geominT = "geominT",
+                                      promax = "promax",
+                                      cluster = "cluster",
+                                      oblimin = "oblimin",
+                                      geominQ = "geominQ")),
+              
+              selectInput("Dimension_reduction7", "Change into 2 dimension data for analysis of variables",
+                          choices = c(MDS = "MDS7",
+                                      tSNE = "tSNE7",
+                                      UMAP = "UMAP7")),
+              conditionalPanel(
+                condition = "input.Dimension_reduction7 == 'tSNE7'",
+                numericInput('perplexity_value7', 'perplexity of t-SNE', "1"),
+                #sliderInput("perplexity_value7",
+                #            "perplexity of t-SNE",
+                #            min = 1,  max = 1000, value = 1, step = 1)
+              ),
+              
+              selectInput("plot_type3", "Plot type for analysis of samples",
+                          choices = c(Name = "G111",
+                                      Index = "G121",
+                                      Plot_and_Name = "G131",
+                                      Plot_and_Index = "G141",
+                                      Only_Plot = "G151"))
+              
+            ),
+            conditionalPanel(
+              condition = "input.Make_variables !=  'Factor1'",
+              selectInput("Dimension_reduction5", "Change into 2 dimension data",
+                           choices = c(MDS = "MDS5",
+                                       tSNE = "tSNE5",
+                                       UMAP = "UMAP5")),
+              conditionalPanel(
+                condition = "input.Dimension_reduction5 == 'tSNE5'",
+                numericInput('perplexity_value5', 'perplexity of t-SNE', "1"),
+                #sliderInput("perplexity_value5",
+                #            "perplexity of t-SNE",
+                #            min = 1,  max = 1000, value = 1, step = 1)
+              ),
             ),
           ),
           conditionalPanel(
@@ -860,7 +996,7 @@ fluidPage(
         conditionalPanel(
           condition = "input.Dimension_type == 'Multi_variable'",
           selectInput("Method5", "Method",
-                       choices = c(Dimension_reduction = "Dimension_reduction3",
+                       choices = c(Component_analysis = "Dimension_reduction3",
                                    Stratifeid_graph = "Stratifeid_graph3",
                                    Cross_correlation = "Cross_correlation")
           ),
@@ -872,12 +1008,16 @@ fluidPage(
                          choices = c(Box_Integrated = "Box_Integrated1",
                                      Box_Separated = "Box_Separated1")
             ),
-            selectInput("Dimension_reduction_type3", "Dimension reduction type",
+            selectInput("Dimension_reduction_type3", "Component type",
                          choices = c(None = "None3",
                                      PCA = "PCA3",
                                      ICA = "ICA3",
                                      Factor = "Factor3"),
             ),
+            selectInput("Use_scale_transformation4", "Scaling",
+                        choices = c(None = "None4",
+                                    Normalization = "Normalization4",
+                                    Standardization = "Standardization4")),
             conditionalPanel(
               condition = "input.Dimension_reduction_type3 ==  'Factor3'",
               numericInput('Factors3', 'Number of factors', "2"),
@@ -917,18 +1057,7 @@ fluidPage(
       a(" (Japanese)   ",href="http://data-science.tokyo/R-J/about_R-EDA1.html"),
       
       selectInput("sep2", "Separator of CSV",  choices = c("Separator_Comma", "Separator_Semicolon", "Separator_Tab")),
-      
-      conditionalPanel(
-        condition = "input.analysis != 'Similarity_of_Samples1'",
-          
-        conditionalPanel(
-          condition = "input.analysis != 'Similarity_of_Names_in_Rows_and_Columns1'",
-          conditionalPanel(
-            condition = "input.analysis != 'Heat_map1'",
-            checkboxInput("DoNotUseFirst", "Do not use the first column of CSV", FALSE),
-          ),
-        ),
-      ),
+
       
     ),
     
@@ -1676,22 +1805,6 @@ fluidPage(
             plotlyOutput("plot204"),
           ),
           conditionalPanel(
-            condition = "input.Dimension_Reduction == 'Factor1'",
-            h3("Factor analysis"),
-            verbatimTextOutput("text407"),
-            h3("Similarity of variables by heatmap"),
-            plotlyOutput("plot407"),
-            h3("Similarity of variables by MDS"),
-            p("Axis1 and axis2 do not have physical meaning. These two dimension are made from multi-dimension data usin MDS."),
-            plotlyOutput("plot409"),
-            h3("Similarity of samples related with factors"),
-            plotlyOutput("plot205"),
-            a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E4-09.html"),
-            a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J4-09.html"),br(),
-            a("About Factor analysis(English)   ",href="http://data-science.tokyo/ed-e/ede1-2-4.html"),
-            a("(Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-4.html"),br(),
-          ),
-          conditionalPanel(
             condition = "input.Dimension_Reduction != 'nMDS1'",
             conditionalPanel(
               condition = "input.Dimension_Reduction != 'None1'",
@@ -1803,8 +1916,11 @@ fluidPage(
           ),
           conditionalPanel(
             condition = "input.A_B_method == 'Using_other_variables1'",
-            plotlyOutput("plot405"),
-            downloadButton("downloadData6", "Download analyzed data"),
+            conditionalPanel(
+              condition = "input.Make_variables != 'Factor1'",
+              plotlyOutput("plot405"),
+              downloadButton("downloadData6", "Download analyzed data"),
+            ),
             
             conditionalPanel(
               condition = "input.Make_variables == 'Correspondence5'",
@@ -1816,8 +1932,25 @@ fluidPage(
               textOutput("text4052"),
               
             ),
+            
+            conditionalPanel(
+              condition = "input.Make_variables == 'Factor1'",
+              h3("Factor analysis"),
+              verbatimTextOutput("text407"),
+              h3("Similarity of variables by heatmap"),
+              plotlyOutput("plot407"),
+              h3("Similarity of variables"),
+              p("Axis1 and axis2 do not have physical meaning. These two dimension are made from multi-dimension data."),
+              plotlyOutput("plot409"),
+              h3("Similarity of samples related with factors"),
+              plotlyOutput("plot205"),
+              a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E4-09.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J4-09.html"),br(),
+              a("About Factor analysis(English)   ",href="http://data-science.tokyo/ed-e/ede1-2-4.html"),
+              a("(Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-4.html"),br(),
+            ),
             h4("Algorithm"),
-            p("1. SVD (Singular Value Decomposition) or Correspondence analysis. Output is multi-dimensional data."),
+            p("1. Make ulti-dimensional data."),
             p("2. Bind two matrix. One is for row. The other is for column"),
             p("3. MDS(sammon) or t-SNE to change from high dimension into 2 dimension"),
             a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-06.html"),
