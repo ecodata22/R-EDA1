@@ -420,6 +420,7 @@ fluidPage(
                                     PCRA = "PCRA1")),
             conditionalPanel(
               condition = "input.Regression_analysis == 'GLMM1'",
+              checkboxInput("Use_squared_model1", "Use squared model", FALSE),
               selectInput("family_link", "family_link",
                           choices = c(gaussian_identity = "gaussian_identity",
                                       poisson_log = "poisson_log",
@@ -1669,10 +1670,9 @@ fluidPage(
               conditionalPanel(
                 condition = "input.Regression_analysis == 'GLMM1'",
               h3("Generalized Linear Mixed Model (Regression Analysis)"),
-              p("Features of interaction (product of two variables) are included. 
-                So this method could be Linear Mixed Effect model (LME) when categorical variables are included."),
               p("Features in the model are automatically choosed using AIC."),
               verbatimTextOutput("text113"),
+              plotlyOutput("plot113"),
               a("About GLMM (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-1-4.html"),
               a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-1-4.html")
             ),
@@ -1682,6 +1682,7 @@ fluidPage(
               h3("Principal Component Regression Analysis"),
               
               verbatimTextOutput("text114"),
+              plotlyOutput("plot114"),
               plotOutput("plot18"),
               a("About PCRA (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-1-2-1-1.html"),
               a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-1-2-1-1.html")

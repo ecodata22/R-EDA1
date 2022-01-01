@@ -1349,20 +1349,53 @@ shinyServer(function(input, output) {
             }
             
             library(MASS)
+            library(VGAM)
             Data1 <- Data
             Y <- names(Data1[input$Label_column])
             Ydata <- Data1[,input$Label_column]
             Data1[,input$Label_column]<-NULL
             if(input$family_link == "gaussian_identity"){
-              anova(step(glm(Ydata~.^2, data=Data1, family= gaussian(link = "identity"))))
+              if(input$Use_squared_model1 == 1){
+                glmmodel <- step(glm(Ydata~.^2, data=Data1, family= gaussian(link = "identity")))
+              } else {
+                glmmodel <- step(glm(Ydata~., data=Data1, family= gaussian(link = "identity")))
+              }
+              s2 <- predict(glmmodel,Data1)
+              Data1s2 <- cbind(Data1,s2)
+              output$plot113 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=Ydata, y=s2)) + geom_point() + labs(x="label",y="predicted")))
             } else if(input$family_link == "poisson_log"){
-              anova(step(glm(Ydata~.^2, data=Data1, family= poisson(link = "log"))))
+              if(input$Use_squared_model1 == 1){
+                glmmodel <- step(glm(Ydata~.^2, data=Data1, family= poisson(link = "log")))
+              } else {
+                glmmodel <- step(glm(Ydata~., data=Data1, family= poisson(link = "log")))
+              }
+              s2 <- predict(glmmodel,Data1)
+              Data1s2 <- cbind(Data1,s2)
+              output$plot113 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=log(Ydata), y=s2)) + geom_point() + labs(x="log(label)",y="predicted")))
+              
             } else if(input$family_link == "binomial_logit"){
-              anova(step(glm(Ydata~.^2, data=Data1, family= binomial(link = "logit"))))
+              if(input$Use_squared_model1 == 1){
+                glmmodel <- step(glm(Ydata~.^2, data=Data1, family= binomial(link = "logit")))
+              } else {
+                glmmodel <- step(glm(Ydata~., data=Data1, family= binomial(link = "logit")))
+              }
+              s2 <- predict(glmmodel,Data1)
+              Data1s2 <- cbind(Data1,s2)
+              output$plot113 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=as.factor(Ydata), y=exp(s2)/(1+exp(s2)))) + geom_point() + labs(x="label",y="predicted.probability")))
+              
             } else if(input$family_link == "binomial_probit"){
-              anova(step(glm(Ydata~.^2, data=Data1, family= binomial(link = "probit"))))
+              if(input$Use_squared_model1 == 1){
+                glmmodel <- step(glm(Ydata~.^2, data=Data1, family= binomial(link = "probit")))
+              } else {
+                glmmodel <- step(glm(Ydata~., data=Data1, family= binomial(link = "probit")))
+              }
+              s2 <- predict(glmmodel,Data1)
+              Data1s2 <- cbind(Data1,s2)
+              output$plot113 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=as.factor(Ydata), y=probitlink(s2,inverse = TRUE))) + geom_point() + labs(x="label",y="predicted.probability")))
+              
             } 
             
+            anova(glmmodel)
           }
         }
       }
@@ -1414,6 +1447,9 @@ shinyServer(function(input, output) {
             V(DM.g)$shape <- c("square", "circle")[V(DM.g)$type+1] 
             output$plot18<-renderPlot(plot(DM.g, edge.width=E(DM.g)$weight))
             
+            s2 <- predict(pcr,pcd)
+            Data1s2 <- cbind(pcd,s2)
+            output$plot114 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=Ydata, y=s2)) + geom_point() + labs(x="label",y="label.predicted")))
             summary(pcr) 
           }
         }
