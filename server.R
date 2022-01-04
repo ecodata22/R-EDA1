@@ -18,7 +18,8 @@ shinyServer(function(input, output) {
       if(input$DoNotUseFirst == 1){
         Data[,1] <- NULL
       }
-          
+      output$text001 <- renderDataTable(head(Data,5))
+      output$text002 <- renderDataTable(tail(Data,5))
       summary(Data)
     }
   })

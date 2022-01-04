@@ -1070,7 +1070,12 @@ fluidPage(
       
       conditionalPanel(
         condition = "input.analysis == 'Basic_EDA1'",
-        dataTableOutput("text00")
+        h3("Summary"),
+        dataTableOutput("text00"),
+        h3("Head of data"),
+        dataTableOutput("text001"),
+        h3("Tail of data"),
+        dataTableOutput("text002")
       ),
       conditionalPanel(
         condition = "input.analysis == 'Heat_map1'",
