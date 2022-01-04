@@ -1135,6 +1135,7 @@ fluidPage(
                   conditionalPanel(
                     condition = "input.Using_GLM == 1",
                     p("Generalized linear model (GLM)"),
+                    plotlyOutput("plot519"),
                     verbatimTextOutput("text519"),
                     verbatimTextOutput("text520"),
                   ),
@@ -1153,9 +1154,10 @@ fluidPage(
                     condition = "input.Scol == 0",
                     conditionalPanel(
                       condition = "input.Using_GLM == 1",
-                      p("Linear mixed model (LMM)"),
-                      verbatimTextOutput("text526"),
-                      p("Generalized linear mixed model (GLMM) (if 'gaussian is chossed, same to LMM)"),
+                      #p("Linear mixed model (LMM)"),
+                      #verbatimTextOutput("text526"),
+                      p("Generalized linear mixed model (GLMM)"),
+                      plotlyOutput("plot527"),
                       verbatimTextOutput("text527"),
                       verbatimTextOutput("text528"),
                     )
@@ -1168,9 +1170,10 @@ fluidPage(
                   condition = "input.Ccol == 0",
                   conditionalPanel(
                     condition = "input.Using_GLM == 1",
-                    p("Linear mixed model (LMM)"),
-                    verbatimTextOutput("text529"),
-                    p("Generalized linear mixed model (GLMM) (if 'gaussian is chossed, same to LMM)"),
+                    #p("Linear mixed model (LMM)"),
+                    #verbatimTextOutput("text529"),
+                    p("Generalized linear mixed model (GLMM)"),
+                    plotlyOutput("plot530"),
                     verbatimTextOutput("text530"),
                     verbatimTextOutput("text531"),
                   )
@@ -1183,10 +1186,11 @@ fluidPage(
                     condition = "input.Scol != 0",
                     conditionalPanel(
                       condition = "input.Using_GLM == 1",
-                      p("Linear mixed model (LMM)"),
-                      verbatimTextOutput("text532"),
-                      verbatimTextOutput("text535"),
-                      p("Generalized linear mixed model (GLMM) (if 'gaussian is chossed, same to LMM)"),
+                      #p("Linear mixed model (LMM)"),
+                      #verbatimTextOutput("text532"),
+                      #verbatimTextOutput("text535"),
+                      p("Generalized linear mixed model (GLMM)"),
+                      plotlyOutput("plot533"),
                       verbatimTextOutput("text533"),
                       verbatimTextOutput("text534"),
                     )
@@ -1671,8 +1675,8 @@ fluidPage(
                 condition = "input.Regression_analysis == 'GLMM1'",
               h3("Generalized Linear Mixed Model (Regression Analysis)"),
               p("Features in the model are automatically choosed using AIC."),
-              verbatimTextOutput("text113"),
               plotlyOutput("plot113"),
+              verbatimTextOutput("text113"),
               a("About GLMM (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-1-4.html"),
               a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-1-4.html")
             ),

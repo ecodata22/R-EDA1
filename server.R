@@ -131,6 +131,7 @@ shinyServer(function(input, output) {
           library(lme4)
           library(dplyr)
           library(plotly)
+          library(VGAM)
           
           if(input$sep2 == "Separator_Comma"){sep <- ","}
           if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
@@ -159,16 +160,33 @@ shinyServer(function(input, output) {
               if(input$NumericalToCategorcalSColor1 == 1){Data1[,input$Ccol] <- as.factor(Data1[,input$Ccol])}
               
               if(input$Using_GLM == 1){
-                output$text532 <- renderPrint(anova(step(lm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Ccol], data=Data1))))
-                output$text535 <- renderPrint(paste("Data1[,input$Lcol] =" ,Lname,"   Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname,"   Data1[,input$Ccol] =" ,Cname))
+                #output$text532 <- renderPrint(anova(step(lm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Ccol], data=Data1))))
+                #output$text532 <- renderPrint(summary(step(lm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Ccol], data=Data1))))
+                #output$text535 <- renderPrint(paste("Data1[,input$Lcol] =" ,Lname,"   Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname,"   Data1[,input$Ccol] =" ,Cname))
                 if(input$family_link2 == "gaussian_identity"){
-                  output$text533 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Ccol], data=Data1, family= gaussian(link = "identity")))))
+                  glmmodel <- step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Ccol], data=Data1, family= gaussian(link = "identity")))
+                  s2 <- predict(glmmodel,Data1)
+                  Data1s2 <- cbind(Data1,s2)
+                  output$plot533 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=Data1[,input$Lcol], y=s2)) + geom_point() + labs(x="label",y="predicted")))
+                  output$text533 <- renderPrint(anova(glmmodel))
                 } else if(input$family_link2 == "poisson_log"){
-                  output$text533 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Ccol], data=Data1, family= poisson(link = "log")))))
+                  glmmodel <- step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Ccol], data=Data1, family= poisson(link = "log")))
+                  s2 <- predict(glmmodel,Data1)
+                  Data1s2 <- cbind(Data1,s2)
+                  output$plot533 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=log(Data1[,input$Lcol]), y=s2)) + geom_point() + labs(x="log(label)",y="predicted")))
+                  output$text533 <- renderPrint(anova(glmmodel))
                 } else if(input$family_link2 == "binomial_logit"){
-                  output$text533 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Ccol], data=Data1, family= binomial(link = "logit")))))
+                  glmmodel <- step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Ccol], data=Data1, family= binomial(link = "logit")))
+                  s2 <- predict(glmmodel,Data1)
+                  Data1s2 <- cbind(Data1,s2)
+                  output$plot533 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=as.factor(Data1[,input$Lcol]), y=exp(s2)/(1+exp(s2)))) + geom_point() + labs(x="label",y="predicted.probability")))
+                  output$text533 <- renderPrint(anova(glmmodel))
                 } else if(input$family_link2 == "binomial_probit"){
-                  output$text533 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Ccol], data=Data1, family= binomial(link = "probit")))))
+                  glmmodel <- step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Ccol], data=Data1, family= binomial(link = "probit")))
+                  s2 <- predict(glmmodel,Data1)
+                  Data1s2 <- cbind(Data1,s2)
+                  output$plot533 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=as.factor(Data1[,input$Lcol]), y=probitlink(s2,inverse = TRUE))) + geom_point() + labs(x="label",y="predicted.probability")))
+                  output$text533 <- renderPrint(anova(glmmodel))
                 } 
                 #output$text533 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Ccol], data=Data1, family= input$family2))))
                 output$text534 <- renderPrint(paste("Data1[,input$Lcol] =" ,Lname,"   Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname,"   Data1[,input$Ccol] =" ,Cname))
@@ -181,15 +199,31 @@ shinyServer(function(input, output) {
               if(input$NumericalToCategorcalSColor1 == 1){Data1[,input$Ccol] <- as.factor(Data1[,input$Ccol])}
               
               if(input$Using_GLM == 1){
-                output$text526 <- renderPrint(anova(step(lm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Ccol], data=Data1))))
+                #output$text526 <- renderPrint(summary(step(lm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Ccol], data=Data1))))
                 if(input$family_link2 == "gaussian_identity"){
-                  output$text527 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Ccol], data=Data1, family= gaussian(link = "identity")))))
+                  glmmodel <- step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Ccol], data=Data1, family= gaussian(link = "identity")))
+                  s2 <- predict(glmmodel,Data1)
+                  Data1s2 <- cbind(Data1,s2)
+                  output$plot527 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=Data1[,input$Lcol], y=s2)) + geom_point() + labs(x="label",y="predicted")))
+                  output$text527 <- renderPrint(anova(glmmodel))
                 } else if(input$family_link2 == "poisson_log"){
-                  output$text527 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Ccol], data=Data1, family= poisson(link = "log")))))
+                  glmmodel <- step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Ccol], data=Data1, family= poisson(link = "log")))
+                  s2 <- predict(glmmodel,Data1)
+                  Data1s2 <- cbind(Data1,s2)
+                  output$plot527 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=log(Data1[,input$Lcol]), y=s2)) + geom_point() + labs(x="log(label)",y="predicted")))
+                  output$text527 <- renderPrint(anova(glmmodel))
                 } else if(input$family_link2 == "binomial_logit"){
-                  output$text527 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Ccol], data=Data1, family= binomial(link = "logit")))))
+                  glmmodel <- step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Ccol], data=Data1, family= binomial(link = "logit")))
+                  s2 <- predict(glmmodel,Data1)
+                  Data1s2 <- cbind(Data1,s2)
+                  output$plot527 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=as.factor(Data1[,input$Lcol]), y=exp(s2)/(1+exp(s2)))) + geom_point() + labs(x="label",y="predicted.probability")))
+                  output$text527 <- renderPrint(anova(glmmodel))
                 } else if(input$family_link2 == "binomial_probit"){
-                  output$text527 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Ccol], data=Data1, family= binomial(link = "probit")))))
+                  glmmodel <- step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Ccol], data=Data1, family= binomial(link = "probit")))
+                  s2 <- predict(glmmodel,Data1)
+                  Data1s2 <- cbind(Data1,s2)
+                  output$plot527 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=as.factor(Data1[,input$Lcol]), y=probitlink(s2,inverse = TRUE))) + geom_point() + labs(x="label",y="predicted.probability")))
+                  output$text527 <- renderPrint(anova(glmmodel))
                 } 
                 #output$text527 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Ccol], data=Data1, family= input$family2))))
                 output$text528 <- renderPrint(paste("Data1[,input$Lcol] =" ,Lname,"   Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Ccol] =" ,Cname))
@@ -199,15 +233,31 @@ shinyServer(function(input, output) {
               if(class(Data1[,input$Scol]) == "numeric" || class(Data1[,input$Scol]) == "integer"){Data1[,input$Scol] <- droplevels(cut(Data1[,input$Scol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
               
               if(input$Using_GLM == 1){
-                output$text529 <- renderPrint(anova(step(lm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol], data=Data1))))
+                #output$text529 <- renderPrint(summary(step(lm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol], data=Data1))))
                 if(input$family_link2 == "gaussian_identity"){
-                  output$text530 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol], data=Data1, family= gaussian(link = "identity")))))
+                  glmmodel <- step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol], data=Data1, family= gaussian(link = "identity")))
+                  s2 <- predict(glmmodel,Data1)
+                  Data1s2 <- cbind(Data1,s2)
+                  output$plot530 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=Data1[,input$Lcol], y=s2)) + geom_point() + labs(x="label",y="predicted")))
+                  output$text530 <- renderPrint(anova(glmmodel))
                 } else if(input$family_link2 == "poisson_log"){
-                  output$text530 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol], data=Data1, family= poisson(link = "log")))))
+                  glmmodel <- step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol], data=Data1, family= poisson(link = "log")))
+                  s2 <- predict(glmmodel,Data1)
+                  Data1s2 <- cbind(Data1,s2)
+                  output$plot530 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=log(Data1[,input$Lcol]), y=s2)) + geom_point() + labs(x="log(label)",y="predicted")))
+                  output$text530 <- renderPrint(anova(glmmodel))
                 } else if(input$family_link2 == "binomial_logit"){
-                  output$text530 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol], data=Data1, family= binomial(link = "logit")))))
+                  glmmodel <- step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol], data=Data1, family= binomial(link = "logit")))
+                  s2 <- predict(glmmodel,Data1)
+                  Data1s2 <- cbind(Data1,s2)
+                  output$plot530 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=as.factor(Data1[,input$Lcol]), y=exp(s2)/(1+exp(s2)))) + geom_point() + labs(x="label",y="predicted.probability")))
+                  output$text530 <- renderPrint(anova(glmmodel))
                 } else if(input$family_link2 == "binomial_probit"){
-                  output$text530 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol], data=Data1, family= binomial(link = "probit")))))
+                  glmmodel <- step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol], data=Data1, family= binomial(link = "probit")))
+                  s2 <- predict(glmmodel,Data1)
+                  Data1s2 <- cbind(Data1,s2)
+                  output$plot530 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=as.factor(Data1[,input$Lcol]), y=probitlink(s2,inverse = TRUE))) + geom_point() + labs(x="label",y="predicted.probability")))
+                  output$text530 <- renderPrint(anova(glmmodel))
                 } 
                 #output$text530 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol], data=Data1, family= input$family2))))
                 output$text531 <- renderPrint(paste("Data1[,input$Lcol] =" ,Lname,"   Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname))
@@ -217,16 +267,32 @@ shinyServer(function(input, output) {
               output$text518 <- renderPrint(paste("Correlation coefficient =" ,cor(Data1[,input$Xcol],Data1[,input$Lcol])))
               if(input$Using_GLM == 1){
                 if(input$family_link2 == "gaussian_identity"){
-                  output$text519 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol], data=Data1, family= gaussian(link = "identity")))))
+                  glmmodel <- step(glm(Data1[,input$Lcol]~Data1[,input$Xcol], data=Data1, family= gaussian(link = "identity")))
+                  s2 <- predict(glmmodel,Data1)
+                  Data1s2 <- cbind(Data1,s2)
+                  output$plot519 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=Data1[,input$Lcol], y=s2)) + geom_point() + labs(x="label",y="predicted")))
+                  output$text519 <- renderPrint(anova(glmmodel))
                 } else if(input$family_link2 == "poisson_log"){
-                  output$text519 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol], data=Data1, family= poisson(link = "log")))))
+                  glmmodel <- step(glm(Data1[,input$Lcol]~Data1[,input$Xcol], data=Data1, family= poisson(link = "log")))
+                  s2 <- predict(glmmodel,Data1)
+                  Data1s2 <- cbind(Data1,s2)
+                  output$plot519 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=log(Data1[,input$Lcol]), y=s2)) + geom_point() + labs(x="log(label)",y="predicted")))
+                  output$text519 <- renderPrint(anova(glmmodel))
                 } else if(input$family_link2 == "binomial_logit"){
-                  output$text519 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol], data=Data1, family= binomial(link = "logit")))))
+                  glmmodel <- step(glm(Data1[,input$Lcol]~Data1[,input$Xcol], data=Data1, family= binomial(link = "logit")))
+                  s2 <- predict(glmmodel,Data1)
+                  Data1s2 <- cbind(Data1,s2)
+                  output$plot519 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=as.factor(Data1[,input$Lcol]), y=exp(s2)/(1+exp(s2)))) + geom_point() + labs(x="label",y="predicted.probability")))
+                  output$text519 <- renderPrint(anova(glmmodel))
                 } else if(input$family_link2 == "binomial_probit"){
-                  output$text519 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol], data=Data1, family= binomial(link = "probit")))))
+                  glmmodel <- step(glm(Data1[,input$Lcol]~Data1[,input$Xcol], data=Data1, family= binomial(link = "probit")))
+                  s2 <- predict(glmmodel,Data1)
+                  Data1s2 <- cbind(Data1,s2)
+                  output$plot519 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=as.factor(Data1[,input$Lcol]), y=probitlink(s2,inverse = TRUE))) + geom_point() + labs(x="label",y="predicted.probability")))
+                  output$text519 <- renderPrint(anova(glmmodel))
                 } 
                 #output$text519 <- renderPrint(summary(glm(Data1[,input$Lcol]~Data1[,input$Xcol], data=Data1, family= input$family2)))
-                output$text520 <- renderPrint(paste("Data1[,input$Lcol] =" ,Lname,"   Data1[,input$Xcol] =" ,Xname,"   input$family2 =" ,input$family2))
+                output$text520 <- renderPrint(paste("Data1[,input$Lcol] =" ,Lname,"   Data1[,input$Xcol] =" ,Xname))
               }
               if(input$Check_difference_between_two_variablesl == 1){
                 output$text537 <- renderPrint(t.test(x=Data1[,input$Xcol],y=Data1[,input$Lcol],paired=T))
@@ -236,7 +302,7 @@ shinyServer(function(input, output) {
                 lm <- lm(Data1[,input$Lcol] ~ Data1[,input$Xcol], data=Data1)
                 Data0 <- predict(lm, Data1, interval="prediction", level = input$Prediction_Interval_Probability)
                 Data2 <- cbind(Data, Data0)
-                gplot <- ggplot(data = Data2, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) +geom_point()+geom_line(aes(y=lwr), color = "red")+geom_line(aes(y=upr), color = "red")+geom_line(aes(y= fit), color = "blue")
+                gplot <- ggplot(data = Data2, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) +geom_point()+geom_line(aes(y=lwr), color = "red")+geom_line(aes(y=upr), color = "red")+geom_line(aes(y= fit), color = "blue")+ labs(x=Xname,y=Lname)
               } else {
                 #if(input$Using_interactive_graph1 == 1){
                 #  #output$plot538 <- renderPlotly(plot_ly(Data1, x=~Data1[,input$Xcol], y=~Data1[,input$Lcol], type = 'scatter'))
@@ -386,7 +452,7 @@ shinyServer(function(input, output) {
                 if(input$Scol2 == 0){
                   Data2 <- cbind(Data1[input$Xcol],Data1[input$Scol])
                   Data3 <- count(group_by(Data2,Data2[,1:2],.drop=FALSE)) 
-                  output$text536 <- renderPrint(anova(step(glm(n~.^2, data=Data3,family=poisson))))
+                  output$text536 <- renderPrint(anova((glm(n~.^2, data=Data3,family=poisson))))
                   Data4 <- tidyr::spread(Data3, key=colnames(Data3[1]), value ="n")
                   Data4[1] <- NULL
                   Data4[is.na(Data4)] <- 0
@@ -397,7 +463,7 @@ shinyServer(function(input, output) {
                   Data2 <- cbind(Data1[input$Lcol],Data1[input$Scol],Data1[input$Scol2])
                   
                   Data3 <- count(group_by(Data2,Data2[,1:3],.drop=FALSE))
-                  output$text536 <- renderPrint(anova(step(glm(n~.^2, data=Data3,family=poisson))))
+                  output$text536 <- renderPrint(anova((glm(n~.^2, data=Data3,family=poisson))))
                   
                   gplot <- ggplot(Data1, aes(x=Data1[,input$Lcol])) + geom_bar() + geom_text(stat='count', aes(label=..count..), vjust=-1) + facet_grid(Data1[,input$Scol2]~Data1[,input$Scol])+ labs(x=Lname,subtitle = paste("columns:",Sname," rows:",Sname2))
                 }
