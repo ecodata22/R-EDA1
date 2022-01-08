@@ -3156,6 +3156,8 @@ shinyServer(function(input, output) {
           
           library(ggplot2)
           library(MASS)
+          library(heatmaply)
+          library(plotly)
           
           if(input$sep2 == "Separator_Comma"){sep <- ","}
           if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
@@ -3173,14 +3175,126 @@ shinyServer(function(input, output) {
             DM <- (max(DM) - DM)/(max(DM)-min(DM))+0.0000001
             diag(DM) <- 0
           }
-          sn <- sammon(DM)
+          sn <- sammon(DM, k=input$k_dimension1)
           Data2 <- sn$points
-          Data2 <- cbind.data.frame(Data2 ,name1)
-          ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=name1)) + geom_text()+ labs(y="axis2",x="axis1"))
+          #Data2 <- cbind.data.frame(Data2 ,name1)
+          row.names(Data2) <- name1
+          output$plot40141 <- renderPlotly(heatmaply(Data2, Colv = NA))
+          Data3 <- cbind.data.frame(Data2 ,name1)
+          ggplotly(ggplot(Data3, aes(x=Data3[,1], y=Data3[,2],label=name1)) + geom_text()+ labs(y="2nd axis",x="1st axis"))
         }
       }
     }
   })
+  output$plot4015 <- renderPlotly({
+    if(input$analysis == "Similarity_of_Names_in_Rows_and_Columns1"){
+      if(input$Matrix_type == 'A_A') {
+        if(input$A_A_method == 'tSNE8') {
+          
+          req(input$file1)
+          
+          library(ggplot2)
+          library(Rtsne)
+          
+          if(input$sep2 == "Separator_Comma"){sep <- ","}
+          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+          
+          
+          
+          DM <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=1)
+          
+          
+          name1 <-  row.names(DM)
+          DM <- as.matrix(DM)
+          
+          if(input$Change_to_Largefar == 1){
+            DM <- (max(DM) - DM)/(max(DM)-min(DM))+0.0000001
+            diag(DM) <- 0
+          }
+          ts <- Rtsne(DM, perplexity = input$perplexity_value8, dims=input$k_dimension1, is_distance=TRUE) # t-SNE
+          Data2 <- as.data.frame(ts$Y)
+          row.names(Data2) <- name1
+          output$plot40151 <- renderPlotly(heatmaply(Data2, Colv = NA))
+          Data3 <- cbind.data.frame(Data2 ,name1)
+          ggplotly(ggplot(Data3, aes(x=Data3[,1], y=Data3[,2],label=name1)) + geom_text()+ labs(y="2nd axis",x="1st axis"))
+        }
+      }
+    }
+  })
+  output$plot4016 <- renderPlotly({
+    if(input$analysis == "Similarity_of_Names_in_Rows_and_Columns1"){
+      if(input$Matrix_type == 'A_A') {
+        if(input$A_A_method == 'UMAP8') {
+          
+          req(input$file1)
+          
+          library(ggplot2)
+          library(Rcpp)
+          library(umap)
+          
+          if(input$sep2 == "Separator_Comma"){sep <- ","}
+          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+          
+          
+          
+          DM <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=1)
+          
+          
+          name1 <-  row.names(DM)
+          DM <- as.matrix(DM)
+          
+          if(input$Change_to_Largefar == 1){
+            DM <- (max(DM) - DM)/(max(DM)-min(DM))+0.0000001
+            diag(DM) <- 0
+          }
+          UMAP_out62 <- umap(DM,input='dist',n_neighbors=input$n_neighbors8, n_components = input$k_dimension1)
+          Data2 <- UMAP_out62$layout
+          row.names(Data2) <- name1
+          output$plot40161 <- renderPlotly(heatmaply(Data2, Colv = NA))
+          Data3 <- cbind.data.frame(Data2 ,name1)
+          ggplotly(ggplot(Data3, aes(x=Data3[,1], y=Data3[,2],label=name1)) + geom_text()+ labs(y="2nd axis",x="1st axis"))
+        }
+      }
+    }
+  })
+  
+  output$plot4017 <- renderPlotly({
+    if(input$analysis == "Similarity_of_Names_in_Rows_and_Columns1"){
+      if(input$Matrix_type == 'A_A') {
+        if(input$A_A_method == 'hclust8') {
+          
+          req(input$file1)
+          
+          library(ggplot2)
+          library(ggdendro)
+          
+          if(input$sep2 == "Separator_Comma"){sep <- ","}
+          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+          
+          
+          
+          DM <- read.csv(input$file1$datapath, header=T,sep = sep, row.names=1)
+          
+          
+          name1 <-  row.names(DM)
+          DM <- as.matrix(DM)
+          
+          if(input$Change_to_Largefar == 1){
+            DM <- (max(DM) - DM)/(max(DM)-min(DM))+0.0000001
+            diag(DM) <- 0
+          }
+          DM<-as.dist(DM)
+          hc <- hclust(DM, input$hclust_type8)
+          ggplotly(ggdendrogram(hc, segments = TRUE, labels = TRUE, leaf_labels = TRUE, rotate = FALSE, theme_dendro = TRUE))
+        }
+      }
+    }
+  })
+  
+  
   output$text4013 <- renderPrint({
     if(input$analysis == "Similarity_of_Names_in_Rows_and_Columns1"){
       if(input$Matrix_type == 'A_A') {

@@ -52,16 +52,19 @@ fluidPage(
       conditionalPanel(
         condition = "input.analysis == 'Similarity_of_Names_in_Rows_and_Columns1'",
         
-        checkboxInput("Use_one_column_as_sample_name3", "Use one of the column as sample name", FALSE),
-        
         conditionalPanel(
-          condition = "input.Use_one_column_as_sample_name3 == 1",
-          numericInput('sample_row3', 'Column number for  sample name', "1"),
-        ),
-        
-        conditionalPanel(
-          condition = "input.Use_one_column_as_sample_name3 == 0",
-          p("Index is used as sample name.")
+          condition = "input.Matrix_type == 'A_B'",
+          checkboxInput("Use_one_column_as_sample_name3", "Use one of the column as sample name", FALSE),
+          
+          conditionalPanel(
+            condition = "input.Use_one_column_as_sample_name3 == 1",
+            numericInput('sample_row3', 'Column number for  sample name', "1"),
+          ),
+          
+          conditionalPanel(
+            condition = "input.Use_one_column_as_sample_name3 == 0",
+            p("Index is used as sample name.")
+          ),
         ),
       ),
       
@@ -848,6 +851,9 @@ fluidPage(
           selectInput("A_A_method", "Method",
                        choices = c(Monopartite_graph = "Monopartite_graph1",
                                    MDS_sammon = "MDS_sammon1",
+                                   tSNE = "tSNE8",
+                                   UMAP = "UMAP8",
+                                   Hierarchical = "hclust8",
                                    Eigen_value = "Eigen_value1")),
           
           conditionalPanel(
@@ -859,8 +865,30 @@ fluidPage(
                         min = 0,  max = 5, value = 2, step = 0.1)
           ),
           conditionalPanel(
-            condition = "input.A_A_method == 'MDS_sammon1'",
-            checkboxInput("Change_to_Largefar", "Change large=close data into large=far data", FALSE),
+            condition = "input.A_A_method != 'Monopartite_graph1'",
+            conditionalPanel(
+              condition = "input.A_A_method != 'Eigen_value1'",
+              checkboxInput("Change_to_Largefar", "Change large=close data into large=far data", FALSE),
+              
+              conditionalPanel(
+                condition = "input.A_A_method != 'hclust8'",
+                numericInput('k_dimension1', 'dimension number of output', "2"),
+              ),
+            ),
+          ),
+          conditionalPanel(
+            condition = "input.A_A_method == 'tSNE8'",
+            numericInput('perplexity_value8', 'perplexity of t-SNE', "1"),
+          ),
+          conditionalPanel(
+            condition = "input.A_A_method == 'UMAP8'",
+            numericInput('n_neighbors8', 'n_neighbors of UMAP', "5"),
+          ),
+          conditionalPanel(
+            condition = "input.A_A_method == 'hclust8'",
+            selectInput("hclust_type8", "Type",
+                        choices = c(ward = "ward.D2",
+                                    single = "single")),
           ),
           
         ),
@@ -2021,8 +2049,32 @@ fluidPage(
             condition = "input.A_A_method == 'MDS_sammon1'",
             p("The data is needed to be the distance matrix. (large = far)"),
             plotlyOutput("plot4014"),
-            a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E4-04.html"),
-            a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J4-04.html"),
+            plotlyOutput("plot40141"),
+            a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-03.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-03.html"),
+          ),
+          conditionalPanel(
+            condition = "input.A_A_method == 'tSNE8'",
+            p("The data is needed to be the distance matrix. (large = far)"),
+            plotlyOutput("plot4015"),
+            plotlyOutput("plot40151"),
+            a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-03.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-03.html"),
+          ),
+          conditionalPanel(
+            condition = "input.A_A_method == 'UMAP8'",
+            p("The data is needed to be the distance matrix. (large = far)"),
+            plotlyOutput("plot4016"),
+            plotlyOutput("plot40161"),
+            a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-03.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-03.html"),
+          ),
+          conditionalPanel(
+            condition = "input.A_A_method == 'hclust8'",
+            p("The data is needed to be the distance matrix. (large = far)"),
+            plotlyOutput("plot4017"),
+            a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E4-03.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J4-03.html"),
           ),
           conditionalPanel(
             condition = "input.A_A_method == 'Eigen_value1'",
