@@ -1029,7 +1029,7 @@ shinyServer(function(input, output) {
             }else if(input$Dimension_reduction6 == "UMAP6"){
               library(Rcpp)
               library(umap)
-              UMAP_out62 <- umap(Data11)
+              UMAP_out62 <- umap(Data11,n_neighbors=input$n_neighbors6)
               Data2 <- UMAP_out62$layout
               Data2 <- cbind.data.frame(Data2 ,name1)
             }
@@ -2536,7 +2536,7 @@ shinyServer(function(input, output) {
               ts <- Rtsne(Data3, perplexity = input$perplexity_value)
               Data5 <- ts$Y
             }else  {
-              UMAP_out <- umap(Data3)
+              UMAP_out <- umap(Data3,n_neighbors=input$n_neighbors1)
               Data5 <-UMAP_out$layout
             }
             Data51 <- Data5
@@ -2922,7 +2922,7 @@ shinyServer(function(input, output) {
               
               library(Rcpp)
               library(umap)
-              UMAP_out <- umap(Data1[,1:n1])
+              UMAP_out <- umap(Data1[,1:n1],n_neighbors=input$n_neighbors5)
               output <- UMAP_out$layout
               Data2 <- cbind(output, Data1)
               gplot <- ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=Name1)) + geom_text(aes(colour=Name2)) + labs(y="axis2",x="axis1"))
@@ -3016,7 +3016,7 @@ shinyServer(function(input, output) {
               
               library(Rcpp)
               library(umap)
-              UMAP_out <- umap(Data11)
+              UMAP_out <- umap(Data11,n_neighbors=input$n_neighbors7)
               Data2 <- UMAP_out$layout
               
             }

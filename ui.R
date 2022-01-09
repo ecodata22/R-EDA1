@@ -274,6 +274,11 @@ fluidPage(
               #            "perplexity of t-SNE",
               #            min = 1,  max = 100, value = 1, step = 1)
             ),
+            
+            conditionalPanel(
+              condition = "input.Dimension_reduction6 == 'UMAP6'",
+              numericInput('n_neighbors6', 'n_neighbors of UMAP', "5"),
+            ),
           ),
           conditionalPanel(
             condition = "input.Among_all_columns == 'Line_graph1'",
@@ -617,6 +622,11 @@ fluidPage(
             #            "perplexity of t-SNE",
             #            min = 1,  max = 1000, value = 1, step = 1)
           ),
+          
+          conditionalPanel(
+            condition = "input.Dimension_Reduction == 'UMAP1'",
+            numericInput('n_neighbors1', 'n_neighbors of UMAP', "5"),
+          ),
         
           
           conditionalPanel(
@@ -812,6 +822,11 @@ fluidPage(
                 #            min = 1,  max = 1000, value = 1, step = 1)
               ),
               
+              conditionalPanel(
+                condition = "input.Dimension_reduction7 == 'UMAP7'",
+                numericInput('n_neighbors7', 'n_neighbors of UMAP', "5"),
+              ),
+              
               selectInput("plot_type3", "Plot type for analysis of samples",
                           choices = c(Name = "G111",
                                       Index = "G121",
@@ -832,6 +847,11 @@ fluidPage(
                 #sliderInput("perplexity_value5",
                 #            "perplexity of t-SNE",
                 #            min = 1,  max = 1000, value = 1, step = 1)
+              ),
+              
+              conditionalPanel(
+                condition = "input.Dimension_reduction5 == 'UMAP5'",
+                numericInput('n_neighbors5', 'n_neighbors of UMAP', "5"),
               ),
             ),
           ),
