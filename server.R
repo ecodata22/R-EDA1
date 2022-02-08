@@ -59,13 +59,13 @@ shinyServer(function(input, output) {
       if(input$Use_scale_transformation1 == "Normalization1"){
         n <- ncol(Data2)
         for (i in 1:n) {
-          Data3[,i] <- (Data2[,i]-min(Data2[,i]))/(max(Data2[,i])-min(Data2[,i]))
+          Data3[,i] <- (Data2[,i]-min(Data2[,i], na.rm = TRUE))/(max(Data2[,i], na.rm = TRUE)-min(Data2[,i], na.rm = TRUE))
         }
       }
       if(input$Use_scale_transformation1 == "Standardization1"){
         n <- ncol(Data2)
         for (i in 1:n) {
-          Data3[,i] <- (Data2[,i]-mean(Data2[,i]))/(sd(Data2[,i]))
+          Data3[,i] <- (Data2[,i]-mean(Data2[,i], na.rm = TRUE))/(sd(Data2[,i], na.rm = TRUE))
         }
       }
       
@@ -90,37 +90,37 @@ shinyServer(function(input, output) {
     }
   })
   
-  output$plot01 <- renderPlotly({
-    if(input$analysis == "Similarity_of_Variables_and_Categories1"){
-      if(input$Similarity_of_Variables_and_Categories == "Among_all_columns1"){
-        if(input$Among_all_columns == "Line_graph1"){
-      
-          req(input$file1)
+  #output$plot01 <- renderPlotly({
+  #  if(input$analysis == "Similarity_of_Variables_and_Categories1"){
+  #    if(input$Similarity_of_Variables_and_Categories == "Among_all_columns1"){
+  #      if(input$Among_all_columns == "Line_graph1"){
+  #    
+  #        req(input$file1)
           
-          if(input$sep2 == "Separator_Comma"){sep <- ","}
-          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
-          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
-          Data <- read.csv(input$file1$datapath, header=T,sep = sep)
-          if(input$DoNotUseFirst == 1){
-            Data[,1] <- NULL
-          }
-          library(dummies)
-          library(ggplot2)
-          library(tidyr)
-          Data2 <- dummy.data.frame(Data)
-          Data2$No <-as.numeric(row.names(Data2))
-          Data_long <- tidyr::gather(Data2, key="Yno", value = Ys, -No)
+  #        if(input$sep2 == "Separator_Comma"){sep <- ","}
+  #        if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+  #        if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+  #        Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+  #        if(input$DoNotUseFirst == 1){
+  #          Data[,1] <- NULL
+  #        }
+  #        library(dummies)
+  #        library(ggplot2)
+  #        library(tidyr)
+  #        Data2 <- dummy.data.frame(Data)
+  #        Data2$Number <-as.numeric(row.names(Data2))
+  #        Data_long <- tidyr::gather(Data2, key="Y_Number", value = Ys, -Number)
           
-          if(input$Line_graph == "Box_Integrated1"){
-            gplot <- ggplot(Data_long, aes(x=No,y=Ys, colour=Yno)) + geom_line()
-          } else {
-            gplot <- ggplot(Data_long, aes(x=No,y=Ys)) + geom_line() + facet_wrap(~Yno,scales="free")
-          }
-          ggplotly(gplot)
-        }
-      }  
-    }
-  })
+  #        if(input$Line_graph == "Box_Integrated1"){
+  #          gplot <- ggplot(Data_long, aes(x=No,y=Ys, colour=Y_Number)) + geom_line()
+  #        } else {
+  #          gplot <- ggplot(Data_long, aes(x=No,y=Ys)) + geom_line() + facet_wrap(~Y_Number,scales="free")
+  #        }
+  #        ggplotly(gplot)
+  #      }
+  #    }  
+  #  }
+  #})
   
   
   output$plot14 <- renderPlotly({
@@ -192,7 +192,7 @@ shinyServer(function(input, output) {
                 #output$text533 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Ccol], data=Data1, family= input$family2))))
                 output$text534 <- renderPrint(paste("Data1[,input$Lcol] =" ,Lname,"   Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname,"   Data1[,input$Ccol] =" ,Cname))
               }  
-              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_point(aes(colour=Data1[,input$Ccol])) + facet_wrap(~Data1[,input$Scol],scales="free")+ labs(x=Xname,y=Lname,color=Cname,subtitle = Sname)
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_point(aes(colour=Data1[,input$Ccol])) + facet_wrap(~Data1[,input$Scol],scales=input$Stratifeid_scaling1)+ labs(x=Xname,y=Lname,color=Cname,subtitle = Sname)
             } else if(input$Scol == 0 && input$Ccol != 0){
               if(input$NumericalToCategorcalSColor2 == 1){
                 if(class(Data1[,input$Ccol]) == "numeric" || class(Data1[,input$Ccol]) == "integer"){Data1[,input$Ccol] <- droplevels(cut(Data1[,input$Ccol], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
@@ -263,7 +263,7 @@ shinyServer(function(input, output) {
                 #output$text530 <- renderPrint(anova(step(glm(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol], data=Data1, family= input$family2))))
                 output$text531 <- renderPrint(paste("Data1[,input$Lcol] =" ,Lname,"   Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname))
               }
-              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_point() + facet_wrap(~Data1[,input$Scol],scales="free")+ labs(x=Xname,y=Lname,subtitle = Sname)
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_point() + facet_wrap(~Data1[,input$Scol],scales=input$Stratifeid_scaling1)+ labs(x=Xname,y=Lname,subtitle = Sname)
             } else {
               output$text518 <- renderPrint(paste("Correlation coefficient =" ,cor(Data1[,input$Xcol],Data1[,input$Lcol])))
               if(input$Using_GLM == 1){
@@ -314,6 +314,7 @@ shinyServer(function(input, output) {
               }
               
             } 
+            
             ggplotly(gplot)
             
           } else if(input$Gtype == "line_graph"){
@@ -360,7 +361,7 @@ shinyServer(function(input, output) {
                     output$text515 <- renderPrint(summary(aov(Data1[,input$Lcol]~Data1[,input$Xcol]+Data1[,input$Scol],data=Data)))
                     output$text516 <- renderPrint(paste("Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname))
                   }
-                  gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_boxplot() + facet_wrap(~Data1[,input$Scol],scales="free")+ labs(x=Xname,y=Lname,subtitle = Sname)
+                  gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_boxplot() + facet_wrap(~Data1[,input$Scol],scales=input$Stratifeid_scaling1)+ labs(x=Xname,y=Lname,subtitle = Sname)
                 } else {
                   
                   mean01 <- aggregate(Data1[,input$Lcol]~Data1[,input$Xcol]*Data1[,input$Scol]*Data1[,input$Scol2],data=Data1,FUN=mean)
@@ -372,7 +373,7 @@ shinyServer(function(input, output) {
                     output$text544 <- renderPrint(summary(aov(Data1[,input$Lcol]~Data1[,input$Xcol]+Data1[,input$Scol]+Data1[,input$Scol2],data=Data)))
                     output$text545 <- renderPrint(paste("Data1[,input$Xcol] =" ,Xname,"   Data1[,input$Scol] =" ,Sname,"   Data1[,input$Scol2] =" ,Sname2))
                   }
-                  gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_boxplot() + facet_grid(Data1[,input$Scol]~Data1[,input$Scol2])+ labs(x=Xname,y=Lname,subtitle = paste("columns:",Sname," rows:",Sname2))
+                  gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_boxplot() + facet_grid(Data1[,input$Scol]~Data1[,input$Scol2],scales=input$Stratifeid_scaling1)+ labs(x=Xname,y=Lname,subtitle = paste("columns:",Sname," rows:",Sname2))
                   
                   
                 }    
@@ -415,7 +416,7 @@ shinyServer(function(input, output) {
                     output$text511 <- renderPrint(summary(aov(Data1[,input$Lcol]~Data1[,input$Scol]+Data1[,input$Scol2],data=Data)))
                     output$text512 <- renderPrint(paste("Data1[,input$Scol] =" ,Sname,"   Data1[,input$Scol2] =" ,Sname2))
                   }
-                  gplot <- ggplot(Data1, aes(x=Data1[,input$Lcol])) + geom_histogram() + facet_grid(Data1[,input$Scol]~Data1[,input$Scol2])+ labs(x=Lname,subtitle = paste("columns:",Sname," rows:",Sname2))
+                  gplot <- ggplot(Data1, aes(x=Data1[,input$Lcol])) + geom_histogram() + facet_grid(Data1[,input$Scol]~Data1[,input$Scol2],scales=input$Stratifeid_scaling1)+ labs(x=Lname,subtitle = paste("columns:",Sname," rows:",Sname2))
                 } else {
                   
                   mean01 <- aggregate(Data1[,input$Lcol]~Data1[,input$Scol],data=Data1,FUN=mean)
@@ -432,7 +433,7 @@ shinyServer(function(input, output) {
                     output$text503 <- renderPrint(bartlett.test(formula=Data1[,input$Lcol]~Data1[,input$Scol]))
                     output$text504 <- renderPrint(paste("Data1[,input$Lcol] =" ,Lname,"   Data1[,input$Scol] =" ,Sname))
                   }
-                  gplot <- ggplot(Data1, aes(x=Data1[,input$Lcol])) + geom_histogram() + facet_grid(Data1[,input$Scol]~.)+ labs(x=Lname,subtitle = Sname)
+                  gplot <- ggplot(Data1, aes(x=Data1[,input$Lcol])) + geom_histogram() + facet_grid(Data1[,input$Scol]~.,scales=input$Stratifeid_scaling1)+ labs(x=Lname,subtitle = Sname)
                 }
             } else {
               M <- mean(Data1[,input$Lcol])
@@ -458,7 +459,7 @@ shinyServer(function(input, output) {
                   Data4[1] <- NULL
                   Data4[is.na(Data4)] <- 0
                   output$text5362 <- renderPrint(chisq.test(Data4))
-                  gplot <- ggplot(Data1, aes(x=Data1[,input$Lcol])) + geom_bar() + geom_text(stat='count', aes(label=..count..), vjust=-1) + facet_grid(.~Data1[,input$Scol])+ labs(x=Lname,subtitle = Sname)
+                  gplot <- ggplot(Data1, aes(x=Data1[,input$Lcol])) + geom_bar() + geom_text(stat='count', aes(label=..count..), vjust=-1) + facet_grid(.~Data1[,input$Scol],scales=input$Stratifeid_scaling1)+ labs(x=Lname,subtitle = Sname)
                 } else {
                   if(class(Data1[,input$Scol2]) == "numeric" || class(Data1[,input$Scol2]) == "integer"){Data1[,input$Scol2] <- droplevels(cut(Data1[,input$Scol2], breaks = input$NumericalToCategorcalS, include.lowest = TRUE))}
                   Data2 <- cbind(Data1[input$Lcol],Data1[input$Scol],Data1[input$Scol2])
@@ -466,7 +467,7 @@ shinyServer(function(input, output) {
                   Data3 <- count(group_by(Data2,Data2[,1:3],.drop=FALSE))
                   output$text536 <- renderPrint(anova((glm(n~.^2, data=Data3,family=poisson))))
                   
-                  gplot <- ggplot(Data1, aes(x=Data1[,input$Lcol])) + geom_bar() + geom_text(stat='count', aes(label=..count..), vjust=-1) + facet_grid(Data1[,input$Scol2]~Data1[,input$Scol])+ labs(x=Lname,subtitle = paste("columns:",Sname," rows:",Sname2))
+                  gplot <- ggplot(Data1, aes(x=Data1[,input$Lcol])) + geom_bar() + geom_text(stat='count', aes(label=..count..), vjust=-1) + facet_grid(Data1[,input$Scol2]~Data1[,input$Scol],scales=input$Stratifeid_scaling1)+ labs(x=Lname,subtitle = paste("columns:",Sname," rows:",Sname2))
                 }
               } else {
                 gplot <- ggplot(Data1, aes(x=Data1[,input$Lcol])) + geom_bar() + geom_text(stat='count', aes(label=..count..), vjust=-1) + labs(x=Lname)
@@ -518,7 +519,7 @@ shinyServer(function(input, output) {
             library(MASS)
             Data1 <- dummy.data.frame(Data)
             DataM <- as.matrix(Data1)
-            GM1 <- cor(DataM)
+            GM1 <- cor(DataM , use = "complete.obs")
             
             if(input$Graph_type1 == 'scatter_plot1'){
               GM2 <- abs(GM1)
@@ -591,7 +592,7 @@ shinyServer(function(input, output) {
             library(MASS)
             Data1 <- dummy.data.frame(Data)
             DataM <- as.matrix(Data1)
-            COR <- cor(DataM)
+            COR <- cor(DataM , use = "complete.obs")
             GM1 <- glasso(COR,input$RHO)$wi
             rownames(GM1) <- rownames(COR)
             colnames(GM1) <- colnames(COR)
@@ -753,11 +754,24 @@ shinyServer(function(input, output) {
             library(bnlearn)
             library(MASS)
             
-            if (input$NumericalToCategorcalB > 0){
+            for (i in 1:ncol(Data)) {
+              if (class(Data[,i]) == "integer") {
+                if (input$IntegerToCategorcalB == "numericB"){
+                  Data[,i] <- as.numeric(Data[,i])
+                } else if (input$IntegerToCategorcalB == "categoricalB"){
+                  Data[,i] <- as.factor(Data[,i])
+                }
+              }
+              if (class(Data[,i]) == "character") {
+                Data[,i] <- as.factor(Data[,i])
+              }
+            }
+            
+            
+            if (input$NumericalToCategorcalB > 1){
               for (i in 1:ncol(Data)) {
-                if (class(Data[,i]) == "numeric" || class(Data[,i]) == "integer") {
+                if (class(Data[,i]) == "numeric") {
                   Data[,i] <- droplevels(cut(Data[,i], breaks = input$NumericalToCategorcalB, include.lowest = TRUE))
-                  
                 }
                 Data[,i] <- as.factor(Data[,i])
               }
@@ -803,64 +817,85 @@ shinyServer(function(input, output) {
     }
   })
   
-  #output$plot17 <- renderPlot({
-  #  if(input$analysis == "Similarity_of_Variables_and_Categories1"){
-  #    if(input$Similarity_of_Variables_and_Categories == "Among_all_columns1"){
-  #      if(input$Among_all_columns == "Variable_Network1"){
-  #        if(input$Variable_Network == 'LiNGAM1') {
-  #          
-  #          req(input$file1)
-  #          
-  #          if(input$sep2 == "Separator_Comma"){sep <- ","}
-  #          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
-  #          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
-  #          Data <- read.csv(input$file1$datapath, header=T,sep = sep)
-  #             if(input$DoNotUseFirst == 1){
-  #               Data[,1] <- NULL
-  #             }
-  #          library(pcalg)
-  #          library(igraph)
-  #          library(dummies)
-  #          library(tidyr)
-  #          for (i in 1:ncol(Data)) {
-  #            if (class(Data[,i]) == "numeric" || class(Data[,i]) == "integer") {
-  #              Data[,i] <- (Data[,i] - mean(Data[,i]))/sd(Data[,i])
-  #            }
-  #          }
-  #          Str <- lingam(Data)$Bpruned
-  #          rownames(Str) <- colnames(Data)
-  #          colnames(Str) <- colnames(Data)
-  #          GM2 <- abs(Str)
-  #          GM3 <- t(GM2*5)
-  #          GM4 <- graph.adjacency(GM3,weighted=T, mode = "directed")
-  #          
+  output$plot17 <- renderPlot({
+    if(input$analysis == "Similarity_of_Variables_and_Categories1"){
+      if(input$Similarity_of_Variables_and_Categories == "Among_all_columns1"){
+        if(input$Among_all_columns == "Variable_Network1"){
+          if(input$Variable_Network == 'LiNGAM1') {
+            
+            req(input$file1)
+            
+            if(input$sep2 == "Separator_Comma"){sep <- ","}
+            if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+            if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+            Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+               if(input$DoNotUseFirst == 1){
+                 Data[,1] <- NULL
+               }
+            library(igraph)
+            library(dummies)
+            library(tidyr)
+            library(fastICA)
+            n <- ncol(Data)
+            for (i in 1:n) {
+              if (class(Data[,i]) == "numeric" || class(Data[,i]) == "integer") {
+                Data[,i] <- (Data[,i] - mean(Data[,i]))/sd(Data[,i])
+              }
+            }
+            fICA <- fastICA(Data, n)
+            K <- fICA$K
+            W <- fICA$W
+            tKW <- t(K %*% W)
+            MintKW <- tKW
+            MinSum <- sum(diag(1/abs(tKW)))
+            for (i in 1:10000) {
+              tKW2 <- tKW[order(sample(tKW,n)),]
+              SumdiagRabstKW <- sum(diag(1/abs(tKW2)))
+              if(MinSum > SumdiagRabstKW){
+                MinSum <- SumdiagRabstKW
+                MintKW <- tKW2
+              }
+            }
+            MintKW2 <- MintKW
+            for (i in 1:n) {
+              MintKW2[i,] <- MintKW2[i,]/MintKW2[i,i] 
+            }
+            Str <- MintKW2
+            diag(Str) <- 0
+            rownames(Str) <- colnames(Data)
+            colnames(Str) <- colnames(Data)
+            GM2 <- t(abs(Str))
+            GM3 <- GM2*5/max(GM2)
+            GM3[GM3<input$coefficient_limit1] <- 0
+            GM4 <- graph.adjacency(GM3,weighted=T, mode = "directed")
             
             
-  #          GM1_DF <- as.data.frame(Str)
-  #          Name <- row.names(GM1_DF)
-  #          GM1_DF2 <- cbind(Name, GM1_DF)
-  #          Data_Output1 <- tidyr::gather(GM1_DF2, key="Name2", value = Bpruned, -Name)
-  #          ABS_Bpruned <- abs(Data_Output1[,3])
-  #          Data_Output1 <- cbind(Data_Output1, ABS_Bpruned)
-  #          Data_Output1 <- Data_Output1[order(Data_Output1$ABS_Bpruned, decreasing=T),]
-  #          output$Data_Output17 <- renderDataTable(Data_Output1)
             
-  #          output$downloadData17 <- downloadHandler(
-  #            filename = function() {
-  #              paste("LiNGAM_data", ".csv", sep = "")
-  #            },
-  #            content = function(file) {
-  #              write.csv(Data_Output1, file, row.names = FALSE)
-  #            }
-  #          )
+            GM1_DF <- as.data.frame(Str)
+            Name <- row.names(GM1_DF)
+            GM1_DF2 <- cbind(Name, GM1_DF)
+            Data_Output1 <- tidyr::gather(GM1_DF2, key="Name2", value = Bpruned, -Name)
+            ABS_Bpruned <- abs(Data_Output1[,3])
+            Data_Output1 <- cbind(Data_Output1, ABS_Bpruned)
+            Data_Output1 <- Data_Output1[order(Data_Output1$ABS_Bpruned, decreasing=T),]
+            output$Data_Output17 <- renderDataTable(Data_Output1)
+          
+            output$downloadData17 <- downloadHandler(
+              filename = function() {
+                paste("LiNGAM_data", ".csv", sep = "")
+              },
+              content = function(file) {
+                write.csv(Data_Output1, file, row.names = FALSE)
+              }
+            )
             
-  #          plot(GM4, edge.width=E(GM4)$weight)
-  #          
-  #        }
-  #      }
-  #    }  
-  #  }
-  #})
+            plot(GM4, edge.width=E(GM4)$weight)
+            
+          }
+        }
+      }  
+    }
+  })
   
   output$ap231 <- renderDataTable({
     if(input$analysis == "Similarity_of_Variables_and_Categories1"){
@@ -1265,9 +1300,9 @@ shinyServer(function(input, output) {
             Data4 <- cbind(Ydata, Data2)
             Data_long <- tidyr::gather(Data4, key="X", value = Xs, -Ydata)
             if(class(Ydata) == "numeric") {
-              gplot <- ggplot(Data_long, aes(x=Xs,y=Data_long[,1])) + geom_point() + facet_wrap(~X,scales="free")+ labs(y=Y)
+              gplot <- ggplot(Data_long, aes(x=Xs,y=Data_long[,1])) + geom_point() + facet_wrap(~X,scales=input$Stratifeid_scaling2)+ labs(y=Y)
             } else {
-              gplot <- ggplot(Data_long, aes(x=Data_long[,1],y=Xs)) + geom_jitter(size=1, position=position_jitter(0.1)) + facet_wrap(~X,scales="free")+ labs(x=Y)
+              gplot <- ggplot(Data_long, aes(x=Data_long[,1],y=Xs)) + geom_jitter(size=1, position=position_jitter(0.1)) + facet_wrap(~X,scales=input$Stratifeid_scaling2)+ labs(x=Y)
             }
             ggplotly(gplot)
           }
@@ -1326,9 +1361,9 @@ shinyServer(function(input, output) {
             Data4 <- cbind(Ydata, pc$x, Data2)
             Data_long <- tidyr::gather(Data4, key="X", value = Xs, -Ydata)
             if(class(Ydata) == "numeric") {
-              ggplotly(ggplot(Data_long, aes(x=Xs,y=Data_long[,1])) + geom_point() + facet_wrap(~X,scales="free")+ labs(y=Y))
+              ggplotly(ggplot(Data_long, aes(x=Xs,y=Data_long[,1])) + geom_point() + facet_wrap(~X,scales=input$Stratifeid_scaling4)+ labs(y=Y))
             } else {
-              ggplotly(ggplot(Data_long, aes(x=Data_long[,1],y=Xs)) + geom_jitter(size=1, position=position_jitter(0.1)) + facet_wrap(~X,scales="free")+ labs(x=Y))
+              ggplotly(ggplot(Data_long, aes(x=Data_long[,1],y=Xs)) + geom_jitter(size=1, position=position_jitter(0.1)) + facet_wrap(~X,scales=input$Stratifeid_scaling4)+ labs(x=Y))
             }
           }
         }
@@ -1389,9 +1424,9 @@ shinyServer(function(input, output) {
             Data4 <- cbind(Ydata, ic, Data2)
             Data_long <- tidyr::gather(Data4, key="X", value = Xs, -Ydata)
             if(class(Ydata) == "numeric") {
-              ggplotly(ggplot(Data_long, aes(x=Xs,y=Data_long[,1])) + geom_point() + facet_wrap(~X,scales="free")+ labs(y=Y))
+              ggplotly(ggplot(Data_long, aes(x=Xs,y=Data_long[,1])) + geom_point() + facet_wrap(~X,scales=input$Stratifeid_scaling5)+ labs(y=Y))
             } else {
-              ggplotly(ggplot(Data_long, aes(x=Data_long[,1],y=Xs)) + geom_jitter(size=1, position=position_jitter(0.1)) + facet_wrap(~X,scales="free")+ labs(x=Y))
+              ggplotly(ggplot(Data_long, aes(x=Data_long[,1],y=Xs)) + geom_jitter(size=1, position=position_jitter(0.1)) + facet_wrap(~X,scales=input$Stratifeid_scaling5)+ labs(x=Y))
             }
           }
         }
@@ -2680,17 +2715,17 @@ shinyServer(function(input, output) {
             #gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point() + facet_wrap(~Data1[,input$Scol11],scales="free")+ labs(x=Xname,y=Lname,subtitle = Sname)
             
             if(input$plot_type2 == "G11") {
-              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11],label=Ydata)) + geom_text() + facet_wrap(~Data1[,input$Scol11],scales="free") + labs(x=Xname,y=Lname,subtitle = Sname)
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11],label=Ydata)) + geom_text() + facet_wrap(~Data1[,input$Scol11],scales=input$Stratifeid_scaling3) + labs(x=Xname,y=Lname,subtitle = Sname)
             } else if(input$plot_type2 == "G12") {
-              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11],label=Index)) + geom_text() + facet_wrap(~Data1[,input$Scol11],scales="free") + labs(x=Xname,y=Lname,subtitle = Sname)
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11],label=Index)) + geom_text() + facet_wrap(~Data1[,input$Scol11],scales=input$Stratifeid_scaling3) + labs(x=Xname,y=Lname,subtitle = Sname)
             } else if(input$plot_type2 == "G13") {
               Data1$Index <- as.numeric(Data1$Index)
-              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point(aes(colour=Ydata)) + facet_wrap(~Data1[,input$Scol11],scales="free") + labs(x=Xname,y=Lname,subtitle = Sname)
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point(aes(colour=Ydata)) + facet_wrap(~Data1[,input$Scol11],scales=input$Stratifeid_scaling3) + labs(x=Xname,y=Lname,subtitle = Sname)
             } else if(input$plot_type2 == "G14") {
               Data1$Index <- as.numeric(Data1$Index)
-              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point(aes(colour=Index)) + facet_wrap(~Data1[,input$Scol11],scales="free") + scale_color_viridis_c(option = "D")+ labs(x=Xname,y=Lname,subtitle = Sname)
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point(aes(colour=Index)) + facet_wrap(~Data1[,input$Scol11],scales=input$Stratifeid_scaling3) + scale_color_viridis_c(option = "D")+ labs(x=Xname,y=Lname,subtitle = Sname)
             } else {
-              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point() + facet_wrap(~Data1[,input$Scol11],scales="free")+ labs(x=Xname,y=Lname,subtitle = Sname)
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point() + facet_wrap(~Data1[,input$Scol11],scales=input$Stratifeid_scaling3)+ labs(x=Xname,y=Lname,subtitle = Sname)
             }
           } else {
             #gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point() + labs(x=Xname,y=Lname)
@@ -3364,7 +3399,7 @@ shinyServer(function(input, output) {
             }
             if(input$NumericalToCategorcalSColor13 == 1){Data1[,input$Ccol3] <- as.factor(Data1[,input$Ccol3])}
             
-            gplot <- ggplot(Data1, aes(x=Data1$No,y=Data1[,input$Lcol3])) + geom_line(aes(colour=Data1[,input$Ccol3])) + facet_wrap(~Data1[,input$Scol3],scales="free")+ labs(x="Index",y=Lname,color=Cname,subtitle = Sname)
+            gplot <- ggplot(Data1, aes(x=Data1$No,y=Data1[,input$Lcol3])) + geom_line(aes(colour=Data1[,input$Ccol3])) + facet_wrap(~Data1[,input$Scol3],scales=input$Stratifeid_scaling6)+ labs(x="Index",y=Lname,color=Cname,subtitle = Sname)
           } else if(input$Scol3 == 0 && input$Ccol3 != 0){
             if(input$NumericalToCategorcalSColor23 == 1){
               if(class(Data1[,input$Ccol3]) == "numeric" || class(Data1[,input$Ccol3]) == "integer"){Data1[,input$Ccol3] <- droplevels(cut(Data1[,input$Ccol3], breaks = input$NumericalToCategorcalS3, include.lowest = TRUE))}
@@ -3375,7 +3410,7 @@ shinyServer(function(input, output) {
           } else if(input$Scol != 0 && input$Ccol == 0){
             if(class(Data1[,input$Scol3]) == "numeric" || class(Data1[,input$Scol3]) == "integer"){Data1[,input$Scol3] <- droplevels(cut(Data1[,input$Scol3], breaks = input$NumericalToCategorcalS3, include.lowest = TRUE))}
             
-            gplot <- ggplot(Data1, aes(x=Data1$No,y=Data1[,input$Lcol3])) + geom_line() + facet_wrap(~Data1[,input$Scol3],scales="free")+ labs(x="Index",y=Lname,subtitle = Sname)
+            gplot <- ggplot(Data1, aes(x=Data1$No,y=Data1[,input$Lcol3])) + geom_line() + facet_wrap(~Data1[,input$Scol3],scales=input$Stratifeid_scaling6)+ labs(x="Index",y=Lname,subtitle = Sname)
           } else {
             
             gplot <- ggplot(Data1, aes(x=Data1$No,y=Data1[,input$Lcol3])) + geom_line() + labs(x="Index",y=Lname)
@@ -3460,7 +3495,7 @@ shinyServer(function(input, output) {
             }
           }
           
-          Data2$No <-as.numeric(row.names(Data2))
+          Data2$Number <-as.numeric(row.names(Data2))
           
           output$downloadData714 <- downloadHandler(
             filename = function() {
@@ -3471,12 +3506,12 @@ shinyServer(function(input, output) {
             }
           )
           
-          Data_long <- tidyr::gather(Data2, key="Yno", value = Ys, -No)
+          Data_long <- tidyr::gather(Data2, key="Y_Number", value = Ys, -Number)
           
           if(input$Line_graph2 == "Box_Integrated1"){
-            gplot <- ggplot(Data_long, aes(x=No,y=Ys, colour=Yno)) + geom_line()
+            gplot <- ggplot(Data_long, aes(x=Number,y=Ys, colour=Y_Number)) + geom_line()
           } else {
-            gplot <- ggplot(Data_long, aes(x=No,y=Ys)) + geom_line() + facet_wrap(~Yno,scales="free")
+            gplot <- ggplot(Data_long, aes(x=Number,y=Ys)) + geom_line() + facet_wrap(~Y_Number,scales=input$Stratifeid_scaling7)
           }
           ggplotly(gplot)
         }
@@ -3509,8 +3544,8 @@ shinyServer(function(input, output) {
             Data2 <- as.data.frame(Data2)
             Data2$X <- Data[,input$Xcol4]
             Data2$Y <- Data[,input$Ycol4]
-            Data_long <- tidyr::gather(Data2, key="Yno", value = Ys, -Data2)
-            gplot <- ggplot(Data_long, aes(x=Data2,y=Ys)) + geom_line() + facet_grid(Yno~.)+labs(x="No",y="Ys")
+            Data_long <- tidyr::gather(Data2, key="Y_Number", value = Ys, -Data2)
+            gplot <- ggplot(Data_long, aes(x=Data2,y=Ys)) + geom_line() + facet_grid(Y_Number~.)+labs(x="Number",y="Ys")
             ggplotly(gplot)
           })
           Value_to_analyze_X <- input$Xcol4
@@ -3552,7 +3587,7 @@ shinyServer(function(input, output) {
           })
           output$plot503 <- renderPlotly({
             Data$No <-as.numeric(row.names(Data))
-            gplot2 <- ggplot(Data, aes(x =No, y=Data[,input$Value_to_analyze])) + geom_line()+ labs(x="No",y=Lname)
+            gplot2 <- ggplot(Data, aes(x =No, y=Data[,input$Value_to_analyze])) + geom_line()+ labs(x="Number",y=Lname)
             ggplotly(gplot2)
           })
           ggplotly(gplot)
@@ -3592,7 +3627,7 @@ shinyServer(function(input, output) {
           output$plot722 <- renderPlotly({
             Lname<-names(Data[input$Value_to_analyze])
             Data$No <-as.numeric(row.names(Data))
-            gplot <- ggplot(Data, aes(x =No, y=Data[,input$Value_to_analyze])) + geom_line()+ labs(x="No",y=Lname)
+            gplot <- ggplot(Data, aes(x =No, y=Data[,input$Value_to_analyze])) + geom_line()+ labs(x="Number",y=Lname)
             ggplotly(gplot)
           })
           
@@ -3621,7 +3656,7 @@ shinyServer(function(input, output) {
           output$plot724 <- renderPlotly({
             Lname<-names(Data[input$Value_to_analyze])
             Data$No <-as.numeric(row.names(Data))
-            gplot <- ggplot(Data, aes(x =No, y=Data[,input$Value_to_analyze])) + geom_line()+ labs(x="No",y=Lname)
+            gplot <- ggplot(Data, aes(x =No, y=Data[,input$Value_to_analyze])) + geom_line()+ labs(x="Number",y=Lname)
             ggplotly(gplot)
           })
           Value_to_analyze <- input$Value_to_analyze

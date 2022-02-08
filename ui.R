@@ -7,7 +7,6 @@ library(visNetwork)
 fluidPage(
   
   titlePanel("R-EDA1 (R Exploratory Data Analysis)"),
-  p("made by Tetsuro Sugihara"),
   HTML('<div id="fb-root"></div><script async defer crossorigin="anonymous" src="https://connect.facebook.net/ja_JP/sdk.js#xfbml=1&version=v10.0" nonce="Y3i7onlm"></script>'),
   #HTML('<a href="https://twitter.com/share" class="twitter-share-button")>Twitter</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>'),
   HTML('<a href="https://ecodata222.shinyapps.io/R-EDA1" class="twitter-share-button" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>'),
@@ -292,20 +291,24 @@ fluidPage(
             selectInput("Variable_Network", "Link Type",
                          choices = c(Correlation_Network = "Correlation_Network1",
                                      Graphical_Lasso = "Graphical_Lasso1",
+                                     LiNGAM = "LiNGAM1",
                                      Cramer_Network = "Cramer_Network1",
                                      Bayesian_Network = "Bayesian_Network1",
                                      Association_rules = "Association1")),
-                                     #LiNGAM = "LiNGAM1")),
             
             conditionalPanel(
               condition = "input.Variable_Network != 'Bayesian_Network1'",
               conditionalPanel(
-                condition = "input.Variable_Network != 'Association1'",
-                selectInput("Graph_type1", "Graph type",
-                            choices = c(scatter_plot = "scatter_plot1",
-                                        network = "network1")),
+                condition = "input.Variable_Network != 'LiNGAM1'",
+                conditionalPanel(
+                  condition = "input.Variable_Network != 'Association1'",
+                  selectInput("Graph_type1", "Graph type",
+                              choices = c(scatter_plot = "scatter_plot1",
+                                          network = "network1")),
+                ),
               ),
             ),
+            
             conditionalPanel(
               condition = "input.Graph_type1 == 'network1'",
               conditionalPanel(
@@ -335,6 +338,12 @@ fluidPage(
                           min = 0,  max = 1, value = 0.2, step = 0.01)
             ),
             
+            conditionalPanel(
+              condition = "input.Variable_Network == 'LiNGAM1'",
+              sliderInput("coefficient_limit1",
+                          "Use absolute value more than",
+                          min = 0,  max = 5, value = 3, step = 0.1),
+            ),
             conditionalPanel(
               condition = "input.Variable_Network == 'Association1'",
               sliderInput("association_limit2",
@@ -931,8 +940,12 @@ fluidPage(
             ),
             conditionalPanel(
               condition = "input.Variable_Network == 'Bayesian_Network1'",
-              numericInput('NumericalToCategorcalB', 'No of ranges', "3"),
-              p("If 0 is input, numerical variables are not changed into categorical variables.")
+              selectInput("IntegerToCategorcalB", "Change integer variable into",
+                          choices = c(categorical ="categoricalB",
+                                      numeric = "numericB")),
+              numericInput('NumericalToCategorcalB', 'Number of ranges', "0"),
+              p("If 3 is number of ranges, numerical variables are changed into categorical variables with 3 categories.
+                Else if less than 2, numerical variables are not changed"),
             ),
             conditionalPanel(
               condition = "input.Variable_Network == 'Association1'",
@@ -1158,23 +1171,34 @@ fluidPage(
           
           conditionalPanel(
             condition = "input.Among_all_columns == 'Stratifeid_graph1'",
-            h3("Stratifeid_graph"),
-            #conditionalPanel(
-            #  condition = "input.Scol == 0",
-            #  checkboxInput("Using_interactive_graph1", "Using interactive graph", FALSE),
-            #),
+            h3("Stratifeid graph"),
+            conditionalPanel(
+              condition = "input.Scol != 0",
+              selectInput("Stratifeid_scaling1", "Scaling of stratified graph",
+                          choices = c(fixed = "fixed",
+                                      free = "free")),
+            ),
             conditionalPanel(
               condition = "input.Gtype == 'bar'",
               p("n of categories"),
             ),
+            #selectInput("graph_height14", "Height of graph",
+            #            choices = c(auto = "auto",
+            #                        size_1000px = "size1000")),
             #conditionalPanel(
-            #  condition = "input.Using_interactive_graph1 == 0",
-            plotlyOutput("plot14"),
+            #  condition = "input.graph_height14 == 'auto'",plotlyOutput("plot14",height = "auto"),
             #),
             #conditionalPanel(
-            #  condition = "input.Using_interactive_graph1 == 1",
-            #  plotlyOutput("plot538"),
+            #  condition = "input.graph_height14 != 'auto'",plotlyOutput("plot141",height = "1000px"),
             #),
+            #conditionalPanel(
+            #    condition = "input.graph_height14 == 'auto'",
+            #    height14 <- "1000px",
+            #    ),
+            #),
+            #plotlyOutput("plot14",height = input.graph_height14),
+            plotlyOutput("plot14",height = "auto"),
+            #plotlyOutput("plot14",height = "1000px"),
             
             conditionalPanel(
               condition = "input.Gtype == 'scatter'",
@@ -1513,8 +1537,10 @@ fluidPage(
               p("3. Absolute values of coefficients are calculated"),
               p("4. Draw network graph"),
               p("In this method, we cannot use categorical variables"),
-              a("Code (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-3-1-2.html"),
-              a("(Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3-1-2.html")
+              a("About LiNGAM (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-3-1-2.html"),
+              a("(Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3-1-2.html"),br(),
+              a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E4-10.html"),
+              a("(Japanese)   ",href="http://data-science.tokyo/R-J/R-J4-10.html")
             ),
             
             conditionalPanel(
@@ -1677,6 +1703,9 @@ fluidPage(
               condition = "input.finder == 'Hidden_None1'",
               h3("Scatter plot (label column vs Others)"),
               p("Similarity among Variables"),
+              selectInput("Stratifeid_scaling2", "Scaling of stratified graph",
+                          choices = c(fixed = "fixed",
+                                      free = "free")),
               plotlyOutput("plot05"),
               p("Categorical data is changed into dummy variables"),
               p("If label column is numerical, 2 dimension scatter plot. 
@@ -1688,7 +1717,9 @@ fluidPage(
             conditionalPanel(
               condition = "input.finder == 'Hidden_PCA1'",
               h3("Label column vs (Other variables and Principal components)"),
-              
+              selectInput("Stratifeid_scaling4", "Scaling of stratified graph",
+                          choices = c(fixed = "fixed",
+                                      free = "free")),
               plotlyOutput("plot10"),
               
               h4("Algorithm"),
@@ -1706,6 +1737,9 @@ fluidPage(
             conditionalPanel(
               condition = "input.finder == 'Hidden_ICA1'",
               h3("Label column vs (Other variables and Independent components)"),
+              selectInput("Stratifeid_scaling5", "Scaling of stratified graph",
+                          choices = c(fixed = "fixed",
+                                      free = "free")),
               plotlyOutput("plot11"),
               h4("Algorithm"),
               p("1. All categorical variables except label column are changed into dummy variables"),
@@ -1860,6 +1894,12 @@ fluidPage(
           h3("Similarity of samples"),
           conditionalPanel(
             condition = "input.Dimension_Reduction == 'None1'",
+            conditionalPanel(
+              condition = "input.Scol11 != 0",
+              selectInput("Stratifeid_scaling3", "Scaling of stratified graph",
+                          choices = c(fixed = "fixed",
+                                      free = "free")),
+            ),
             plotlyOutput("plot204"),
           ),
           conditionalPanel(
@@ -2158,6 +2198,12 @@ fluidPage(
           conditionalPanel(
             condition = "input.Method5== 'Dimension_reduction3'",
             h3("All variables"),
+            conditionalPanel(
+              condition = "input.Line_graph2 != 'Box_Integrated1'",
+              selectInput("Stratifeid_scaling7", "Scaling of stratified graph",
+                          choices = c(fixed = "fixed",
+                                      free = "free")),
+            ),
             plotlyOutput("plot701"),
             conditionalPanel(
               condition = "input.Dimension_reduction_type3 != 'None3'",
@@ -2170,6 +2216,12 @@ fluidPage(
           conditionalPanel(
             condition = "input.Method5== 'Stratifeid_graph3'",
             h3("Stratifeid graph"),
+            conditionalPanel(
+              condition = "input.Scol3 != 0",
+              selectInput("Stratifeid_scaling6", "Scaling of stratified graph",
+                          choices = c(fixed = "fixed",
+                                      free = "free")),
+            ),
             plotlyOutput("plot702"),
             
           ),
