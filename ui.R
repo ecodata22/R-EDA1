@@ -455,7 +455,8 @@ fluidPage(
             selectInput("Decision_Tree", "Tree Method",
                          choices = c(C5.0 = "C501",
                                      RandomForest = "RandomForest1",
-                                     C5.0_based_RandomForest = "C50_based_RandomForest1")),
+                                     C5.0_based_RandomForest = "C50_based_RandomForest1",
+                                     Model_tree = "Model_tree1")),
             conditionalPanel(
               condition = "input.Decision_Tree == 'C50_based_RandomForest1'",
               checkboxInput("Use_sampling_variables", "Random sampling of variables (rows)", TRUE),
@@ -463,12 +464,15 @@ fluidPage(
             ),
             conditionalPanel(
               condition = "input.Decision_Tree != 'RandomForest1'",
-              checkboxInput("Use_minCases", "Use minimum size of splits", TRUE),
               conditionalPanel(
-                condition = "input.Use_minCases == 1",
-                sliderInput("Ratio_of_columns",
-                            "Ratio of the number of minimum size",
-                            min = 0,  max = 0.3, value = 0.1, step = 0.001),
+                condition = "input.Decision_Tree != 'Model_tree1'",
+                checkboxInput("Use_minCases", "Use minimum size of splits", TRUE),
+                conditionalPanel(
+                  condition = "input.Use_minCases == 1",
+                  sliderInput("Ratio_of_columns",
+                              "Ratio of the number of minimum size",
+                              min = 0,  max = 0.3, value = 0.1, step = 0.001),
+                ),
               ),
             ),
           ),
@@ -1794,7 +1798,16 @@ fluidPage(
             ),
             conditionalPanel(
               condition = "input.Decision_Tree != 'C50_based_RandomForest1'",
-              plotOutput("plot15"),
+              
+              conditionalPanel(
+                condition = "input.Decision_Tree != 'Model_tree1'",
+                plotOutput("plot15"),
+              ),
+            ),
+            conditionalPanel(
+              condition = "input.Decision_Tree == 'Model_tree1'",
+              verbatimTextOutput("text151"),
+              plotOutput("plot151"),
             ),
             
             a("About Decision_Tree (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-1.html"),

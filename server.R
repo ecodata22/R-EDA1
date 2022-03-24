@@ -1563,7 +1563,7 @@ shinyServer(function(input, output) {
     if(input$analysis == "Similarity_of_Variables_and_Categories1"){
       if(input$Similarity_of_Variables_and_Categories == "Between_label_column_and_others1"){
         if(input$Between_label_column_and_others == "Decision_Tree1"){
-          if (input$Decision_Tree != "C50_based_RandomForest1"){
+          if (input$Decision_Tree == "C501" || input$Decision_Tree == "RandomForest1"){
           
             req(input$file1)
             
@@ -1803,6 +1803,42 @@ shinyServer(function(input, output) {
     }
   })
   
+  output$plot151 <- renderPlot({
+    if(input$analysis == "Similarity_of_Variables_and_Categories1"){
+      if(input$Similarity_of_Variables_and_Categories == "Between_label_column_and_others1"){
+        if(input$Between_label_column_and_others == "Decision_Tree1"){
+          if (input$Decision_Tree == "Model_tree1"){
+            
+            req(input$file1)
+            
+            if(input$sep2 == "Separator_Comma"){sep <- ","}
+            if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+            if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+            Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+            DataR <- Data
+            if(input$DoNotUseFirst == 1){
+              Data[,1] <- NULL
+            }
+            
+            
+            library(Cubist) 
+            
+            
+            Ydata <- Data[,input$Label_column]
+            Data[,input$Label_column]<-NULL
+            
+            treeModel <- cubist(y = Ydata, x=Data, data = Data)
+            
+            output$text151 <- renderPrint(summary(treeModel))
+            Output <- predict(treeModel,Data)
+            Data2 <- cbind(Data, Output)
+            
+            ggplot(Data2, aes(x=Ydata, y=Output)) + geom_point()+xlab("Data Y")+ylab("Predicted Y")+ggtitle("Model Tree (Cubist)")
+          }
+        }
+      }
+    }
+  })
   
   output$plot301 <- renderPlotly({
     if(input$analysis == "Similarity_of_Variables_and_Categories1"){
