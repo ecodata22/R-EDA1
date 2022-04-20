@@ -777,17 +777,17 @@ shinyServer(function(input, output) {
               }
             }
             if(input$Structure_Learning == "stable_version1"){
-              BNstructure <- pc.stable(Data)
+              BNstructure <- pc.stable(Data, alpha = input$BN_alpha)
             } else if(input$Structure_Learning == "Grow_Shrink1"){
-              BNstructure <- gs(Data)
+              BNstructure <- gs(Data, alpha = input$BN_alpha)
             } else if(input$Structure_Learning == "Incremental_Association_Markov_Blanket1"){
-              BNstructure <- iamb(Data)
+              BNstructure <- iamb(Data, alpha = input$BN_alpha)
             } else if(input$Structure_Learning == "Fast_Incremental_Association1"){
-              BNstructure <- fast.iamb(Data)
+              BNstructure <- fast.iamb(Data, alpha = input$BN_alpha)
             } else if(input$Structure_Learning == "Interleaved_Incremental_Association1"){
-              BNstructure <- inter.iamb(Data)
+              BNstructure <- inter.iamb(Data, alpha = input$BN_alpha)
             } else if(input$Structure_Learning == "Incremental_Association_with_FDR_Correction1"){
-              BNstructure <- iamb.fdr(Data)
+              BNstructure <- iamb.fdr(Data, alpha = input$BN_alpha)
             } else if(input$Structure_Learning == "Max_Min_Parents_and_Children1"){
               BNstructure <- mmpc(Data)
             } else if(input$Structure_Learning == "Semi_Interleaved_Hiton_PC1"){
@@ -1827,7 +1827,7 @@ shinyServer(function(input, output) {
             Ydata <- Data[,input$Label_column]
             Data[,input$Label_column]<-NULL
             
-            treeModel <- cubist(y = Ydata, x=Data, data = Data)
+            treeModel <- cubist(y = Ydata, x=Data, data = Data, control=cubistControl(rules = input$Number_of_rules))
             
             output$text151 <- renderPrint(summary(treeModel))
             Output <- predict(treeModel,Data)

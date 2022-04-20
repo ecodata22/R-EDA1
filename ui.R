@@ -303,8 +303,8 @@ fluidPage(
                 conditionalPanel(
                   condition = "input.Variable_Network != 'Association1'",
                   selectInput("Graph_type1", "Graph type",
-                              choices = c(scatter_plot = "scatter_plot1",
-                                          network = "network1")),
+                              choices = c(network = "network1",
+                                          scatter_plot = "scatter_plot1")),
                 ),
               ),
             ),
@@ -368,7 +368,38 @@ fluidPage(
                                       Hybrid_HPC = "Hybrid_HPC1",
                                       General_2_Phase_Restricted_Maximization = "General_2_Phase_Restricted_Maximization1",
                                       Chow_Liu = "Chow_Liu1",
-                                      ARACNE = "ARACNE1"))
+                                      ARACNE = "ARACNE1")),
+              conditionalPanel(
+                condition = "input.Structure_Learning != 'Max_Min_Parents_and_Children1'",
+                conditionalPanel(
+                  condition = "input.Structure_Learning != 'Semi_Interleaved_Hiton_PC1'",
+                  conditionalPanel(
+                    condition = "input.Structure_Learning != 'Hybrid_Parents_and_Children1'",
+                    conditionalPanel(
+                      condition = "input.Structure_Learning != 'Hill_Climbing1'",
+                      conditionalPanel(
+                        condition = "input.Structure_Learning != 'Tabu_Search1'",
+                        conditionalPanel(
+                          condition = "input.Structure_Learning != 'Max_Min_Hill_Climbing1'",
+                          conditionalPanel(
+                            condition = "input.Structure_Learning != 'Hybrid_HPC1'",
+                            conditionalPanel(
+                              condition = "input.Structure_Learning != 'General_2_Phase_Restricted_Maximization1'",
+                              conditionalPanel(
+                                condition = "input.Structure_Learning != 'Chow_Liu1'",
+                                conditionalPanel(
+                                  condition = "input.Structure_Learning != 'ARACNE1'",
+                                  numericInput('BN_alpha', 'alpha (0 < alpha< 1)', "0.05"),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
         ),
@@ -474,6 +505,10 @@ fluidPage(
                               min = 0,  max = 0.3, value = 0.1, step = 0.001),
                 ),
               ),
+            ),
+            conditionalPanel(
+              condition = "input.Decision_Tree == 'Model_tree1'",
+              numericInput('Number_of_rules', 'Number of rules (Max)', "5"),
             ),
           ),
           
@@ -1808,10 +1843,12 @@ fluidPage(
               condition = "input.Decision_Tree == 'Model_tree1'",
               verbatimTextOutput("text151"),
               plotOutput("plot151"),
+              a("About Model Tree (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-1-4.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-1-4.html"),
             ),
             
-            a("About Decision_Tree (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-1.html"),
-            a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-1.html"),
+            a("About Decision Tree (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-1.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-1.html"),br(),
             a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E4-02.html"),
             a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J4-02.html")
           ),
