@@ -1450,54 +1450,107 @@ shinyServer(function(input, output) {
               Data[,1] <- NULL
             }
             
-            library(MASS)
-            library(VGAM)
-            Data1 <- Data
-            Y <- names(Data1[input$Label_column])
-            Ydata <- Data1[,input$Label_column]
-            Data1[,input$Label_column]<-NULL
-            if(input$family_link == "gaussian_identity"){
-              if(input$Use_squared_model1 == 1){
-                glmmodel <- step(glm(Ydata~.^2, data=Data1, family= gaussian(link = "identity")))
-              } else {
-                glmmodel <- step(glm(Ydata~., data=Data1, family= gaussian(link = "identity")))
-              }
-              s2 <- predict(glmmodel,Data1)
-              Data1s2 <- cbind(Data1,s2)
-              output$plot113 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=Ydata, y=s2)) + geom_point() + labs(x="label",y="predicted")))
-            } else if(input$family_link == "poisson_log"){
-              if(input$Use_squared_model1 == 1){
-                glmmodel <- step(glm(Ydata~.^2, data=Data1, family= poisson(link = "log")))
-              } else {
-                glmmodel <- step(glm(Ydata~., data=Data1, family= poisson(link = "log")))
-              }
-              s2 <- predict(glmmodel,Data1)
-              Data1s2 <- cbind(Data1,s2)
-              output$plot113 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=log(Ydata), y=s2)) + geom_point() + labs(x="log(label)",y="predicted")))
-              
-            } else if(input$family_link == "binomial_logit"){
-              if(input$Use_squared_model1 == 1){
-                glmmodel <- step(glm(Ydata~.^2, data=Data1, family= binomial(link = "logit")))
-              } else {
-                glmmodel <- step(glm(Ydata~., data=Data1, family= binomial(link = "logit")))
-              }
-              s2 <- predict(glmmodel,Data1)
-              Data1s2 <- cbind(Data1,s2)
-              output$plot113 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=as.factor(Ydata), y=exp(s2)/(1+exp(s2)))) + geom_point() + labs(x="label",y="predicted.probability")))
-              
-            } else if(input$family_link == "binomial_probit"){
-              if(input$Use_squared_model1 == 1){
-                glmmodel <- step(glm(Ydata~.^2, data=Data1, family= binomial(link = "probit")))
-              } else {
-                glmmodel <- step(glm(Ydata~., data=Data1, family= binomial(link = "probit")))
-              }
-              s2 <- predict(glmmodel,Data1)
-              Data1s2 <- cbind(Data1,s2)
-              output$plot113 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=as.factor(Ydata), y=probitlink(s2,inverse = TRUE))) + geom_point() + labs(x="label",y="predicted.probability")))
-              
-            } 
+            if(input$Variable_selection == "Stepwise1"){
+              library(MASS)
+              library(VGAM)
+              Data1 <- Data
+              Y <- names(Data1[input$Label_column])
+              Ydata <- Data1[,input$Label_column]
+              Data1[,input$Label_column]<-NULL
+              if(input$family_link == "gaussian_identity"){
+                if(input$Use_squared_model1 == 1){
+                  glmmodel <- step(glm(Ydata~.^2, data=Data1, family= gaussian(link = "identity")))
+                } else {
+                  glmmodel <- step(glm(Ydata~., data=Data1, family= gaussian(link = "identity")))
+                }
+                s2 <- predict(glmmodel,Data1)
+                Data1s2 <- cbind(Data1,s2)
+                output$plot113 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=Ydata, y=s2)) + geom_point() + labs(x="label",y="predicted")))
+              } else if(input$family_link == "poisson_log"){
+                if(input$Use_squared_model1 == 1){
+                  glmmodel <- step(glm(Ydata~.^2, data=Data1, family= poisson(link = "log")))
+                } else {
+                  glmmodel <- step(glm(Ydata~., data=Data1, family= poisson(link = "log")))
+                }
+                s2 <- predict(glmmodel,Data1)
+                Data1s2 <- cbind(Data1,s2)
+                output$plot113 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=log(Ydata), y=s2)) + geom_point() + labs(x="log(label)",y="predicted")))
+                
+              } else if(input$family_link == "binomial_logit"){
+                if(input$Use_squared_model1 == 1){
+                  glmmodel <- step(glm(Ydata~.^2, data=Data1, family= binomial(link = "logit")))
+                } else {
+                  glmmodel <- step(glm(Ydata~., data=Data1, family= binomial(link = "logit")))
+                }
+                s2 <- predict(glmmodel,Data1)
+                Data1s2 <- cbind(Data1,s2)
+                output$plot113 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=as.factor(Ydata), y=exp(s2)/(1+exp(s2)))) + geom_point() + labs(x="label",y="predicted.probability")))
+                
+              } else if(input$family_link == "binomial_probit"){
+                if(input$Use_squared_model1 == 1){
+                  glmmodel <- step(glm(Ydata~.^2, data=Data1, family= binomial(link = "probit")))
+                } else {
+                  glmmodel <- step(glm(Ydata~., data=Data1, family= binomial(link = "probit")))
+                }
+                s2 <- predict(glmmodel,Data1)
+                Data1s2 <- cbind(Data1,s2)
+                output$plot113 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=as.factor(Ydata), y=probitlink(s2,inverse = TRUE))) + geom_point() + labs(x="label",y="predicted.probability")))
+                
+              } 
+              summary(glmmodel)
+            }
             
-            anova(glmmodel)
+            if(input$Variable_selection == "Lasso1"){
+              library(glmnet)
+              Data1 <- Data
+              Y <- names(Data1[input$Label_column])
+              Ydata <- Data1[,input$Label_column]
+              Data1[,input$Label_column]<-NULL
+              if(input$family_link4 == "gaussian"){
+                glmmodel.cv <- cv.glmnet(x = as.matrix(Data1), y = Ydata, family = "gaussian", alpha = 1)
+                glmmodel <- glmnet(x = Data1, y = Ydata, family = "gaussian", alpha = 1,lambda = glmmodel.cv$lambda.min) 
+                s2 <- predict(glmmodel,newx = as.matrix(Data1), s = glmmodel.cv$lambda.min, type = 'response')
+                Data1s2 <- cbind(Data1,s2)
+                output$plot113 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=Ydata, y=s2)) + geom_point() + labs(x="label",y="predicted")))
+              } 
+              if(input$family_link4 == "poisson"){
+                glmmodel.cv <- cv.glmnet(x = as.matrix(Data1), y = Ydata, family = "poisson", alpha = 1)
+                glmmodel <- glmnet(x = Data1, y = Ydata, family = "poisson", alpha = 1,lambda = glmmodel.cv$lambda.min) 
+                s2 <- predict(glmmodel,newx = as.matrix(Data1), s = glmmodel.cv$lambda.min, type = 'response')
+                Data1s2 <- cbind(Data1,s2)
+                output$plot113 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=Ydata, y=s2)) + geom_point() + labs(x="label",y="predicted")))
+              } 
+              if(input$family_link4 == "binomial"){
+                glmmodel.cv <- cv.glmnet(x = as.matrix(Data1), y = Ydata, family = "binomial", alpha = 1)
+                glmmodel <- glmnet(x = Data1, y = Ydata, family = "binomial", alpha = 1,lambda = glmmodel.cv$lambda.min) 
+                s2 <- predict(glmmodel,newx = as.matrix(Data1), s = glmmodel.cv$lambda.min, type = 'response')
+                Data1s2 <- cbind(Data1,s2)
+                output$plot113 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=Ydata, y=s2)) + geom_point() + labs(x="label",y="predicted")))
+              } 
+              if(input$family_link4 == "multinomial"){
+                glmmodel.cv <- cv.glmnet(x = as.matrix(Data1), y = Ydata, family = "multinomial", alpha = 1)
+                glmmodel <- glmnet(x = Data1, y = Ydata, family = "multinomial", alpha = 1,lambda = glmmodel.cv$lambda.min) 
+                s2 <- predict(glmmodel,newx = as.matrix(Data1), s = glmmodel.cv$lambda.min, type = 'response')
+                Data1s2 <- cbind(Data1,s2)
+                output$plot113 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=Ydata, y=s2)) + geom_point() + labs(x="label",y="predicted")))
+              } 
+              if(input$family_link4 == "cox"){
+                glmmodel.cv <- cv.glmnet(x = as.matrix(Data1), y = Ydata, family = "cox", alpha = 1)
+                glmmodel <- glmnet(x = Data1, y = Ydata, family = "cox", alpha = 1,lambda = glmmodel.cv$lambda.min) 
+                s2 <- predict(glmmodel,newx = as.matrix(Data1), s = glmmodel.cv$lambda.min, type = 'response')
+                Data1s2 <- cbind(Data1,s2)
+                output$plot113 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=Ydata, y=s2)) + geom_point() + labs(x="label",y="predicted")))
+              } 
+              if(input$family_link4 == "mgaussian"){
+                glmmodel.cv <- cv.glmnet(x = as.matrix(Data1), y = Ydata, family = "mgaussian", alpha = 1)
+                glmmodel <- glmnet(x = Data1, y = Ydata, family = "gaussian", alpha = 1,lambda = glmmodel.cv$lambda.min) 
+                s2 <- predict(glmmodel,newx = as.matrix(Data1), s = glmmodel.cv$lambda.min, type = 'response')
+                Data1s2 <- cbind(Data1,s2)
+                output$plot113 <- renderPlotly(ggplotly(ggplot(Data1s2, aes(x=Ydata, y=s2)) + geom_point() + labs(x="label",y="predicted")))
+              } 
+              glmmodel$beta
+            }
+            
           }
         }
       }

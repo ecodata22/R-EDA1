@@ -468,16 +468,39 @@ fluidPage(
                                     PCRA = "PCRA1")),
             conditionalPanel(
               condition = "input.Regression_analysis == 'GLMM1'",
-              checkboxInput("Use_squared_model1", "Use squared model", FALSE),
-              selectInput("family_link", "family_link",
-                          choices = c(gaussian_identity = "gaussian_identity",
-                                      poisson_log = "poisson_log",
-                                      binomial_logit = "binomial_logit",
-                                      binomial_probit = "binomial_probit"),
-                          selected = "gaussian_identity"),
-              p("'gaussian_identity' = Simple mutli regression analysis"),
-              p("'poisson_log' = Regression analysis for count data of Y"),
-              p("'binomial_logit' = Logistic regression analysis")
+              
+              selectInput("Variable_selection", "Variable selection Method",
+                          choices = c(Stepwise = "Stepwise1",
+                                      Lasso = "Lasso1")),
+              conditionalPanel(
+                condition = "input.Variable_selection == 'Stepwise1'",
+              
+                checkboxInput("Use_squared_model1", "Use squared model", FALSE),
+                selectInput("family_link", "family_link",
+                            choices = c(gaussian_identity = "gaussian_identity",
+                                        poisson_log = "poisson_log",
+                                        binomial_logit = "binomial_logit",
+                                        binomial_probit = "binomial_probit"),
+                            selected = "gaussian_identity"),
+                p("'gaussian_identity' = Simple mutli regression analysis"),
+                p("'poisson_log' = Regression analysis for count data of Y"),
+                p("'binomial_logit' = Logistic regression analysis")
+              ),
+              conditionalPanel(
+                condition = "input.Variable_selection == 'Lasso1'",
+                
+                selectInput("family_link4", "family",
+                            choices = c(gaussian = "gaussian",
+                                        poisson = "poisson",
+                                        binomial = "binomial",
+                                        multinomial = "multinomial",
+                                        cox = "cox",
+                                        mgaussian = "mgaussian"),
+                            selected = "gaussian"),
+                p("'gaussian' = Simple mutli regression analysis"),
+                p("'poisson' = Regression analysis for count data of Y"),
+                p("'binomial' = Logistic regression analysis")
+              ),
             ),
           ),
           
@@ -1800,11 +1823,20 @@ fluidPage(
               conditionalPanel(
                 condition = "input.Regression_analysis == 'GLMM1'",
               h3("Generalized Linear Mixed Model (Regression Analysis)"),
-              p("Features in the model are automatically choosed using AIC."),
+              conditionalPanel(
+                condition = "input.Variable_selection == 'Stepwise1'",
+                p("Features in the model are automatically choosed using Stepwise and AIC."),
+              ),
+              conditionalPanel(
+                condition = "input.Variable_selection == 'Lasso1'",
+                p("Features in the model are automatically choosed using Lasso regression."),
+              ),
               plotlyOutput("plot113"),
               verbatimTextOutput("text113"),
               a("About GLMM (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-1-4.html"),
-              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-1-4.html")
+              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-1-4.html"),br(),
+              a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-08.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-08.html")
             ),
             
             conditionalPanel(
@@ -1818,6 +1850,7 @@ fluidPage(
               a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-1-2-1-1.html")
             ),
           ),
+          
           
           conditionalPanel(
             condition = "input.Between_label_column_and_others == 'Decision_Tree1'",
