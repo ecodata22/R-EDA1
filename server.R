@@ -5,6 +5,7 @@ library(networkD3)
 library(visNetwork)
 
 shinyServer(function(input, output) {
+  #eventReactive(input$button,{
   output$text00 <- renderDataTable({
     if(input$analysis == "Basic_EDA1"){
       
@@ -25,6 +26,7 @@ shinyServer(function(input, output) {
   })
   #output$plot03 <- renderPlot({
   output$plot03 <- renderPlotly({
+  #output$plot03 <- eventReactive(input$button,{renderPlotly({
     if(input$analysis ==  "Heat_map1"){
           
       req(input$file1)
@@ -89,6 +91,7 @@ shinyServer(function(input, output) {
       }
     }
   })
+  #})})
   
   #output$plot01 <- renderPlotly({
   #  if(input$analysis == "Similarity_of_Variables_and_Categories1"){
@@ -1616,7 +1619,7 @@ shinyServer(function(input, output) {
     if(input$analysis == "Similarity_of_Variables_and_Categories1"){
       if(input$Similarity_of_Variables_and_Categories == "Between_label_column_and_others1"){
         if(input$Between_label_column_and_others == "Decision_Tree1"){
-          if (input$Decision_Tree == "C501" || input$Decision_Tree == "RandomForest1"){
+          if (input$Decision_Tree == "C501" || input$Decision_Tree == "CART" || input$Decision_Tree == "RandomForest1"){
           
             req(input$file1)
             
@@ -1653,6 +1656,7 @@ shinyServer(function(input, output) {
               }
             }
             library(C50)
+            library(rpart)
             library(partykit)
             library(randomForest) 
             #if (input$Numerical_to_Categorical == "Numerical_to_Categorical1") {
@@ -1674,13 +1678,28 @@ shinyServer(function(input, output) {
             
             
             if (input$Decision_Tree == "C501"){
-                if(input$Use_minCases == 1){
-                  treeModel <- C5.0(Ydata ~ ., data = Data,control = C5.0Control(minCase = floor(nrow(Data)*input$Ratio_of_columns)))
+                if(input$Use_minCases == 'Use_minCases2'){
+                  treeModel <- C5.0(Ydata ~ ., data = Data,control = C5.0Control(minCase = floor(nrow(Data)*input$Ratio_of_samples)))
+                } else if(input$Use_minCases == 'Use_minCases3'){
+                  treeModel <- C5.0(Ydata ~ ., data = Data,control = C5.0Control(minCase = input$Number_of_samples))
                 } else {
                   treeModel <- C5.0(Ydata ~ ., data = Data)
                 }
               
               plot(as.party(treeModel))
+              
+            } else if(input$Decision_Tree == "CART"){
+              if(input$Use_minCases == 'Use_minCases2'){
+                treeModel <- rpart(Ydata ~ ., data = Data,control = rpart.control(minsplit = floor(nrow(Data)*input$Ratio_of_samples)))
+              } else if(input$Use_minCases == 'Use_minCases3'){
+                treeModel <- rpart(Ydata ~ ., data = Data,control = rpart.control(minsplit = input$Number_of_samples))
+              } else {
+                treeModel <- rpart(Ydata ~ ., data = Data)
+              }
+              
+              
+              plot(as.party(treeModel))
+              
             } else {
               treeModel <- randomForest(Ydata ~ ., datset = Data, ntree = 30)
               varImpPlot(treeModel) 
@@ -2585,12 +2604,86 @@ shinyServer(function(input, output) {
 
   
   
+  output$plot204 <- renderPlotly({
+    if(input$analysis == "Similarity_of_Samples1"){
+      if(input$Dimension_for_clustering == "Dimension_2"){
+        if(input$Dimension_Reduction == "None1") {
+          
+          
+          req(input$file1)
+          
+          if(input$sep2 == "Separator_Comma"){sep <- ","}
+          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+          
+          
+          Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+          
+          
+          library(dummies)
+          library(ggplot2)
+          
+          Data1 <- Data
+          if(input$Use_one_column_as_sample_name2 == 1){
+            Y <- names(Data1[input$sample_row2])
+            Ydata <- Data1[,input$sample_row2]
+            Data1[,input$sample_row2] <- NULL
+          } else {
+            Y <- "Index_No"
+            Ydata <- row.names(Data)
+          }
+          Data1$Index = row.names(Data1)
+          
+          if(input$Xcol11 > 0){Xname <- names(Data1[input$Xcol11])} else {Xname <- "None"}
+          if(input$Ycol11 > 0){Lname <- names(Data1[input$Ycol11])} else {Lname <- "None"}
+          if(input$Scol11 > 0){Sname <- names(Data1[input$Scol11])} else {Sname <- "None"}
+          
+          if(input$Scol11 != 0 ){
+            if(class(Data1[,input$Scol11]) == "numeric" || class(Data1[,input$Scol11]) == "integer"){Data1[,input$Scol11] <- droplevels(cut(Data1[,input$Scol11], breaks = input$NumericalToCategorcalS11, include.lowest = TRUE))}
+            #gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point() + facet_wrap(~Data1[,input$Scol11],scales="free")+ labs(x=Xname,y=Lname,subtitle = Sname)
+            
+            if(input$plot_type2 == "G11") {
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11],label=Ydata)) + geom_text() + facet_wrap(~Data1[,input$Scol11],scales=input$Stratifeid_scaling3) + labs(x=Xname,y=Lname,subtitle = Sname)
+            } else if(input$plot_type2 == "G12") {
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11],label=Index)) + geom_text() + facet_wrap(~Data1[,input$Scol11],scales=input$Stratifeid_scaling3) + labs(x=Xname,y=Lname,subtitle = Sname)
+            } else if(input$plot_type2 == "G13") {
+              Data1$Index <- as.numeric(Data1$Index)
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point(aes(colour=Ydata)) + facet_wrap(~Data1[,input$Scol11],scales=input$Stratifeid_scaling3) + labs(x=Xname,y=Lname,subtitle = Sname)
+            } else if(input$plot_type2 == "G14") {
+              Data1$Index <- as.numeric(Data1$Index)
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point(aes(colour=Index)) + facet_wrap(~Data1[,input$Scol11],scales=input$Stratifeid_scaling3) + scale_color_viridis_c(option = "D")+ labs(x=Xname,y=Lname,subtitle = Sname)
+            } else {
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point() + facet_wrap(~Data1[,input$Scol11],scales=input$Stratifeid_scaling3)+ labs(x=Xname,y=Lname,subtitle = Sname)
+            }
+          } else {
+            #gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point() + labs(x=Xname,y=Lname)
+            if(input$plot_type2 == "G11") {
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11],label=Ydata)) + geom_text()  + labs(x=Xname,y=Lname)
+            } else if(input$plot_type2 == "G12") {
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11],label=Index)) + geom_text() + labs(x=Xname,y=Lname)
+            } else if(input$plot_type2 == "G13") {
+              Data1$Index <- as.numeric(Data1$Index)
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point(aes(colour=Ydata)) + labs(x=Xname,y=Lname)
+            } else if(input$plot_type2 == "G14") {
+              Data1$Index <- as.numeric(Data1$Index)
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point(aes(colour=Index))  + scale_color_viridis_c(option = "D")+ labs(x=Xname,y=Lname)
+            } else {
+              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point() + labs(x=Xname,y=Lname)
+            }
+          } 
+          #gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point()
+          ggplotly(gplot)
+          
+        }
+      }
+    }
+  })
   
     
   output$plot201 <- renderPlotly({
     if(input$analysis == "Similarity_of_Samples1"){
       if(input$Dimension_for_clustering == "Dimension_2"){
-        if(input$Dimension_Reduction == "MDS1" || input$Dimension_Reduction == "MDS2"  || input$Dimension_Reduction == "UMAP1"|| input$Dimension_Reduction == "nMDS1") {
+        if(input$Dimension_Reduction == "not_using_label_column2") {
         
       
           req(input$file1)
@@ -2651,12 +2744,12 @@ shinyServer(function(input, output) {
           #}
           
           
-          if(input$Dimension_Reduction != "nMDS1") {
-            if(input$Dimension_Reduction == "MDS1") {
+          if(input$Dimension_Reduction_Method1 != "nMDS1") {
+            if(input$Dimension_Reduction_Method1 == "MDS1") {
               Data4 <- dist(Data3)
               sn <- sammon(Data4)
               Data5 <- sn$points
-            }else if(input$Dimension_Reduction == "MDS2") {
+            }else if(input$Dimension_Reduction_Method1 == "MDS2") {
               ts <- Rtsne(Data3, perplexity = input$perplexity_value)
               Data5 <- ts$Y
             }else  {
@@ -2758,10 +2851,11 @@ shinyServer(function(input, output) {
     }
   })
   
-  output$plot204 <- renderPlotly({
+  
+  output$plot206 <- renderPlotly({
     if(input$analysis == "Similarity_of_Samples1"){
       if(input$Dimension_for_clustering == "Dimension_2"){
-        if(input$Dimension_Reduction == "None1") {
+        if(input$Dimension_Reduction == "using_label_column2") {
           
           
           req(input$file1)
@@ -2772,74 +2866,138 @@ shinyServer(function(input, output) {
           
           
           Data <- read.csv(input$file1$datapath, header=T,sep = sep)
-          #if(input$DoNotUseFirst == 1){
-          #  Data[,1] <- NULL
-          #}
           
           
           library(dummies)
           library(ggplot2)
-          #Data1 <- Data
-          #Y <- names(Data1[1])
-          #Ydata <- Data1[,1]
-          #Data1[,1] <- NULL
+          library(som)
+          library(MASS)
+          library(Rtsne)
+          library(mclust)
+          library(dbscan)
+          library(e1071)
+          library(kernlab)
+          library(Rcpp)
+          library(umap)
           
           Data1 <- Data
           if(input$Use_one_column_as_sample_name2 == 1){
             Y <- names(Data1[input$sample_row2])
             Ydata <- Data1[,input$sample_row2]
-            Data1[,input$sample_row2] <- NULL
+            Data1[Y] <- NULL
           } else {
             Y <- "Index_No"
             Ydata <- row.names(Data)
           }
-          Data1$Index = row.names(Data1)
+          Y2 <- names(Data1[input$Label_column2])
+          Y2data <- Data1[,input$Label_column2]
+          Data1[Y2] <- NULL
           
-          if(input$Xcol11 > 0){Xname <- names(Data1[input$Xcol11])} else {Xname <- "None"}
-          if(input$Ycol11 > 0){Lname <- names(Data1[input$Ycol11])} else {Lname <- "None"}
-          if(input$Scol11 > 0){Sname <- names(Data1[input$Scol11])} else {Sname <- "None"}
+          Data2 <- dummy.data.frame(Data1)
+          if(input$Dimension_reduction_type7 == "PCA7"){
+            pc <- prcomp(Data2, scale=TRUE,tol=0.001)
+            Data2 <- as.data.frame(pc$x)
+          }
+          Data3 <- Data2
+          n <- ncol(Data2)
+          if(input$Use_scale_transformation2 == "Normalization2"){
+            n <- ncol(Data2)
+            for (i in 1:n) {
+              Data3[,i] <- (Data2[,i]-min(Data2[,i]))/(max(Data2[,i])-min(Data2[,i]))
+            }
+          }
+          if(input$Use_scale_transformation2 == "Standardization2"){
+            Data3 <- data.frame(scale(Data2))
+          }
+          Data4<-cbind(Y2data,Data3)
           
-          if(input$Scol11 != 0 ){
-            if(class(Data1[,input$Scol11]) == "numeric" || class(Data1[,input$Scol11]) == "integer"){Data1[,input$Scol11] <- droplevels(cut(Data1[,input$Scol11], breaks = input$NumericalToCategorcalS11, include.lowest = TRUE))}
-            #gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point() + facet_wrap(~Data1[,input$Scol11],scales="free")+ labs(x=Xname,y=Lname,subtitle = Sname)
-            
+          
+          if(input$Dimension_Reduction_Method2 == "Regression_analysis2") {
+            two_demension_model <- step(glm(Y2data~., data=Data4, family= gaussian(link = "identity")))
+          } else if(input$Dimension_Reduction_Method2 == "Model_Tree2") {
+            library(Cubist) 
+            two_demension_model <- cubist(y = Y2data, x=Data3, data = Data4, control=cubistControl(rules = input$Number_of_rules))
+          } else if(input$Dimension_Reduction_Method2 == "Support_Vector_Regression2") {
+            library(kernlab) 
+            two_demension_model<- ksvm(Y2data~.,data=Data4,type='eps-svr', kernel=input$Kernel_library3, nu = input$nu3)
+          }
+          
+          
+          s2 <- predict(two_demension_model,Data3)
+          Data6 <- cbind(data.frame(Y2data,s2),Index = row.names(Data))
+          Y1 <- s2 - Y2data
+          output$plot2061 <- renderPlotly(ggplotly(ggplot(Data, aes(x=Y1)) + geom_histogram()+ labs(x="predicted - label")))
+          output$plot2062 <- renderPlotly(ggplotly(ggplot(Data, aes(y=Y1)) + geom_boxplot() + labs(y="predicted - label")))
+          
+          if(input$AddClustering == 0){
             if(input$plot_type2 == "G11") {
-              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11],label=Ydata)) + geom_text() + facet_wrap(~Data1[,input$Scol11],scales=input$Stratifeid_scaling3) + labs(x=Xname,y=Lname,subtitle = Sname)
+              ggplotly(ggplot(Data6, aes(x=Data6[,1], y=Data6[,2],label=Ydata)) + geom_text() + labs(y="predicted",x="label"))
             } else if(input$plot_type2 == "G12") {
-              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11],label=Index)) + geom_text() + facet_wrap(~Data1[,input$Scol11],scales=input$Stratifeid_scaling3) + labs(x=Xname,y=Lname,subtitle = Sname)
+              ggplotly(ggplot(Data6, aes(x=Data6[,1], y=Data6[,2],label=Index)) + geom_text() + labs(y="predicted",x="label"))
             } else if(input$plot_type2 == "G13") {
-              Data1$Index <- as.numeric(Data1$Index)
-              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point(aes(colour=Ydata)) + facet_wrap(~Data1[,input$Scol11],scales=input$Stratifeid_scaling3) + labs(x=Xname,y=Lname,subtitle = Sname)
+              Data6$Index <- as.numeric(Data6$Index)
+              ggplotly(ggplot(Data6, aes(x=Data6[,1], y=Data6[,2])) + geom_point(aes(colour=Ydata)) + labs(y="predicted",x="label"))
             } else if(input$plot_type2 == "G14") {
-              Data1$Index <- as.numeric(Data1$Index)
-              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point(aes(colour=Index)) + facet_wrap(~Data1[,input$Scol11],scales=input$Stratifeid_scaling3) + scale_color_viridis_c(option = "D")+ labs(x=Xname,y=Lname,subtitle = Sname)
+              Data6$Index <- as.numeric(Data6$Index)
+              ggplotly(ggplot(Data6, aes(x=Data6[,1], y=Data6[,2])) + geom_point(aes(colour=Index)) + scale_color_viridis_c(option = "D")+ labs(y="predicted",x="label"))
             } else {
-              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point() + facet_wrap(~Data1[,input$Scol11],scales=input$Stratifeid_scaling3)+ labs(x=Xname,y=Lname,subtitle = Sname)
+              ggplotly(ggplot(Data6, aes(x=Data6[,1], y=Data6[,2])) + geom_point()+ labs(y="predicted",x="label"))
             }
           } else {
-            #gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point() + labs(x=Xname,y=Lname)
-            if(input$plot_type2 == "G11") {
-              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11],label=Ydata)) + geom_text()  + labs(x=Xname,y=Lname)
-            } else if(input$plot_type2 == "G12") {
-              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11],label=Index)) + geom_text() + labs(x=Xname,y=Lname)
-            } else if(input$plot_type2 == "G13") {
-              Data1$Index <- as.numeric(Data1$Index)
-              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point(aes(colour=Ydata)) + labs(x=Xname,y=Lname)
-            } else if(input$plot_type2 == "G14") {
-              Data1$Index <- as.numeric(Data1$Index)
-              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point(aes(colour=Index))  + scale_color_viridis_c(option = "D")+ labs(x=Xname,y=Lname)
-            } else {
-              gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point() + labs(x=Xname,y=Lname)
+            
+            if(input$Clustering == "clust1") {
+              mc <- Mclust(Data6[,1:2],input$k)
+              Data7 <- transform(Data6 ,clust = mc$classification)
+            }else if(input$Clustering == "clust2"){
+              dbs <- dbscan(Data6[,1:2], eps = input$eps_value)
+              Data7 <- transform(Data6 ,clust = dbs$cluster)
+            }else if(input$Clustering == "HDBSCAN1"){
+              dbs <- hdbscan(Data6[,1:2], minPts = input$minPts1)
+              Data7 <- transform(Data6 ,clust = dbs$cluster)
+            }else if(input$Clustering == "clust3"){
+              km <- kmeans(Data6[,1:2],input$k)
+              Data7 <- transform(Data6 ,clust = km$cluster)
+            }else if(input$Clustering == "One_class_SVM_Clustering1"){
+              if(input$Kernel_library == "anovadot" || input$Kernel_library == "rbfdot" || input$Kernel_library == "polydot" || input$Kernel_library == "vanilladot" || 
+                 input$Kernel_library == "tanhdot" || input$Kernel_library == "laplacedot" || input$Kernel_library == "besseldot" || input$Kernel_library == "splinedot"){
+                Data8 <- transform(Data6[,1:2], type=1)
+                
+                OC <- ksvm(type~.,data=Data8,type='one-svc', kernel=input$Kernel_library, nu = input$nu1)
+                clust <- predict(OC,Data8)
+                Data7 <- cbind( Data6,clust)
+              }else {
+                Data8 <- transform(Data6[,1:2])
+                OC <- svm(x=Data8, y=NULL, type='one-classification', kernel=input$Kernel_library, nu = input$nu1)
+                clust <- predict(OC,Data8)
+                Data7 <- cbind(Data6, clust)
+              }
             }
-          } 
-          #gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol11],y=Data1[,input$Ycol11])) + geom_point()
-          ggplotly(gplot)
-          
+            Data7$clust <- as.factor(Data7$clust)
+            
+            output$downloadData <- downloadHandler(
+              filename = function() {
+                paste("cluster_data", ".csv", sep = "")
+              },
+              content = function(file) {
+                write.csv(Data7, file, row.names = FALSE)
+              }
+            )
+            
+            if(input$plot_type == "G1") {
+              ggplotly(ggplot(Data7, aes(x=Data7[,1], y=Data7[,2],label=Ydata)) + geom_text() + geom_point(aes(colour=clust))+ labs(y="predicted",x="label"))
+            } else if(input$plot_type == "G2") {
+              ggplotly(ggplot(Data7, aes(x=Data7[,1], y=Data7[,2],label=Index)) + geom_text() + geom_point(aes(colour=clust))+ labs(y="predicted",x="label"))
+            } else if(input$plot_type == "G3") {
+              Data7$Index <- as.numeric(Data7$Index)
+              ggplotly(ggplot(Data7, aes(x=Data7[,1], y=Data7[,2],label=clust)) + geom_point(aes(colour=Index)) + scale_color_viridis_c(option = "D")+ geom_text()+ labs(y="predicted",x="label"))
+            } else {
+              ggplotly(ggplot(Data7, aes(x=Data7[,1], y=Data7[,2])) + geom_point(aes(colour=clust))+ labs(y="predicted",x="label"))
+            }
+          }
         }
       }
     }
   })
-    
   
     
   output$plot202 <- renderPlotly({
@@ -3853,5 +4011,5 @@ shinyServer(function(input, output) {
   
 
   
-  
+  #})
 })

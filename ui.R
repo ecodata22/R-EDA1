@@ -15,7 +15,7 @@ fluidPage(
   sidebarLayout(
     
     sidebarPanel(
-      
+      #actionButton("button", label="RUN!"), 
       fileInput("file1", "Choose CSV File", multiple = TRUE,accept = c("text/csv", "text/comma-separated-values,text/plain",".csv")),
       
       conditionalPanel(
@@ -408,7 +408,7 @@ fluidPage(
             
         conditionalPanel(
           condition = "input.Similarity_of_Variables_and_Categories == 'Between_label_column_and_others1'",
-          numericInput('Label_column', 'Column number for  label', "1"),
+          numericInput('Label_column', 'Column number for label', "1"),
           
             
           conditionalPanel(
@@ -508,6 +508,7 @@ fluidPage(
             condition = "input.Between_label_column_and_others == 'Decision_Tree1'",
             selectInput("Decision_Tree", "Tree Method",
                          choices = c(C5.0 = "C501",
+                                     CART = "CART",
                                      RandomForest = "RandomForest1",
                                      C5.0_based_RandomForest = "C50_based_RandomForest1",
                                      Model_tree = "Model_tree1")),
@@ -520,12 +521,22 @@ fluidPage(
               condition = "input.Decision_Tree != 'RandomForest1'",
               conditionalPanel(
                 condition = "input.Decision_Tree != 'Model_tree1'",
-                checkboxInput("Use_minCases", "Use minimum size of splits", TRUE),
+                #checkboxInput("Use_minCases", "Use minimum size of splits", TRUE),
+                selectInput("Use_minCases", "Tyep of minimum size of splits",
+                            choices = c(Default_setting = "Use_minCases1",
+                                        Ratio = "Use_minCases2",
+                                        Number = "Use_minCases3")),
                 conditionalPanel(
-                  condition = "input.Use_minCases == 1",
-                  sliderInput("Ratio_of_columns",
+                  condition = "input.Use_minCases == 'Use_minCases2'",
+                  sliderInput("Ratio_of_samples",
                               "Ratio of the number of minimum size",
                               min = 0,  max = 0.3, value = 0.1, step = 0.001),
+                ),
+                conditionalPanel(
+                  condition = "input.Use_minCases == 'Use_minCases3'",
+                  sliderInput("Number_of_samples",
+                              "Number of samples of minimum size",
+                              min = 0,  max = 100, value = 10, step = 1),
                 ),
               ),
             ),
@@ -644,31 +655,15 @@ fluidPage(
                                  Dimension_All = "Dimension_All"),
         ),
         
-        
         conditionalPanel(
           condition = "input.Dimension_for_clustering == 'Dimension_2'",   
-          selectInput("Dimension_Reduction", "Change into 2 dimension data",
-                       choices = c(None = "None1",
-                                    MDS = "MDS1",
-                                   tSNE = "MDS2",
-                                   UMAP = "UMAP1",
-                                   NetworkMDS = "nMDS1"),
-                       selected = "None1"),
           
-          conditionalPanel(
-            condition = "input.Dimension_Reduction != 'None1'",
-            #checkboxInput("PCA_use2", "Use PCA", TRUE),
-            selectInput("Dimension_reduction_type7", "Component type",
-                        choices = c(None = "None7",
-                                    PCA = "PCA7"),
-            ),
-            #checkboxInput("Normalization_use2", "Use normalization", TRUE),
-            selectInput("Use_scale_transformation2", "Scaling",
-                        choices = c(None = "None2",
-                                    Normalization = "Normalization2",
-                                    Standardization = "Standardization2")),
-            
-          ),
+          selectInput("Dimension_Reduction", "Change into 2 dimension data",
+                      choices = c(None = "None1",
+                                  not_using_label_column = "not_using_label_column2",
+                                  using_label_column = "using_label_column2"
+                      ),
+                      selected = "None1"),
           
           conditionalPanel(
             condition = "input.Dimension_Reduction == 'None1'",
@@ -687,21 +682,77 @@ fluidPage(
           
           
           conditionalPanel(
-            condition = "input.Dimension_Reduction == 'MDS2'",
-            numericInput('perplexity_value', 'perplexity of t-SNE', "1"),
-            #sliderInput("perplexity_value",
-            #            "perplexity of t-SNE",
-            #            min = 1,  max = 1000, value = 1, step = 1)
+            condition = "input.Dimension_Reduction == 'not_using_label_column2'",   
+            
+            selectInput("Dimension_Reduction_Method1", "Change into 2 dimension data",
+                        choices = c(MDS = "MDS1",
+                                    tSNE = "MDS2",
+                                    UMAP = "UMAP1",
+                                    NetworkMDS = "nMDS1"),
+                        selected = "MDS1"),
+            
+            conditionalPanel(
+              condition = "input.Dimension_Reduction_Method1 == 'MDS2'",
+              numericInput('perplexity_value', 'perplexity of t-SNE', "1"),
+            ),
+            
+            conditionalPanel(
+              condition = "input.Dimension_Reduction_Method1 == 'UMAP1'",
+              numericInput('n_neighbors1', 'n_neighbors of UMAP', "5"),
+            ),
           ),
           
           conditionalPanel(
-            condition = "input.Dimension_Reduction == 'UMAP1'",
-            numericInput('n_neighbors1', 'n_neighbors of UMAP', "5"),
+            condition = "input.Dimension_Reduction == 'using_label_column2'",   
+            numericInput('Label_column2', 'Column number for label', "1"),
+            
+            selectInput("Dimension_Reduction_Method2", "Change into 2 dimension data",
+                        choices = c(Regression_analysis = "Regression_analysis2",
+                                    Model_Tree = "Model_Tree2",
+                                    Support_Vector_Regression = "Support_Vector_Regression2"),
+                        selected = "Regression_analysis2"),
+            conditionalPanel(
+              condition = "input.Dimension_Reduction_Method2 == 'Model_Tree2'",
+              numericInput('Number_of_rules2', 'Number of rules (Max)', "5"),
+            ),
+            
+            
+            conditionalPanel(
+              condition = "input.Dimension_Reduction_Method2 == 'Support_Vector_Regression2'",
+              selectInput("Kernel_library3", "Kernel_library",
+                          choices = c(anovadot_kernlab= "anovadot",
+                                      rbfdot_kernlab= "rbfdot",
+                                      polydot_kernlab= "polydot",
+                                      vanilladot_kernlab= "vanilladot",
+                                      tanhdot_kernlab= "tanhdot",
+                                      laplacedot_kernlab= "laplacedot",
+                                      besseldot_kernlab= "besseldot",
+                                      splinedot_kernlab= "splinedot"),
+                          selected = "rbfdot"),
+              sliderInput("nu3",
+                          "nu (Adjust outliers)",
+                          min = 0.001,  max = 1, value = 0.2, step = 0.001)
+            ),
+            
           ),
+          
+          conditionalPanel(
+            condition = "input.Dimension_Reduction != 'None1'",
+            selectInput("Dimension_reduction_type7", "Component type",
+                        choices = c(None = "None7",
+                                    PCA = "PCA7"),
+            ),
+            selectInput("Use_scale_transformation2", "Scaling",
+                        choices = c(None = "None2",
+                                    Normalization = "Normalization2",
+                                    Standardization = "Standardization2")),
+            
+          ),
+          
         
           
           conditionalPanel(
-            condition = "input.Dimension_Reduction != 'nMDS1'",
+            condition = "input.Dimension_Reduction_Method1 != 'nMDS1'",
             conditionalPanel(
               condition = "input.AddClustering == 0",
               selectInput("plot_type2", "Plot type",
@@ -712,71 +763,67 @@ fluidPage(
                                        Only_Plot = "G15"),
                            selected = "G15")
             ),
-            conditionalPanel(
-              condition = "input.Dimension_Reduction != 'None1'",
-              checkboxInput("AddClustering", "Add clustering methods", FALSE),
+            
+            checkboxInput("AddClustering", "Add clustering methods", FALSE),
               
             
-              conditionalPanel(
-                condition = "input.AddClustering == 1",
-                  
-                selectInput("Clustering", "Clustering",
-                             choices = c(k_Means = "clust3",
-                                         GMM= "clust1",
-                                         DBSCAN = "clust2",
-                                         HDBSCAN = "HDBSCAN1",
-                                         One_class_SVM_Clustering = "One_class_SVM_Clustering1")
-                            ),
+            conditionalPanel(
+              condition = "input.AddClustering == 1",
                 
-                conditionalPanel(
-                  condition = "input.Clustering == 'clust3' || input.Clustering == 'clust1'",
-                  numericInput('k', 'Number of Clusters', 2)
-                ),
-                
-                conditionalPanel(
-                  condition = "input.Clustering == 'clust2'",
-                  numericInput('eps_value', 'eps of DBSCAN', 0.1),
-                  #sliderInput("eps_value",
-                  #            "eps of DBSCAN",
-                  #            min = 0,  max = 1, value = 0.1, step = 0.01)
-                ),
-                conditionalPanel(
-                  condition = "input.Clustering == 'HDBSCAN1'",
-                  numericInput('minPts1', 'minPts of HDBSCAN', 10),
-                ),
-                
-                conditionalPanel(
-                  condition = "input.Clustering == 'One_class_SVM_Clustering1'",
-                  selectInput("Kernel_library", "Kernel_library",
-                               choices = c(anovadot_kernlab= "anovadot",
-                                           rbfdot_kernlab= "rbfdot",
-                                           polydot_kernlab= "polydot",
-                                           vanilladot_kernlab= "vanilladot",
-                                           tanhdot_kernlab= "tanhdot",
-                                           laplacedot_kernlab= "laplacedot",
-                                           besseldot_kernlab= "besseldot",
-                                           splinedot_kernlab= "splinedot"),
-                               selected = "rbfdot"),
-                  sliderInput("nu1",
-                              "nu (Adjust outliers)",
-                              min = 0.001,  max = 1, value = 0.2, step = 0.001)
-                ),
-                
+              selectInput("Clustering", "Clustering",
+                           choices = c(k_Means = "clust3",
+                                       GMM= "clust1",
+                                       DBSCAN = "clust2",
+                                       HDBSCAN = "HDBSCAN1",
+                                       One_class_SVM_Clustering = "One_class_SVM_Clustering1")
+                          ),
               
-                selectInput("plot_type", "Plot type",
-                             choices = c(Name_and_Clusering= "G1",
-                                         Index_and_Clusering1 = "G2",
-                                         Index_and_Clusering2 = "G3",
-                                         Only_Clustering = "G4"),
-                             selected = "G4"),
-                
+              conditionalPanel(
+                condition = "input.Clustering == 'clust3' || input.Clustering == 'clust1'",
+                numericInput('k', 'Number of Clusters', 2)
               ),
               
+              conditionalPanel(
+                condition = "input.Clustering == 'clust2'",
+                numericInput('eps_value', 'eps of DBSCAN', 0.1),
+              ),
+              conditionalPanel(
+                condition = "input.Clustering == 'HDBSCAN1'",
+                numericInput('minPts1', 'minPts of HDBSCAN', 10),
+              ),
+              
+              conditionalPanel(
+                condition = "input.Clustering == 'One_class_SVM_Clustering1'",
+                selectInput("Kernel_library", "Kernel_library",
+                             choices = c(anovadot_kernlab= "anovadot",
+                                         rbfdot_kernlab= "rbfdot",
+                                         polydot_kernlab= "polydot",
+                                         vanilladot_kernlab= "vanilladot",
+                                         tanhdot_kernlab= "tanhdot",
+                                         laplacedot_kernlab= "laplacedot",
+                                         besseldot_kernlab= "besseldot",
+                                         splinedot_kernlab= "splinedot"),
+                             selected = "rbfdot"),
+                sliderInput("nu1",
+                            "nu (Adjust outliers)",
+                            min = 0.001,  max = 1, value = 0.2, step = 0.001)
+              ),
+              
+            
+              selectInput("plot_type", "Plot type",
+                           choices = c(Name_and_Clusering= "G1",
+                                       Index_and_Clusering1 = "G2",
+                                       Index_and_Clusering2 = "G3",
+                                       Only_Clustering = "G4"),
+                           selected = "G4"),
+              
             ),
+              
+            
           ),
           
           conditionalPanel(
-            condition = "input.Dimension_Reduction == 'nMDS1'",
+            condition = "input.Dimension_Reduction_Method1 == 'nMDS1'",
             sliderInput("Distance_to_use",
                         "Use absolute value of distance more than",
                         min = 0,  max = 10, value = 9, step = 0.1)
@@ -1986,34 +2033,71 @@ fluidPage(
             plotlyOutput("plot204"),
           ),
           conditionalPanel(
-            condition = "input.Dimension_Reduction != 'nMDS1'",
+            condition = "input.Dimension_Reduction == 'not_using_label_column2'",
             conditionalPanel(
-              condition = "input.Dimension_Reduction != 'None1'",
+              condition = "input.Dimension_Reduction_Method1 != 'nMDS1'",
               plotlyOutput("plot201"),
             ),
-          ),
-          conditionalPanel(
-            condition = "input.Dimension_Reduction == 'nMDS1'",
-            selectInput("network_library5", "Library of network",  choices = c("igraph", "networkD3")),
             conditionalPanel(
-              condition = "input.network_library5 == 'igraph'",
-              plotOutput("plot203"),
+              condition = "input.Dimension_Reduction_Method1 == 'nMDS1'",
+              selectInput("network_library5", "Library of network",  choices = c("igraph", "networkD3")),
+              conditionalPanel(
+                condition = "input.network_library5 == 'igraph'",
+                plotOutput("plot203"),
+              ),
+              conditionalPanel(
+                condition = "input.network_library5 == 'networkD3'",
+                simpleNetworkOutput("plot203b"),
+              ),
+              #plotOutput("plot203"),
             ),
-            conditionalPanel(
-              condition = "input.network_library5 == 'networkD3'",
-              simpleNetworkOutput("plot203b"),
-            ),
-            #plotOutput("plot203"),
-          ),
-          conditionalPanel(
-            condition = "input.Dimension_Reduction != 'None1'",
             p("Axis1 and axis2 do not have physical meaning"),
             p("Change from High dimension data into 2 dimension data."),
+          
+        
+            conditionalPanel(
+              condition = "input.Dimension_Reduction_Method1 != 'nMDS1'",
+              conditionalPanel(
+                condition = "input.AddClustering == 1",
+                p("Then find clusters for the 2 dimension data."),
+                conditionalPanel(
+                  condition = "input.Clustering == 'clust2'",
+                  p("If DBSCAN is used, clust name 0 is the samples judged as outliers")
+                ),
+                conditionalPanel(
+                  condition = "input.Clustering == 'HDBSCAN1'",
+                  p("If HDBSCAN is used, clust name 0 is the samples judged as outliers")
+                ),
+                p("Download analyzed data for the next step.
+                For example, if clust column is put on the first (left side) column,
+                we can analyze with the function 'Similarity_of_Variables_and_Categories'"),
+                downloadButton("downloadData", "Download analyzed data")
+              ),
+              a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-03.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-03.html"),br(),
+              a("About dimension reduction(English)   ",href="http://data-science.tokyo/ed-e/ede1-3-3-1.html"),
+              a("(Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-3-1.html"),br(),
+              
+            ),
+            conditionalPanel(
+              condition = "input.Dimension_Reduction_Method1 == 'nMDS1'",
+              p("Change from High dimension data into 2 dimension data using network graph algrithm. "),
+              
+              a("About NetworkMDS (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-3-1-1-1.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-3-1-1-1.html"),br(),
+            )
           ),
-        
-        
+          
           conditionalPanel(
-            condition = "input.Dimension_Reduction != 'nMDS1'",
+            condition = "input.Dimension_Reduction == 'using_label_column2'",
+            
+            plotlyOutput("plot206"),
+            plotlyOutput("plot2061"),
+            plotlyOutput("plot2062"),
+            p("Change from High dimension data into 2 dimension data."),
+            
+            
+            
             conditionalPanel(
               condition = "input.AddClustering == 1",
               p("Then find clusters for the 2 dimension data."),
@@ -2028,20 +2112,14 @@ fluidPage(
               p("Download analyzed data for the next step.
               For example, if clust column is put on the first (left side) column,
               we can analyze with the function 'Similarity_of_Variables_and_Categories'"),
-              downloadButton("downloadData", "Download analyzed data")
+              downloadButton("downloadData232", "Download analyzed data")
             ),
             a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-03.html"),
             a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-03.html"),br(),
             a("About dimension reduction(English)   ",href="http://data-science.tokyo/ed-e/ede1-3-3-1.html"),
             a("(Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-3-1.html"),br(),
             
-          ),
-          conditionalPanel(
-            condition = "input.Dimension_Reduction == 'nMDS1'",
-            p("Change from High dimension data into 2 dimension data using network graph algrithm. "),
             
-            a("About NetworkMDS (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-3-1-1-1.html"),
-            a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-3-1-1-1.html"),br(),
           )
         )
       ),
