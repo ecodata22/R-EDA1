@@ -661,7 +661,9 @@ fluidPage(
           selectInput("Dimension_Reduction", "Change into 2 dimension data",
                       choices = c(None = "None1",
                                   not_using_label_column = "not_using_label_column2",
-                                  using_label_column = "using_label_column2"
+#                                  using_one_label_column = "using_label_column2"
+                                  using_one_label_column = "using_label_column2",
+                                  using_label_columns_more_2 = "using_label_columns_more2"
                       ),
                       selected = "None1"),
           
@@ -734,6 +736,31 @@ fluidPage(
                           min = 0.001,  max = 1, value = 0.2, step = 0.001)
             ),
             
+          ),
+          
+          conditionalPanel(
+            condition = "input.Dimension_Reduction == 'using_label_columns_more2'", 
+            numericInput('Label_column3', 'Column number for label of Max', "2"),
+            p("If 3 is the input. Columns 1:3 is Y group. 4: is X group. "),
+            
+            selectInput("Dimension_Reduction_Method3", "Change into 2 dimension data",
+                        choices = c(Canonical_Correlation_Analysis = "Canonical_Correlation_Analysis3",
+                                    Kerbel_CCA = "Kerbel_CCA3"),
+                        selected = "Canonical_Correlation_Analysis3"),
+            conditionalPanel(
+              condition = "input.Dimension_Reduction_Method3 == 'Kerbel_CCA3'", 
+              selectInput("Kernel5", "Kernel",
+                          choices = c(rbfdot= "rbfdot",
+                                      anovadot= "anovadot",
+                                      laplacedot= "laplacedot",
+                                      besseldot= "besseldot"),
+                                      #besseldot= "besseldot",
+                                      #polydot= "polydot",
+                                      #vanilladot= "vanilladot",
+                                      #tanhdot= "tanhdot",
+                                      #splinedot= "splinedot"),
+                          selected = "rbfdot"),
+            ),
           ),
           
           conditionalPanel(
@@ -2118,6 +2145,29 @@ fluidPage(
             a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-03.html"),br(),
             a("About dimension reduction(English)   ",href="http://data-science.tokyo/ed-e/ede1-3-3-1.html"),
             a("(Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-3-1.html"),br(),
+            
+            
+          ),
+          
+          conditionalPanel(
+            condition = "input.Dimension_Reduction == 'using_label_columns_more2'",
+            
+            #plotlyOutput("plot2071"),
+            #plotlyOutput("plot2072"),
+            plotlyOutput("plot207"),
+            textOutput("text207"),
+            textOutput("text2071"),
+            p("Change from High dimension data into 2 dimension data."),
+            p("Number above each graph is the number of factors (Max is 4)."),
+            
+            
+            
+            a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E4-16.html"),
+            a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J4-16.html"),br(),
+            a("About dimension reduction(English)   ",href="http://data-science.tokyo/ed-e/ede1-3-3-1.html"),
+            a("(Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-3-1.html"),br(),
+            a("About dimension reduction with CCA(English)   ",href="http://data-science.tokyo/ed-e/ede1-3-3-1-4.html"),
+            a("(Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-3-1-4.html"),br(),
             
             
           )

@@ -2999,6 +2999,151 @@ shinyServer(function(input, output) {
     }
   })
   
+  output$plot207 <- renderPlotly({
+    if(input$analysis == "Similarity_of_Samples1"){
+      if(input$Dimension_for_clustering == "Dimension_2"){
+        if(input$Dimension_Reduction == "using_label_columns_more2") {
+          
+          
+          req(input$file1)
+          
+          if(input$sep2 == "Separator_Comma"){sep <- ","}
+          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+          
+          
+          Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+          
+          
+          library(dummies)
+          library(ggplot2)
+          library(som)
+          library(MASS)
+          library(Rtsne)
+          library(mclust)
+          library(dbscan)
+          library(e1071)
+          library(kernlab)
+          library(Rcpp)
+          library(umap)
+          
+          Data1 <- Data
+          
+          
+          if(input$Use_one_column_as_sample_name2 == 1){
+            Y <- names(Data1[input$sample_row2])
+            Ydata <- Data1[,input$sample_row2]
+            Data1[Y] <- NULL
+          } else {
+            Y <- "Index_No"
+            Ydata <- row.names(Data)
+          }
+          #Y2 <- names(Data1[input$Label_column2])
+          
+          
+          
+          Retu <- input$Label_column3
+          Retu2 <- Retu+1
+          Retu3 <- ncol(Data1)
+          
+          DataY <- Data1[,1:Retu]
+          DataX <- Data1[,Retu2:Retu3]
+          
+          DataY2 <- dummy.data.frame(DataY)
+          DataX2 <- dummy.data.frame(DataX)
+          if(input$Dimension_reduction_type7 == "PCA7"){
+            pc <- prcomp(DataX2, scale=TRUE,tol=0.001)
+            DataX2 <- as.data.frame(pc$x)
+            pc <- prcomp(DataY2, scale=TRUE,tol=0.001)
+            DataY2 <- as.data.frame(pc$x)
+          }
+          DataX3 <- DataX2
+          DataY3 <- DataY2
+          if(input$Use_scale_transformation2 == "Normalization2"){
+            n <- ncol(DataX2)
+            for (i in 1:n) {
+              DataX3[,i] <- (DataX2[,i]-min(DataX2[,i]))/(max(DataX2[,i])-min(DataX2[,i]))
+            }
+            n <- ncol(DataY2)
+            for (i in 1:n) {
+              DataY3[,i] <- (DataY2[,i]-min(DataY2[,i]))/(max(DataY2[,i])-min(DataY2[,i]))
+            }
+          }
+          if(input$Use_scale_transformation2 == "Standardization2"){
+            DataX3 <- data.frame(scale(DataX2))
+            DataY3 <- data.frame(scale(DataY2))
+          }
+          #Data4<-cbind(DataX3,DataY3)
+          
+          #library(CCA)
+          #model <- cc(DataX3,DataY3)
+          #X1 <- model$scores$xscores[,1]
+          #Y1 <- model$scores$yscores[,1]
+          
+          if(input$Dimension_Reduction_Method3 == 'Canonical_Correlation_Analysis3'){
+            model <- cancor(DataY3,DataX3)
+            u <- data.matrix(DataX3) %*% model$ycoef
+            v <- data.matrix(DataY3) %*% model$xcoef
+          }else{
+            ker5 <- input$Kernel5
+            model <- kcca(data.matrix(DataX3), data.matrix(DataY3), kernel = ker5, ncomps = 4)
+            if(input$Kernel5 == 'anovadot'){
+              u <- kernelMatrix(anovadot(),data.matrix(DataY3)) %*% model@xcoef
+              v <- kernelMatrix(anovadot(),data.matrix(DataX3)) %*% model@ycoef
+            }else if(input$Kernel5 == 'rbfdot'){
+              u <- kernelMatrix(rbfdot(),data.matrix(DataY3)) %*% model@xcoef
+              v <- kernelMatrix(rbfdot(),data.matrix(DataX3)) %*% model@ycoef
+            }else if(input$Kernel5 == 'polydot'){
+              u <- kernelMatrix(polydot(),data.matrix(DataY3)) %*% model@xcoef
+              v <- kernelMatrix(polydot(),data.matrix(DataX3)) %*% model@ycoef
+            }else if(input$Kernel5 == 'vanilladot'){
+              u <- kernelMatrix(vanilladot(),data.matrix(DataY3)) %*% model@xcoef
+              v <- kernelMatrix(vanilladot(),data.matrix(DataX3)) %*% model@ycoef
+            }else if(input$Kernel5 == 'tanhdot'){
+              u <- kernelMatrix(tanhdot(),data.matrix(DataY3)) %*% model@xcoef
+              v <- kernelMatrix(tanhdot(),data.matrix(DataX3)) %*% model@ycoef
+            }else if(input$Kernel5 == 'laplacedot'){
+              u <- kernelMatrix(laplacedot(),data.matrix(DataY3)) %*% model@xcoef
+              v <- kernelMatrix(laplacedot(),data.matrix(DataX3)) %*% model@ycoef
+            }else if(input$Kernel5 == 'besseldot'){
+              u <- kernelMatrix(besseldot(),data.matrix(DataY3)) %*% model@xcoef
+              v <- kernelMatrix(besseldot(),data.matrix(DataX3)) %*% model@ycoef
+            }else if(input$Kernel5 == 'splinedot'){
+              u <- kernelMatrix(splinedot(),data.matrix(DataY3)) %*% model@xcoef
+              v <- kernelMatrix(splinedot(),data.matrix(DataX3)) %*% model@ycoef
+            }
+          }
+          
+          
+          Data6 <- cbind(data.frame(u[,1],v[,1]),Index = row.names(Data),Factors = c(1),Ydata)
+          names(Data6)[1:2] <- c("u","v")
+          for(i in 2:min(ncol(u),ncol(v),4)) {
+            Data61 <- cbind(data.frame(u[,i],v[,i]),Index = row.names(Data),Factors = c(i),Ydata)
+            names(Data61)[1:2] <- c("u","v")
+            Data6 <- rbind(Data6,Data61)
+          }
+          
+          #output$text207 <- renderPrint(head(Data6,1))
+          #output$text2071 <- renderPrint(tail(Data61,1))
+          #plot(1)
+          
+          if(input$plot_type2 == "G11") {
+            ggplotly(ggplot(Data6, aes(x=u,y=v,label=Ydata)) + geom_text() + facet_wrap(~Factors,scales="free") + labs(x="X group",y="Y group"))
+          } else if(input$plot_type2 == "G12") {
+            ggplotly(ggplot(Data6, aes(x=u,y=v,label=Index)) + geom_text() + facet_wrap(~Factors,scales="free") + labs(x="X group",y="Y group"))
+          } else if(input$plot_type2 == "G13") {
+            Data6$Index <- as.numeric(Data6$Index)
+            ggplotly(ggplot(Data6, aes(x=u,y=v)) + geom_point(aes(colour=Ydata)) + facet_wrap(~Factors,scales="free") + labs(x="X group",y="Y group"))
+          } else if(input$plot_type2 == "G14") {
+            Data6$Index <- as.numeric(Data6$Index)
+            ggplotly(ggplot(Data6, aes(x=u,y=v)) + geom_point(aes(colour=Index)) + facet_wrap(~Factors,scales="free") + labs(x="X group",y="Y group"))
+          } else {
+            ggplotly(ggplot(Data6, aes(x=u,y=v)) + geom_point() + facet_wrap(~Factors,scales="free") + labs(x="X group",y="Y group"))
+          }
+        }
+      }
+    }
+  })
     
   output$plot202 <- renderPlotly({
     if(input$analysis == "Similarity_of_Samples1"){
