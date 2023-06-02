@@ -210,14 +210,22 @@ fluidPage(
                   condition = "input.Gtype == 'scatter'",
                   conditionalPanel(
                     condition = "input.Ccol == 0 && input.Scol == 0",
+                    
                     checkboxInput("Using_Prediction_Interval", "Using prediction interval", FALSE),
+                    
+                    conditionalPanel(
+                      condition = "input.Using_Prediction_Interval == 1",
+                      selectInput("proportional1", "Regression type",
+                                  choices = c(General_regression = "General_regression",
+                                              Proporional_distribution = "Proporional_distribution"),
+                                  selected = "General_regression"),
+                      
+                      sliderInput("Prediction_Interval_Probability",
+                                  "Prediction interval probability",
+                                  min = 0,  max = 1, value = 0.95, step = 0.01)
+                    ),
                   ),
-                  conditionalPanel(
-                    condition = "input.Using_Prediction_Interval == 1",
-                    sliderInput("Prediction_Interval_Probability",
-                                "Prediction interval probability",
-                                min = 0,  max = 1, value = 0.95, step = 0.01)
-                  ),
+                  
                   
                   checkboxInput("Using_GLM", "Using GLM", FALSE),
                   conditionalPanel(
@@ -1307,7 +1315,7 @@ fluidPage(
           
           conditionalPanel(
             condition = "input.Among_all_columns == 'Stratifeid_graph1'",
-            h3("Stratifeid graph"),
+            
             conditionalPanel(
               condition = "input.Scol != 0",
               selectInput("Stratifeid_scaling1", "Scaling of stratified graph",
@@ -1345,6 +1353,24 @@ fluidPage(
                   condition = "input.Ccol == 0",
                   h3("Check correlation"),
                   verbatimTextOutput("text518"),
+                  conditionalPanel(
+                    condition = "input.Using_Prediction_Interval == 1",
+                    conditionalPanel(
+                      condition = "input.proportional1 == 'Proporional_distribution'",
+                      
+                      h3("Check Y/X distribution"),
+                      plotOutput("plot538"),
+                      verbatimTextOutput("text538"),
+                      
+                      a("Code (English)",href="http://data-science.tokyo/R-E/R-E2-03.html"),
+                      a(" (Japanese)",href="http://data-science.tokyo/R-J/R-J2-03.html"),br(),
+                      a("About Regression analysis of proportional distribution(English)",href="http://data-science.tokyo/ed-e/ede1-2-1-1-4.html"),
+                      a("(Japanese)",href="http://data-science.tokyo/ed/edj1-2-1-1-4.html"),br(),
+                      a("About proportional distribution(English)",href="http://data-science.tokyo/ed-e/ede1-1-1-4.html"),
+                      a("(Japanese)",href="http://data-science.tokyo/ed/edj1-1-1-4.html"),
+                    
+                    ),
+                  ),
                   conditionalPanel(
                     condition = "input.Using_GLM == 1",
                     p("Generalized linear model (GLM)"),

@@ -303,15 +303,33 @@ shinyServer(function(input, output) {
                 output$plot537 <- renderPlot(ggplot(Data1, aes(x=(Data1[,input$Lcol] - Data1[,input$Xcol]))) + geom_histogram() + labs(x=paste("Difference between",Lname,"and",Xname)))
               }
               if(input$Using_Prediction_Interval == 1){
-                lm <- lm(Data1[,input$Lcol] ~ Data1[,input$Xcol], data=Data1)
-                Data0 <- predict(lm, Data1, interval="prediction", level = input$Prediction_Interval_Probability)
-                Data2 <- cbind(Data, Data0)
+                if(input$proportional1 == "General_regression"){
+                  lm <- lm(Data1[,input$Lcol] ~ Data1[,input$Xcol], data=Data1)
+                  Data0 <- predict(lm, Data1, interval="prediction", level = input$Prediction_Interval_Probability)
+                  Data2 <- cbind(Data, Data0)
+                } else {
+                  M <- mean(Data1[,input$Lcol] / Data1[,input$Xcol])
+                  n <- nrow(Data1)
+                  
+                  t <- -qt((1-input$Prediction_Interval_Probability)/2, n-1)
+                  V <- var(Data1[,input$Lcol] / Data1[,input$Xcol])
+                  
+                  Upper <- M + t * sqrt(V * (1 + 1/n))
+                  Lower <- M - t * sqrt(V * (1 + 1/n))
+                  YXname <- paste(Lname,"/",Xname,sep="")
+                  output$text538 <- renderPrint(paste("(Average(",YXname,"), Standard deviation(",YXname,")) = (",M,", ",sqrt(V),")",sep = ""))
+                  YX <- Data1[,input$Lcol] / Data1[,input$Xcol]
+                  output$plot538 <- renderPlot(ggplot(Data1, aes(x=YX)) + geom_histogram() + labs(x=YXname))
+                  
+                  upr<-Data1[,input$Xcol] * Upper
+                  lwr<-Data1[,input$Xcol] * Lower
+                  fit<-Data1[,input$Xcol] * M
+                  Data2<-cbind(Data1,lwr,upr,fit)
+                }
+                
                 gplot <- ggplot(data = Data2, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) +geom_point()+geom_line(aes(y=lwr), color = "red")+geom_line(aes(y=upr), color = "red")+geom_line(aes(y= fit), color = "blue")+ labs(x=Xname,y=Lname)
               } else {
-                #if(input$Using_interactive_graph1 == 1){
-                #  #output$plot538 <- renderPlotly(plot_ly(Data1, x=~Data1[,input$Xcol], y=~Data1[,input$Lcol], type = 'scatter'))
-                #  output$plot538 <- renderPlotly(ggplotly(ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_point() + labs(x=Xname,y=Lname)))
-                #}
+                
                 gplot <- ggplot(Data1, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) + geom_point() + labs(x=Xname,y=Lname)
 
               }
