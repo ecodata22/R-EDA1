@@ -42,11 +42,13 @@ shinyServer(function(input, output) {
       }
       
       
-      library(dummies)
+      #library(dummies)
+      library(fastDummies)
       library(heatmaply)
       
       if(input$Change_categorical_data_into == "Dummy_Varaiables1"){
-        Data2 <- dummy.data.frame(Data)
+        #Data2 <- dummy.data.frame(Data)
+        Data2 <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
       } else {
         Data2 <- Data
         n <- ncol(Data)
@@ -533,12 +535,14 @@ shinyServer(function(input, output) {
               Data[,1] <- NULL
             }
             
-            library(dummies)
+            #library(dummies)
+            library(fastDummies)
             library(igraph)
             library(networkD3)
             library(tidyr)
             library(MASS)
-            Data1 <- dummy.data.frame(Data)
+            #Data1 <- dummy.data.frame(Data)
+            Data1 <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
             DataM <- as.matrix(Data1)
             GM1 <- cor(DataM , use = "complete.obs")
             
@@ -607,11 +611,13 @@ shinyServer(function(input, output) {
               Data[,1] <- NULL
             }
             
-            library(dummies)
+            #library(dummies)
+            library(fastDummies)
             library(glasso)
             library(igraph)
             library(MASS)
-            Data1 <- dummy.data.frame(Data)
+            #Data1 <- dummy.data.frame(Data)
+            Data1 <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
             DataM <- as.matrix(Data1)
             COR <- cor(DataM , use = "complete.obs")
             GM1 <- glasso(COR,input$RHO)$wi
@@ -854,7 +860,8 @@ shinyServer(function(input, output) {
                  Data[,1] <- NULL
                }
             library(igraph)
-            library(dummies)
+            l#ibrary(dummies)
+            library(fastDummies)
             library(tidyr)
             library(fastICA)
             n <- ncol(Data)
@@ -935,7 +942,8 @@ shinyServer(function(input, output) {
             }
             
             library(arules)
-            library(dummies)
+            #library(dummies)
+            library(fastDummies)
             library(ggplot2)
             library(igraph) 
             
@@ -944,7 +952,8 @@ shinyServer(function(input, output) {
                 Data[,i] <- droplevels(cut(Data[,i], breaks = input$NumericalToCategorcalA, include.lowest = TRUE))
               }
             }
-            Data <- dummy.data.frame(Data)
+            #Data <- dummy.data.frame(Data)
+            Data <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
             Data3 <- as(Data, "matrix")
             Data4 <- as(Data3, "transactions")
             ap <- apriori(Data4, parameter = list(support = 5/nrow(Data), maxlen = 2, minlen = 2))
@@ -1063,10 +1072,12 @@ shinyServer(function(input, output) {
               Data[,1] <- NULL
             }
             
-            library(dummies)
+            #library(dummies)
+            library(fastDummies)
             library(ggplot2)
             library(MASS)
-            Data1 <- dummy.data.frame(Data)
+            #Data1 <- dummy.data.frame(Data)
+            Data1 <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
             pc <- prcomp(Data1, scale=TRUE,tol=0.01)
             output$text410 <- renderPrint(summary(pc))
             pc2 <- sweep(pc$rotation, MARGIN=2, pc$sdev, FUN="*")
@@ -1114,7 +1125,8 @@ shinyServer(function(input, output) {
             }
             
             
-            library(dummies)
+            #library(dummies)
+            library(fastDummies)
             library(MASS)
             library(ggplot2)
             for (i in 1:ncol(Data)) {
@@ -1122,7 +1134,8 @@ shinyServer(function(input, output) {
                 Data[,i] <- droplevels(cut(Data[,i], breaks = input$NumericalToCategorcalU, include.lowest = TRUE))
               }
             }
-            Data_dmy <- dummy.data.frame(Data)
+            #Data_dmy <- dummy.data.frame(Data)
+            Data_dmy <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
             pc <- corresp(Data_dmy,nf=min(ncol(Data),nrow(Data)))
             pc1 <- data.frame(pc$cscore)
             pc1 <- transform(pc1 ,name1 = rownames(pc1))
@@ -1310,14 +1323,16 @@ shinyServer(function(input, output) {
               }
             }
             
-            library(dummies)
+            #library(dummies)
+            library(fastDummies) 
             library(ggplot2)
             library(tidyr)
             Data1 <- Data
             Y <- names(Data1[input$Label_column])
             Ydata <- Data1[,input$Label_column]
             Data1[,input$Label_column] <- NULL
-            Data2 <- dummy.data.frame(Data1)
+            #Data2 <- dummy.data.frame(Data1)
+            Data2 <- dummy_cols(Data1,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
             Data4 <- cbind(Ydata, Data2)
             Data_long <- tidyr::gather(Data4, key="X", value = Xs, -Ydata)
             if(class(Ydata) == "numeric") {
@@ -1370,14 +1385,16 @@ shinyServer(function(input, output) {
                 }
               }
             }
-            library(dummies)
+            #library(dummies)
+            library(fastDummies) 
             library(ggplot2)
             library(tidyr)
             Data1 <- Data
             Y <- names(Data1[input$Label_column])
             Ydata <- Data1[,input$Label_column]
             Data1[,input$Label_column] <- NULL
-            Data2 <- dummy.data.frame(Data1)
+            #Data2 <- dummy.data.frame(Data1)
+            Data2 <- dummy_cols(Data1,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
             pc <- prcomp(Data2, scale=TRUE)
             Data4 <- cbind(Ydata, pc$x, Data2)
             Data_long <- tidyr::gather(Data4, key="X", value = Xs, -Ydata)
@@ -1432,14 +1449,16 @@ shinyServer(function(input, output) {
               }
             }
             library(fastICA)
-            library(dummies)
+            #library(dummies)
+            library(fastDummies) 
             library(ggplot2)
             library(tidyr)
             Data1 <- Data
             Y <- names(Data1[input$Label_column])
             Ydata <- Data1[,input$Label_column]
             Data1[,input$Label_column] <- NULL
-            Data2 <- dummy.data.frame(Data1)
+            #Data2 <- dummy.data.frame(Data1)
+            Data2 <- dummy_cols(Data1,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
             pc <- prcomp(Data2, scale=TRUE, tol=0.01)
             ic <- fastICA(Data2, ncol(pc$x))$S
             Data4 <- cbind(Ydata, ic, Data2)
@@ -1957,7 +1976,7 @@ shinyServer(function(input, output) {
           
           library(ggplot2)
           library(fastDummies)
-          library(dummies)
+          #library(dummies)
           library(kernlab)
           library(tidyr)
           
@@ -1976,7 +1995,8 @@ shinyServer(function(input, output) {
               Data1 <- Data
             }
           } else {
-            Data1 <- dummy.data.frame(Data)
+            #Data1 <- dummy.data.frame(Data)
+            Data1 <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
           }
           
           Data2 <- subset(Data1, Data1[,input$Label_column] == 0)
@@ -2638,7 +2658,8 @@ shinyServer(function(input, output) {
           Data <- read.csv(input$file1$datapath, header=T,sep = sep)
           
           
-          library(dummies)
+          #library(dummies)
+          library(fastDummies) 
           library(ggplot2)
           
           Data1 <- Data
@@ -2717,7 +2738,8 @@ shinyServer(function(input, output) {
           #}
           
         
-          library(dummies)
+          #library(dummies)
+          library(fastDummies) 
           library(ggplot2)
           library(som)
           library(MASS)
@@ -2739,7 +2761,8 @@ shinyServer(function(input, output) {
             Ydata <- row.names(Data)
           }
           
-          Data2 <- dummy.data.frame(Data1)
+          #Data2 <- dummy.data.frame(Data1)
+          Data2 <- dummy_cols(Data1,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
           if(input$Dimension_reduction_type7 == "PCA7"){
             pc <- prcomp(Data2, scale=TRUE,tol=0.001)
             Data2 <- as.data.frame(pc$x)
@@ -2886,7 +2909,8 @@ shinyServer(function(input, output) {
           Data <- read.csv(input$file1$datapath, header=T,sep = sep)
           
           
-          library(dummies)
+          #library(dummies)
+          library(fastDummies)
           library(ggplot2)
           library(som)
           library(MASS)
@@ -2911,7 +2935,8 @@ shinyServer(function(input, output) {
           Y2data <- Data1[,input$Label_column2]
           Data1[Y2] <- NULL
           
-          Data2 <- dummy.data.frame(Data1)
+          #Data2 <- dummy.data.frame(Data1)
+          Data2 <- dummy_cols(Data1,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
           if(input$Dimension_reduction_type7 == "PCA7"){
             pc <- prcomp(Data2, scale=TRUE,tol=0.001)
             Data2 <- as.data.frame(pc$x)
@@ -3033,7 +3058,8 @@ shinyServer(function(input, output) {
           Data <- read.csv(input$file1$datapath, header=T,sep = sep)
           
           
-          library(dummies)
+          #library(dummies)
+          library(fastDummies)
           library(ggplot2)
           library(som)
           library(MASS)
@@ -3067,8 +3093,10 @@ shinyServer(function(input, output) {
           DataY <- Data1[,1:Retu]
           DataX <- Data1[,Retu2:Retu3]
           
-          DataY2 <- dummy.data.frame(DataY)
-          DataX2 <- dummy.data.frame(DataX)
+          #DataY2 <- dummy.data.frame(DataY)
+          #DataX2 <- dummy.data.frame(DataX)
+          DataY2 <- dummy_cols(DataY,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+          DataX2 <- dummy_cols(DataX,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
           if(input$Dimension_reduction_type7 == "PCA7"){
             pc <- prcomp(DataX2, scale=TRUE,tol=0.001)
             DataX2 <- as.data.frame(pc$x)
@@ -3173,7 +3201,8 @@ shinyServer(function(input, output) {
         if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
         if(input$sep2 == "Separator_Tab"){sep <- "\t"}
         
-        library(dummies)
+        #library(dummies)
+        library(fastDummies)
         library(ggplot2)
         
         if(input$Use_one_column_as_sample_name2 == 1){
@@ -3182,7 +3211,8 @@ shinyServer(function(input, output) {
           Data <- read.csv(input$file1$datapath, header=T,sep = sep)
         }
         
-        Data2 <- dummy.data.frame(Data)
+        #Data2 <- dummy.data.frame(Data)
+        Data2 <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
         if(input$Dimension_reduction_type8 == "PCA8"){
           pc <- prcomp(Data2, scale=TRUE,tol=0.01)
           Data2 <- as.data.frame(pc$x)
@@ -3847,7 +3877,7 @@ shinyServer(function(input, output) {
           }
           library(ggplot2)
           library(tidyr)
-          library(dummies)
+          #library(dummies)
           library(fastDummies)
           library(fastICA)
           library(psych)
@@ -3868,7 +3898,8 @@ shinyServer(function(input, output) {
               Data <- Data
             }
           } else {
-            Data <- dummy.data.frame(Data)
+            #Data <- dummy.data.frame(Data)
+            Data <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
           }
           
           if(input$Dimension_reduction_type3 == "None3"){
