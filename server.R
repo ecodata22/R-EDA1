@@ -48,7 +48,14 @@ shinyServer(function(input, output) {
       
       if(input$Change_categorical_data_into == "Dummy_Varaiables1"){
         #Data2 <- dummy.data.frame(Data)
-        Data2 <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+        #Data2 <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+        Data2 <- Data
+        for (i in 1:ncol(Data)) {
+          if (class(Data[,i]) == "character") {
+            Data2 <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+            break
+          }
+        }
       } else {
         Data2 <- Data
         n <- ncol(Data)
@@ -542,7 +549,14 @@ shinyServer(function(input, output) {
             library(tidyr)
             library(MASS)
             #Data1 <- dummy.data.frame(Data)
-            Data1 <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+            #Data1 <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+            Data1 <- Data
+            for (i in 1:ncol(Data)) {
+              if (class(Data[,i]) == "character") {
+                Data1 <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+                break
+              }
+            }
             DataM <- as.matrix(Data1)
             GM1 <- cor(DataM , use = "complete.obs")
             
@@ -617,7 +631,14 @@ shinyServer(function(input, output) {
             library(igraph)
             library(MASS)
             #Data1 <- dummy.data.frame(Data)
-            Data1 <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+            #Data1 <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+            Data1 <- Data
+            for (i in 1:ncol(Data)) {
+              if (class(Data[,i]) == "character") {
+                Data1 <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+                break
+              }
+            }
             DataM <- as.matrix(Data1)
             COR <- cor(DataM , use = "complete.obs")
             GM1 <- glasso(COR,input$RHO)$wi
@@ -953,7 +974,14 @@ shinyServer(function(input, output) {
               }
             }
             #Data <- dummy.data.frame(Data)
-            Data <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+            #Data <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+            #Data1 <- Data
+            for (i in 1:ncol(Data)) {
+              if (class(Data[,i]) == "character") {
+                Data <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+                break
+              }
+            }
             Data3 <- as(Data, "matrix")
             Data4 <- as(Data3, "transactions")
             ap <- apriori(Data4, parameter = list(support = 5/nrow(Data), maxlen = 2, minlen = 2))
@@ -1077,7 +1105,14 @@ shinyServer(function(input, output) {
             library(ggplot2)
             library(MASS)
             #Data1 <- dummy.data.frame(Data)
-            Data1 <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+            #Data1 <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+            Data1 <- Data
+            for (i in 1:ncol(Data)) {
+              if (class(Data[,i]) == "character") {
+                Data1 <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+                break
+              }
+            }
             pc <- prcomp(Data1, scale=TRUE,tol=0.01)
             output$text410 <- renderPrint(summary(pc))
             pc2 <- sweep(pc$rotation, MARGIN=2, pc$sdev, FUN="*")
@@ -1135,7 +1170,14 @@ shinyServer(function(input, output) {
               }
             }
             #Data_dmy <- dummy.data.frame(Data)
-            Data_dmy <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+            #Data_dmy <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+            Data_dmy <- Data
+            for (i in 1:ncol(Data)) {
+              if (class(Data[,i]) == "character") {
+                Data_dmy <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+                break
+              }
+            }
             pc <- corresp(Data_dmy,nf=min(ncol(Data),nrow(Data)))
             pc1 <- data.frame(pc$cscore)
             pc1 <- transform(pc1 ,name1 = rownames(pc1))
@@ -1332,7 +1374,14 @@ shinyServer(function(input, output) {
             Ydata <- Data1[,input$Label_column]
             Data1[,input$Label_column] <- NULL
             #Data2 <- dummy.data.frame(Data1)
-            Data2 <- dummy_cols(Data1,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+            #Data2 <- dummy_cols(Data1,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+            Data2 <- Data1
+            for (i in 1:ncol(Data1)) {
+              if (class(Data1[,i]) == "character") {
+                Data2 <- dummy_cols(Data1,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+                break
+              }
+            }
             Data4 <- cbind(Ydata, Data2)
             Data_long <- tidyr::gather(Data4, key="X", value = Xs, -Ydata)
             if(class(Ydata) == "numeric") {
@@ -1394,7 +1443,14 @@ shinyServer(function(input, output) {
             Ydata <- Data1[,input$Label_column]
             Data1[,input$Label_column] <- NULL
             #Data2 <- dummy.data.frame(Data1)
-            Data2 <- dummy_cols(Data1,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+            #Data2 <- dummy_cols(Data1,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+            Data2 <- Data1
+            for (i in 1:ncol(Data1)) {
+              if (class(Data1[,i]) == "character") {
+                Data2 <- dummy_cols(Data1,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+                break
+              }
+            }
             pc <- prcomp(Data2, scale=TRUE)
             Data4 <- cbind(Ydata, pc$x, Data2)
             Data_long <- tidyr::gather(Data4, key="X", value = Xs, -Ydata)
@@ -1458,7 +1514,14 @@ shinyServer(function(input, output) {
             Ydata <- Data1[,input$Label_column]
             Data1[,input$Label_column] <- NULL
             #Data2 <- dummy.data.frame(Data1)
-            Data2 <- dummy_cols(Data1,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+            #Data2 <- dummy_cols(Data1,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+            Data2 <- Data1
+            for (i in 1:ncol(Data1)) {
+              if (class(Data1[,i]) == "character") {
+                Data2 <- dummy_cols(Data1,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+                break
+              }
+            }
             pc <- prcomp(Data2, scale=TRUE, tol=0.01)
             ic <- fastICA(Data2, ncol(pc$x))$S
             Data4 <- cbind(Ydata, ic, Data2)
@@ -1990,13 +2053,27 @@ shinyServer(function(input, output) {
               }
             }
             if(CCheck == 1){
-              Data1 <- dummy_cols(Data,remove_first_dummy = TRUE,remove_selected_columns = TRUE)
+              #Data1 <- dummy_cols(Data,remove_first_dummy = TRUE,remove_selected_columns = TRUE)
+              Data1 <- Data
+              for (i in 1:ncol(Data)) {
+                if (class(Data[,i]) == "character") {
+                  Data1 <- dummy_cols(Data,remove_first_dummy = TRUE,remove_selected_columns = TRUE)
+                  break
+                }
+              }
             } else {
               Data1 <- Data
             }
           } else {
             #Data1 <- dummy.data.frame(Data)
-            Data1 <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+            #Data1 <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+            Data1 <- Data
+            for (i in 1:ncol(Data)) {
+              if (class(Data[,i]) == "character") {
+                Data1 <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+                break
+              }
+            }
           }
           
           Data2 <- subset(Data1, Data1[,input$Label_column] == 0)
@@ -2762,7 +2839,14 @@ shinyServer(function(input, output) {
           }
           
           #Data2 <- dummy.data.frame(Data1)
-          Data2 <- dummy_cols(Data1,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+          #Data2 <- dummy_cols(Data1,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+          Data2 <- Data1
+          for (i in 1:ncol(Data1)) {
+            if (class(Data1[,i]) == "character") {
+              Data2 <- dummy_cols(Data1,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+              break
+            }
+          }
           if(input$Dimension_reduction_type7 == "PCA7"){
             pc <- prcomp(Data2, scale=TRUE,tol=0.001)
             Data2 <- as.data.frame(pc$x)
@@ -2936,7 +3020,14 @@ shinyServer(function(input, output) {
           Data1[Y2] <- NULL
           
           #Data2 <- dummy.data.frame(Data1)
-          Data2 <- dummy_cols(Data1,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+          #Data2 <- dummy_cols(Data1,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+          Data2 <- Data1
+          for (i in 1:ncol(Data1)) {
+            if (class(Data1[,i]) == "character") {
+              Data2 <- dummy_cols(Data1,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+              break
+            }
+          }
           if(input$Dimension_reduction_type7 == "PCA7"){
             pc <- prcomp(Data2, scale=TRUE,tol=0.001)
             Data2 <- as.data.frame(pc$x)
@@ -3095,8 +3186,22 @@ shinyServer(function(input, output) {
           
           #DataY2 <- dummy.data.frame(DataY)
           #DataX2 <- dummy.data.frame(DataX)
-          DataY2 <- dummy_cols(DataY,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
-          DataX2 <- dummy_cols(DataX,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+          #DataY2 <- dummy_cols(DataY,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+          #DataX2 <- dummy_cols(DataX,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+          DataY2 <- DataY
+          for (i in 1:ncol(DataY)) {
+            if (class(DataY[,i]) == "character") {
+              DataY2 <- dummy_cols(DataY,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+              break
+            }
+          }
+          DataX2 <- DataX
+          for (i in 1:ncol(DataX)) {
+            if (class(DataX[,i]) == "character") {
+              DataX2 <- dummy_cols(DataX,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+              break
+            }
+          }
           if(input$Dimension_reduction_type7 == "PCA7"){
             pc <- prcomp(DataX2, scale=TRUE,tol=0.001)
             DataX2 <- as.data.frame(pc$x)
@@ -3212,7 +3317,14 @@ shinyServer(function(input, output) {
         }
         
         #Data2 <- dummy.data.frame(Data)
-        Data2 <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+        #Data2 <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+        Data2 <- Data
+        for (i in 1:ncol(Data)) {
+          if (class(Data[,i]) == "character") {
+            Data2 <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+            break
+          }
+        }
         if(input$Dimension_reduction_type8 == "PCA8"){
           pc <- prcomp(Data2, scale=TRUE,tol=0.01)
           Data2 <- as.data.frame(pc$x)
@@ -3899,7 +4011,14 @@ shinyServer(function(input, output) {
             }
           } else {
             #Data <- dummy.data.frame(Data)
-            Data <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+            #Data <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+            #Data1 <- Data
+            for (i in 1:ncol(Data)) {
+              if (class(Data[,i]) == "character") {
+                Data <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+                break
+              }
+            }
           }
           
           if(input$Dimension_reduction_type3 == "None3"){
