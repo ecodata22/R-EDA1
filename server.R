@@ -984,7 +984,7 @@ shinyServer(function(input, output) {
             }
             Data3 <- as(Data, "matrix")
             Data4 <- as(Data3, "transactions")
-            ap <- apriori(Data4, parameter = list(support = 5/nrow(Data), maxlen = input$association_limit3, minlen = 2))
+            ap <- apriori(Data4, parameter = list(support = input$association_limit4/nrow(Data), maxlen = input$association_limit3, minlen = 2))
             ap_inspect <- inspect(ap)
             ap_inspect$set <- paste(ap_inspect$lhs,"->",ap_inspect$rhs)
             

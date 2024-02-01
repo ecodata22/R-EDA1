@@ -354,8 +354,11 @@ fluidPage(
             ),
             conditionalPanel(
               condition = "input.Variable_Network == 'Association1'",
+              sliderInput("association_limit4",
+                          "Number of minimum group size",
+                          min = 2,  max = 100, value = 5, step = 1),
               sliderInput("association_limit3",
-                          "Number of maximum set",
+                          "Number of maximum rule set",
                           min = 2,  max = 6, value = 2, step = 1),
               sliderInput("association_limit2",
                           "Choose set number for each evaluation (Confidense, Support and Lift)",
