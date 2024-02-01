@@ -354,6 +354,9 @@ fluidPage(
             ),
             conditionalPanel(
               condition = "input.Variable_Network == 'Association1'",
+              sliderInput("association_limit3",
+                          "Number of maximum set",
+                          min = 2,  max = 6, value = 2, step = 1),
               sliderInput("association_limit2",
                           "Choose set number for each evaluation (Confidense, Support and Lift)",
                           min = 0,  max = 100, value = 20, step = 1)
@@ -1709,7 +1712,7 @@ fluidPage(
               condition = "input.Variable_Network == 'Association1'",
               h3("Associations Rules"),
               p("Similarity among Categories"),
-              selectInput("network_library4", "Library of network",  choices = c("visNetwork", "igraph")),
+              selectInput("network_library4", "Library of network",  choices = c("igraph", "visNetwork")),
               #selectInput("network_library4", "Library of network",  choices = c("igraph","visNetwork")),
               #selectInput("network_library4", "Library of network",  choices = c( "visNetwork")),
               #selectInput("network_library4", "Library of network",  choices = c( "igraph")),

@@ -977,14 +977,14 @@ shinyServer(function(input, output) {
             #Data <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
             #Data1 <- Data
             for (i in 1:ncol(Data)) {
-              if (class(Data[,i]) == "character") {
+              if (class(Data[,i]) == "character" || class(Data[,i]) == "factor") {
                 Data <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
                 break
               }
             }
             Data3 <- as(Data, "matrix")
             Data4 <- as(Data3, "transactions")
-            ap <- apriori(Data4, parameter = list(support = 5/nrow(Data), maxlen = 2, minlen = 2))
+            ap <- apriori(Data4, parameter = list(support = 5/nrow(Data), maxlen = input$association_limit3, minlen = 2))
             ap_inspect <- inspect(ap)
             ap_inspect$set <- paste(ap_inspect$lhs,"->",ap_inspect$rhs)
             
@@ -1009,7 +1009,7 @@ shinyServer(function(input, output) {
               }
             )
             ap23 <- (head(ap_inspect[order(ap_inspect$lift, decreasing=T),], input$association_limit2))
-            output$ap231 <- renderDataTable(ap23[,1:8])
+            #output$ap231 <- renderDataTable(ap23[,1:8])
             output$downloadData231 <- downloadHandler(
               filename = function() {
                 paste("Association_lift_data", ".csv", sep = "")
