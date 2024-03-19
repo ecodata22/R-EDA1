@@ -1680,29 +1680,49 @@ shinyServer(function(input, output) {
             Data1 <- Data
             Ydata <- Data[,input$Label_column]
             Data1[,input$Label_column]<-NULL
-            pc <- prcomp(Data1, scale=TRUE, tol=0.01)
+            pc <- prcomp(Data1, scale=TRUE, tol=input$tol_PCRA1)
+            output$text1141 <- renderPrint({summary(pc)})
             pcd <- as.data.frame(pc$x)
-            pcr <- lm(Ydata ~ . ,pcd)
+            DataPCR <- transform(pcd, Y = Ydata)
+            pcr <- lm(Y ~ . ,DataPCR)
+            
+            
+            MaxN <- ncol(pcd)
+            cor1 <- cor(DataPCR)
+            cor1 <- cor1[,1:MaxN]
+            cor1 <- cor1[MaxN+1,]
+            cor2 <- data.matrix(cor1^2) 
+            output$text1142 <- renderPrint({cor2})
             
             library(MASS)
             pc2 <- sweep(pc$rotation, MARGIN=2, pc$sdev, FUN="*") 
+            pc3 <- pc2^2
+            pc3[pc3 < 0.3] <- 0 
+            output$text1143 <- renderPrint({pc3})
             
-            Data11 <- pc2
-            Data11_dist <- dist(Data11)
-            library(igraph) 
-            library(sigmoid) 
-            Data1p = Data11
-            colnames(Data1p) = paste(colnames(Data1p),"+",sep="")
-            DM.matp = apply(Data1p,c(1,2),relu)
-            Data1m = -Data11
-            colnames(Data1m) = paste(colnames(Data1m),"-",sep="")
-            DM.matm = apply(Data1m,c(1,2),relu)
-            DM.mat =cbind(DM.matp,DM.matm)
-            DM.mat <- DM.mat / max(DM.mat) * 3
-            DM.mat[DM.mat < 1] <- 0 
-            DM.g<-graph_from_incidence_matrix(DM.mat,weighted=T) 
-            V(DM.g)$color <- c("steel blue", "orange")[V(DM.g)$type+1] 
-            V(DM.g)$shape <- c("square", "circle")[V(DM.g)$type+1] 
+            library(igraph) # パッケージを読み込み
+            pc4<-pc3*2　 # 線の太さを変更
+            
+            #Data11 <- pc2
+            #Data11_dist <- dist(Data11)
+            #library(igraph) 
+            #library(sigmoid) 
+            #Data1p = Data11
+            #colnames(Data1p) = paste(colnames(Data1p),"+",sep="")
+            #DM.matp = apply(Data1p,c(1,2),relu)
+            #Data1m = -Data11
+            #colnames(Data1m) = paste(colnames(Data1m),"-",sep="")
+            #DM.matm = apply(Data1m,c(1,2),relu)
+            #DM.mat =cbind(DM.matp,DM.matm)
+            #DM.mat <- DM.mat / max(DM.mat) * 3
+            #DM.mat[DM.mat < 1] <- 0 
+            #DM.g<-graph_from_incidence_matrix(DM.mat,weighted=T) 
+            #V(DM.g)$color <- c("steel blue", "orange")[V(DM.g)$type+1] 
+            #V(DM.g)$shape <- c("square", "circle")[V(DM.g)$type+1] 
+            #output$plot18<-renderPlot(plot(DM.g, edge.width=E(DM.g)$weight))
+            DM.g<-graph_from_incidence_matrix(pc4,weighted=T)
+            V(DM.g)$color <- c("steel blue", "orange")[V(DM.g)$type+1]
+            V(DM.g)$shape <- c("square", "circle")[V(DM.g)$type+1]
             output$plot18<-renderPlot(plot(DM.g, edge.width=E(DM.g)$weight))
             
             s2 <- predict(pcr,pcd)

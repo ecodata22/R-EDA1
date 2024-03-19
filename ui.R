@@ -516,6 +516,14 @@ fluidPage(
                 p("'binomial' = Logistic regression analysis")
               ),
             ),
+            conditionalPanel(
+              condition = "input.Regression_analysis == 'PCRA1'",
+              
+              sliderInput("tol_PCRA1",
+                          "Components should be omitted",
+                          min = 0,  max = 1, value = 0.1, step = 0.01),
+              
+            ),
           ),
           
           conditionalPanel(
@@ -1949,11 +1957,20 @@ fluidPage(
               condition = "input.Regression_analysis == 'PCRA1'",
               h3("Principal Component Regression Analysis"),
               
+              p("Principal component analysis for explanatory variables"),
+              verbatimTextOutput("text1141"),
+              p("Relationship among explanatory variables and principal components"),
+              verbatimTextOutput("text1143"),
+              plotOutput("plot18"),
+              p("Principal component regression analysis"),
               verbatimTextOutput("text114"),
               plotlyOutput("plot114"),
-              plotOutput("plot18"),
+              p("Contribution rates of principal components in the regression model"),
+              verbatimTextOutput("text1142"),
               a("About PCRA (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-1-2-1-1.html"),
-              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-1-2-1-1.html")
+              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-1-2-1-1.html"),br(),
+              a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E4-01.html"),
+              a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J4-01.html")
             ),
           ),
           
