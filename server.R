@@ -103,8 +103,8 @@ shinyServer(function(input, output) {
   #})})
   
   #output$plot01 <- renderPlotly({
-  #  if(input$analysis == "Similarity_of_Variables_and_Categories1"){
-  #    if(input$Similarity_of_Variables_and_Categories == "Among_all_columns1"){
+  #  if(input$analysis == "Similarity_of_Variables1"){
+  #    if(input$Similarity_of_Variables == "Among_all_columns1"){
   #      if(input$Among_all_columns == "Line_graph1"){
   #    
   #        req(input$file1)
@@ -136,8 +136,8 @@ shinyServer(function(input, output) {
   
   
   output$plot14 <- renderPlotly({
-    if(input$analysis == "Similarity_of_Variables_and_Categories1"){
-      if(input$Similarity_of_Variables_and_Categories == "Among_all_columns1"){
+    if(input$analysis == "Similarity_of_Variables1"){
+      if(input$Similarity_of_Variables == "Among_all_columns1"){
         if(input$Among_all_columns == "Stratifeid_graph1"){
       
           req(input$file1)
@@ -527,8 +527,8 @@ shinyServer(function(input, output) {
   
   
   output$Data_Output2 <- renderDataTable({
-    if(input$analysis == "Similarity_of_Variables_and_Categories1"){
-      if(input$Similarity_of_Variables_and_Categories == "Among_all_columns1"){
+    if(input$analysis == "Similarity_of_Variables1"){
+      if(input$Similarity_of_Variables == "Among_all_columns1"){
         if(input$Among_all_columns == "Variable_Network1"){
           if(input$Variable_Network == 'Correlation_Network1') {
       
@@ -610,8 +610,8 @@ shinyServer(function(input, output) {
   })
   
   output$Data_Output3 <- renderDataTable({
-    if(input$analysis == "Similarity_of_Variables_and_Categories1"){
-      if(input$Similarity_of_Variables_and_Categories == "Among_all_columns1"){
+    if(input$analysis == "Similarity_of_Variables1"){
+      if(input$Similarity_of_Variables == "Among_all_columns1"){
         if(input$Among_all_columns == "Variable_Network1"){
           if(input$Variable_Network == 'Graphical_Lasso1') {
             
@@ -695,8 +695,8 @@ shinyServer(function(input, output) {
   
   
   output$Data_Output4 <- renderDataTable({
-    if(input$analysis == "Similarity_of_Variables_and_Categories1"){
-      if(input$Similarity_of_Variables_and_Categories == "Among_all_columns1"){
+    if(input$analysis == "Similarity_of_Variables1"){
+      if(input$Similarity_of_Variables == "Among_all_columns1"){
         if(input$Among_all_columns == "Variable_Network1"){
           if(input$Variable_Network == 'Cramer_Network1') {
       
@@ -784,8 +784,8 @@ shinyServer(function(input, output) {
   })
   
   output$plot16 <- renderPlot({
-    if(input$analysis == "Similarity_of_Variables_and_Categories1"){
-      if(input$Similarity_of_Variables_and_Categories == "Among_all_columns1"){
+    if(input$analysis == "Similarity_of_Variables1"){
+      if(input$Similarity_of_Variables == "Among_all_columns1"){
         if(input$Among_all_columns == "Variable_Network1"){
           if(input$Variable_Network == 'Bayesian_Network1') {
             
@@ -866,8 +866,8 @@ shinyServer(function(input, output) {
   })
   
   output$plot17 <- renderPlot({
-    if(input$analysis == "Similarity_of_Variables_and_Categories1"){
-      if(input$Similarity_of_Variables_and_Categories == "Among_all_columns1"){
+    if(input$analysis == "Similarity_of_Variables1"){
+      if(input$Similarity_of_Variables == "Among_all_columns1"){
         if(input$Among_all_columns == "Variable_Network1"){
           if(input$Variable_Network == 'LiNGAM1') {
             
@@ -946,11 +946,89 @@ shinyServer(function(input, output) {
     }
   })
   
+  
+  
+  output$plot13 <- renderPlotly({
+    if(input$analysis == "Similarity_of_Categories1"){
+#      if(input$Similarity_of_Variables == "Among_all_columns1"){
+#        if(input$Among_all_columns == "Using_MDS1"){
+      if(input$Category_Network ==  'Correspondence_MDS_Categories1') {
+            
+            req(input$file1)
+            
+            if(input$sep2 == "Separator_Comma"){sep <- ","}
+            if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+            if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+            Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+            if(input$DoNotUseFirst == 1){
+              Data[,1] <- NULL
+            }
+            
+            
+            #library(dummies)
+            library(fastDummies)
+            library(MASS)
+            library(ggplot2)
+            for (i in 1:ncol(Data)) {
+              if (class(Data[,i]) == "numeric"|| class(Data[,i]) == "integer"){
+                Data[,i] <- droplevels(cut(Data[,i], breaks = input$NumericalToCategorcalU, include.lowest = TRUE))
+              }
+            }
+            #Data_dmy <- dummy.data.frame(Data)
+            #Data_dmy <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+            Data_dmy <- Data
+            for (i in 1:ncol(Data)) {
+              if (class(Data[,i]) == "character") {
+                Data_dmy <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+                break
+              }
+            }
+            pc <- corresp(Data_dmy,nf=min(ncol(Data),nrow(Data)))
+            pc1 <- data.frame(pc$cscore)
+            pc1 <- transform(pc1 ,name1 = rownames(pc1))
+            #output$text409 <- renderPrint(summary(pc))
+            ei1 <- round(pc$cor^2/sum(pc$cor^2),2)
+            output$text131 <- renderText(ei1)
+            for (i in 1: length(ei1)){
+              if(ei1[i] > 0.1){
+                n1 <- i
+              }
+            }
+            output$text132 <- renderText(n1)
+            Data11 <- pc1[,1:n1]
+            Data11_dist <- dist(Data11)
+            name1 <-  row.names(Data11)
+            if(input$Dimension_reduction61 == "MDS61"){
+              Data11_dist <- dist(Data11)
+              sn <- sammon(Data11_dist)
+              Data2 <- sn$points
+              Data2 <- cbind.data.frame(Data2 ,name1)
+            }else if(input$Dimension_reduction61 == "tSNE61"){
+              library(Rtsne)
+              ts <- Rtsne(Data11, perplexity = input$perplexity_value61)
+              Data2 <- ts$Y
+              Data2 <- cbind.data.frame(Data2 ,name1)
+            }else if(input$Dimension_reduction61 == "UMAP61"){
+              library(Rcpp)
+              library(umap)
+              UMAP_out60 <- umap(Data11,n_neighbors=input$n_neighbors61)
+              Data2 <- UMAP_out60$layout
+              Data2 <- cbind.data.frame(Data2 ,name1)
+            }
+            ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=name1)) + geom_text()+ labs(y="axis2",x="axis1"))
+          }
+        }
+#      }
+#    }
+  })
+  
+  
+  
   output$ap231 <- renderDataTable({
-    if(input$analysis == "Similarity_of_Variables_and_Categories1"){
-      if(input$Similarity_of_Variables_and_Categories == "Among_all_columns1"){
-        if(input$Among_all_columns == "Variable_Network1"){
-          if(input$Variable_Network == 'Association1') {
+    if(input$analysis == "Similarity_of_Categories1"){
+#      if(input$Similarity_of_Variables == "Among_all_columns1"){
+#        if(input$Among_all_columns == "Variable_Network1"){
+          if(input$Category_Network == 'Association1') {
       
             req(input$file1)
             
@@ -1078,15 +1156,15 @@ shinyServer(function(input, output) {
             ap23[,1:8]
           }
         }
-      }
-    }
+#      }
+#    }
   })
   
   
   
   output$plot08 <- renderPlotly({
-    if(input$analysis == "Similarity_of_Variables_and_Categories1"){
-      if(input$Similarity_of_Variables_and_Categories == "Among_all_columns1"){
+    if(input$analysis == "Similarity_of_Variables1"){
+      if(input$Similarity_of_Variables == "Among_all_columns1"){
         if(input$Among_all_columns == "Using_MDS1"){
           if(input$Using_MDS == 'PCA_MDS1') {
       
@@ -1143,84 +1221,10 @@ shinyServer(function(input, output) {
   })
   
   
-  output$plot13 <- renderPlotly({
-    if(input$analysis == "Similarity_of_Variables_and_Categories1"){
-      if(input$Similarity_of_Variables_and_Categories == "Among_all_columns1"){
-        if(input$Among_all_columns == "Using_MDS1"){
-          if(input$Using_MDS == 'Correspondence_MDS_Categories1') {
-      
-            req(input$file1)
-            
-            if(input$sep2 == "Separator_Comma"){sep <- ","}
-            if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
-            if(input$sep2 == "Separator_Tab"){sep <- "\t"}
-            Data <- read.csv(input$file1$datapath, header=T,sep = sep)
-            if(input$DoNotUseFirst == 1){
-              Data[,1] <- NULL
-            }
-            
-            
-            #library(dummies)
-            library(fastDummies)
-            library(MASS)
-            library(ggplot2)
-            for (i in 1:ncol(Data)) {
-              if (class(Data[,i]) == "numeric"|| class(Data[,i]) == "integer"){
-                Data[,i] <- droplevels(cut(Data[,i], breaks = input$NumericalToCategorcalU, include.lowest = TRUE))
-              }
-            }
-            #Data_dmy <- dummy.data.frame(Data)
-            #Data_dmy <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
-            Data_dmy <- Data
-            for (i in 1:ncol(Data)) {
-              if (class(Data[,i]) == "character") {
-                Data_dmy <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
-                break
-              }
-            }
-            pc <- corresp(Data_dmy,nf=min(ncol(Data),nrow(Data)))
-            pc1 <- data.frame(pc$cscore)
-            pc1 <- transform(pc1 ,name1 = rownames(pc1))
-            #output$text409 <- renderPrint(summary(pc))
-            ei1 <- round(pc$cor^2/sum(pc$cor^2),2)
-            output$text131 <- renderText(ei1)
-            for (i in 1: length(ei1)){
-              if(ei1[i] > 0.1){
-                n1 <- i
-              }
-            }
-            output$text132 <- renderText(n1)
-            Data11 <- pc1[,1:n1]
-            Data11_dist <- dist(Data11)
-            name1 <-  row.names(Data11)
-            if(input$Dimension_reduction6 == "MDS6"){
-              Data11_dist <- dist(Data11)
-              sn <- sammon(Data11_dist)
-              Data2 <- sn$points
-              Data2 <- cbind.data.frame(Data2 ,name1)
-            }else if(input$Dimension_reduction6 == "tSNE6"){
-              library(Rtsne)
-              ts <- Rtsne(Data11, perplexity = input$perplexity_value6)
-              Data2 <- ts$Y
-              Data2 <- cbind.data.frame(Data2 ,name1)
-            }else if(input$Dimension_reduction6 == "UMAP6"){
-              library(Rcpp)
-              library(umap)
-              UMAP_out60 <- umap(Data11)
-              Data2 <- UMAP_out60$layout
-              Data2 <- cbind.data.frame(Data2 ,name1)
-            }
-            ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=name1)) + geom_text()+ labs(y="axis2",x="axis1"))
-          }
-        }
-      }
-    }
-  })
-  
   
   output$text406 <- renderPrint({
-    if(input$analysis == "Similarity_of_Variables_and_Categories1"){
-      if(input$Similarity_of_Variables_and_Categories == "Among_all_columns1"){
+    if(input$analysis == "Similarity_of_Variables1"){
+      if(input$Similarity_of_Variables == "Among_all_columns1"){
         if(input$Among_all_columns == "Using_MDS1"){
           if(input$Using_MDS == "Factor_Analysis1"){
             
@@ -1277,7 +1281,7 @@ shinyServer(function(input, output) {
             }else if(input$Dimension_reduction6 == "UMAP6"){
               library(Rcpp)
               library(umap)
-              UMAP_out61 <- umap(Data11)
+              UMAP_out61 <- umap(Data11,n_neighbors=input$n_neighbors6)
               Data2 <- UMAP_out61$layout
               Data2 <- cbind.data.frame(Data2 ,name1)
             }
@@ -1290,8 +1294,8 @@ shinyServer(function(input, output) {
   })
   
   output$text404 <- renderPrint({
-    if(input$analysis == "Similarity_of_Variables_and_Categories1"){
-      if(input$Similarity_of_Variables_and_Categories == "Among_all_columns1"){
+    if(input$analysis == "Similarity_of_Variables1"){
+      if(input$Similarity_of_Variables == "Among_all_columns1"){
         if(input$Among_all_columns == "Log_Linear1"){
             
           req(input$file1)
@@ -1327,8 +1331,8 @@ shinyServer(function(input, output) {
   
   
   output$plot05 <- renderPlotly({
-    if(input$analysis == "Similarity_of_Variables_and_Categories1"){
-      if(input$Similarity_of_Variables_and_Categories == "Between_label_column_and_others1"){
+    if(input$analysis == "Similarity_of_Variables1"){
+      if(input$Similarity_of_Variables == "Between_label_column_and_others1"){
         if(input$Between_label_column_and_others == "Hidden1"){
           if(input$finder == "Hidden_None1"){
       
@@ -1397,8 +1401,8 @@ shinyServer(function(input, output) {
   })
   
   output$plot10 <- renderPlotly({
-    if(input$analysis == "Similarity_of_Variables_and_Categories1"){
-      if(input$Similarity_of_Variables_and_Categories == "Between_label_column_and_others1"){
+    if(input$analysis == "Similarity_of_Variables1"){
+      if(input$Similarity_of_Variables == "Between_label_column_and_others1"){
         if(input$Between_label_column_and_others == "Hidden1"){
           if(input$finder == "Hidden_PCA1"){
             
@@ -1466,8 +1470,8 @@ shinyServer(function(input, output) {
   })
   
   output$plot11 <- renderPlotly({
-    if(input$analysis == "Similarity_of_Variables_and_Categories1"){
-      if(input$Similarity_of_Variables_and_Categories == "Between_label_column_and_others1"){
+    if(input$analysis == "Similarity_of_Variables1"){
+      if(input$Similarity_of_Variables == "Between_label_column_and_others1"){
         if(input$Between_label_column_and_others == "Hidden1"){
           if(input$finder == "Hidden_ICA1"){
             
@@ -1538,8 +1542,8 @@ shinyServer(function(input, output) {
   })
   
   output$text113 <- renderPrint({
-    if(input$analysis == "Similarity_of_Variables_and_Categories1"){
-      if(input$Similarity_of_Variables_and_Categories == "Between_label_column_and_others1"){
+    if(input$analysis == "Similarity_of_Variables1"){
+      if(input$Similarity_of_Variables == "Between_label_column_and_others1"){
         if(input$Between_label_column_and_others == "Regression_analysis1"){
           if(input$Regression_analysis == "GLMM1"){
         
@@ -1662,8 +1666,8 @@ shinyServer(function(input, output) {
   
   
   output$text114 <- renderPrint({
-    if(input$analysis == "Similarity_of_Variables_and_Categories1"){
-      if(input$Similarity_of_Variables_and_Categories == "Between_label_column_and_others1"){
+    if(input$analysis == "Similarity_of_Variables1"){
+      if(input$Similarity_of_Variables == "Between_label_column_and_others1"){
         if(input$Between_label_column_and_others == "Regression_analysis1"){
           if(input$Regression_analysis == "PCRA1"){
             
@@ -1736,8 +1740,8 @@ shinyServer(function(input, output) {
   })
   
   output$plot15 <- renderPlot({
-    if(input$analysis == "Similarity_of_Variables_and_Categories1"){
-      if(input$Similarity_of_Variables_and_Categories == "Between_label_column_and_others1"){
+    if(input$analysis == "Similarity_of_Variables1"){
+      if(input$Similarity_of_Variables == "Between_label_column_and_others1"){
         if(input$Between_label_column_and_others == "Decision_Tree1"){
           if (input$Decision_Tree == "C501" || input$Decision_Tree == "CART" || input$Decision_Tree == "RandomForest1"){
           
@@ -1831,8 +1835,8 @@ shinyServer(function(input, output) {
   })
   
   output$plotDT05 <- renderPlot({
-    if(input$analysis == "Similarity_of_Variables_and_Categories1"){
-      if(input$Similarity_of_Variables_and_Categories == "Between_label_column_and_others1"){
+    if(input$analysis == "Similarity_of_Variables1"){
+      if(input$Similarity_of_Variables == "Between_label_column_and_others1"){
         if(input$Between_label_column_and_others == "Decision_Tree1"){
           if (input$Decision_Tree == "C50_based_RandomForest1"){
           
@@ -1996,8 +2000,8 @@ shinyServer(function(input, output) {
   })
   
   output$plot151 <- renderPlot({
-    if(input$analysis == "Similarity_of_Variables_and_Categories1"){
-      if(input$Similarity_of_Variables_and_Categories == "Between_label_column_and_others1"){
+    if(input$analysis == "Similarity_of_Variables1"){
+      if(input$Similarity_of_Variables == "Between_label_column_and_others1"){
         if(input$Between_label_column_and_others == "Decision_Tree1"){
           if (input$Decision_Tree == "Model_tree1"){
             
@@ -2033,8 +2037,8 @@ shinyServer(function(input, output) {
   })
   
   output$plot301 <- renderPlotly({
-    if(input$analysis == "Similarity_of_Variables_and_Categories1"){
-      if(input$Similarity_of_Variables_and_Categories == "Between_label_column_and_others1"){
+    if(input$analysis == "Similarity_of_Variables1"){
+      if(input$Similarity_of_Variables == "Between_label_column_and_others1"){
         if(input$Between_label_column_and_others == "One_class1"){
       
           req(input$file1)
@@ -3616,7 +3620,7 @@ shinyServer(function(input, output) {
               Data2 <- sn$points
             }else if(input$Dimension_reduction7 == "tSNE7"){
               library(Rtsne)
-              ts <- Rtsne(Data11, perplexity = input$perplexity_value6)
+              ts <- Rtsne(Data11, perplexity = input$perplexity_value7)
               Data2 <- ts$Y
               
             }else if(input$Dimension_reduction7 == "UMAP7"){

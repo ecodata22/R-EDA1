@@ -84,8 +84,9 @@ fluidPage(
       selectInput("analysis", "Analysis",
                    choices = c(Basic_EDA ="Basic_EDA1",
                                Heat_map = "Heat_map1",
-                                Similarity_of_Variables_and_Categories = "Similarity_of_Variables_and_Categories1",
+                                Similarity_of_Variables = "Similarity_of_Variables1",
                                Similarity_of_Samples = "Similarity_of_Samples1",
+                               Similarity_of_Categories = "Similarity_of_Categories1",
                                Many_vs_many = "Similarity_of_Names_in_Rows_and_Columns1",
                                Time_series = "Time_series1"),
                    selected = "Basic_EDA1"),
@@ -119,16 +120,16 @@ fluidPage(
       ),
       
       conditionalPanel(
-        condition = "input.analysis == 'Similarity_of_Variables_and_Categories1'",
+        condition = "input.analysis == 'Similarity_of_Variables1'",
         
-        selectInput("Similarity_of_Variables_and_Categories", "Method type",
+        selectInput("Similarity_of_Variables", "Method type",
                      choices = c(Among_all_columns = "Among_all_columns1",
                                  Between_label_column_and_others = "Between_label_column_and_others1"
                      )
         ),
         
         conditionalPanel(
-          condition = "input.Similarity_of_Variables_and_Categories == 'Among_all_columns1'",
+          condition = "input.Similarity_of_Variables == 'Among_all_columns1'",
           selectInput("Among_all_columns", "Method",
                        choices = c(Stratifeid_graph = "Stratifeid_graph1",
                                    Variable_Network = "Variable_Network1",
@@ -255,8 +256,7 @@ fluidPage(
             condition = "input.Among_all_columns == 'Using_MDS1'",
             selectInput("Using_MDS", "Analysis_of_variables",
                          choices = c(PCA = "PCA_MDS1",
-                                     Factor_Analysis = "Factor_Analysis1",
-                                     Correspondence_Analysis = "Correspondence_MDS_Categories1")),
+                                     Factor_Analysis = "Factor_Analysis1")),
             conditionalPanel(
               condition = "input.Using_MDS == 'Factor_Analysis1'",
               numericInput('Factors', 'Number of factors', "2"),
@@ -296,24 +296,31 @@ fluidPage(
           
           conditionalPanel(
             condition = "input.Among_all_columns == 'Variable_Network1'",
+#            selectInput("Variable_Network", "Link Type",
+#                         choices = c(Correlation_Network = "Correlation_Network1",
+#                                     Graphical_Lasso = "Graphical_Lasso1",
+#                                     LiNGAM = "LiNGAM1",
+#                                     Cramer_Network = "Cramer_Network1",
+#                                     Bayesian_Network = "Bayesian_Network1",
+#                                     Association_rules = "Association1")),
+            
             selectInput("Variable_Network", "Link Type",
-                         choices = c(Correlation_Network = "Correlation_Network1",
-                                     Graphical_Lasso = "Graphical_Lasso1",
-                                     LiNGAM = "LiNGAM1",
-                                     Cramer_Network = "Cramer_Network1",
-                                     Bayesian_Network = "Bayesian_Network1",
-                                     Association_rules = "Association1")),
+                        choices = c(Correlation_Network = "Correlation_Network1",
+                                    Graphical_Lasso = "Graphical_Lasso1",
+                                    LiNGAM = "LiNGAM1",
+                                    Cramer_Network = "Cramer_Network1",
+                                    Bayesian_Network = "Bayesian_Network1")),
             
             conditionalPanel(
               condition = "input.Variable_Network != 'Bayesian_Network1'",
               conditionalPanel(
                 condition = "input.Variable_Network != 'LiNGAM1'",
-                conditionalPanel(
-                  condition = "input.Variable_Network != 'Association1'",
+#                conditionalPanel(
+#                  condition = "input.Variable_Network != 'Association1'",
                   selectInput("Graph_type1", "Graph type",
                               choices = c(network = "network1",
                                           scatter_plot = "scatter_plot1")),
-                ),
+#                ),
               ),
             ),
             
@@ -352,18 +359,7 @@ fluidPage(
                           "Use absolute value more than",
                           min = 0,  max = 5, value = 3, step = 0.1),
             ),
-            conditionalPanel(
-              condition = "input.Variable_Network == 'Association1'",
-              sliderInput("association_limit4",
-                          "Number of minimum group size",
-                          min = 2,  max = 100, value = 5, step = 1),
-              sliderInput("association_limit3",
-                          "Number of maximum rule set",
-                          min = 2,  max = 6, value = 2, step = 1),
-              sliderInput("association_limit2",
-                          "Choose set number for each evaluation (Confidense, Support and Lift)",
-                          min = 0,  max = 100, value = 20, step = 1)
-            ),
+            
             conditionalPanel(
               condition = "input.Variable_Network == 'Bayesian_Network1'",
               selectInput("Structure_Learning", "Structure_Learning",
@@ -421,7 +417,7 @@ fluidPage(
         
             
         conditionalPanel(
-          condition = "input.Similarity_of_Variables_and_Categories == 'Between_label_column_and_others1'",
+          condition = "input.Similarity_of_Variables == 'Between_label_column_and_others1'",
           numericInput('Label_column', 'Column number for label', "1"),
           
             
@@ -923,6 +919,60 @@ fluidPage(
           ),
         ),
       ),
+
+
+      conditionalPanel(
+        condition = "input.analysis == 'Similarity_of_Categories1'",
+        selectInput("Category_Network", "Link Type",
+                                             choices = c(Correspondence_Analysis = "Correspondence_MDS_Categories1",
+                                                         Association_rules = "Association1")),
+        conditionalPanel(
+          condition = "input.Category_Network == 'Association1'",
+          sliderInput("association_limit4",
+                      "Number of minimum group size",
+                      min = 2,  max = 100, value = 5, step = 1),
+          sliderInput("association_limit3",
+                      "Number of maximum rule set",
+                      min = 2,  max = 6, value = 2, step = 1),
+          sliderInput("association_limit2",
+                      "Choose set number for each evaluation (Confidense, Support and Lift)",
+                      min = 0,  max = 100, value = 20, step = 1)
+        ),
+        conditionalPanel(
+          condition = "input.Category_Network == 'Association1'",
+          numericInput('NumericalToCategorcalA', 'No of ranges', "3"),
+        ),
+        
+        
+        conditionalPanel(
+          condition = "input.Category_Network == 'Correspondence_MDS_Categories1'",
+          
+          
+            selectInput("Dimension_reduction61", "Change into 2 dimension data",
+                        choices = c(MDS = "MDS61",
+                                    tSNE = "tSNE61",
+                                    UMAP = "UMAP61")),
+            conditionalPanel(
+              condition = "input.Dimension_reduction61 == 'tSNE61'",
+              numericInput('perplexity_value61', 'perplexity of t-SNE', "1"),
+              #sliderInput("perplexity_value6",
+              #            "perplexity of t-SNE",
+              #            min = 1,  max = 100, value = 1, step = 1)
+            ),
+            
+            conditionalPanel(
+              condition = "input.Dimension_reduction61 == 'UMAP61'",
+              numericInput('n_neighbors61', 'n_neighbors of UMAP', "5"),
+            ),
+            
+            p("This tool changes numerical variables into categorical.
+                    For example, if '5 is the input, numerical variable is divided into 5 ranges.
+                    And names of the ranges are used as categories."),
+            
+            numericInput('NumericalToCategorcalU', 'No of ranges', "3"),
+
+        ),
+      ),
       
       
       conditionalPanel(
@@ -1083,9 +1133,9 @@ fluidPage(
       
       
       conditionalPanel(
-        condition = "input.analysis == 'Similarity_of_Variables_and_Categories1'",
+        condition = "input.analysis == 'Similarity_of_Variables1'",
         conditionalPanel(
-          condition = "input.Similarity_of_Variables_and_Categories == 'Among_all_columns1'",
+          condition = "input.Similarity_of_Variables == 'Among_all_columns1'",
           
           conditionalPanel(
             condition = "input.Among_all_columns == 'Variable_Network1'",
@@ -1105,10 +1155,7 @@ fluidPage(
               p("If 3 is number of ranges, numerical variables are changed into categorical variables with 3 categories.
                 Else if less than 2, numerical variables are not changed"),
             ),
-            conditionalPanel(
-              condition = "input.Variable_Network == 'Association1'",
-              numericInput('NumericalToCategorcalA', 'No of ranges', "3"),
-            ),
+            
           ),
           
           conditionalPanel(
@@ -1122,24 +1169,9 @@ fluidPage(
             
           ),
           
-          conditionalPanel(
-            condition = "input.Among_all_columns == 'Using_MDS1'",
-            conditionalPanel(
-              condition = "input.Using_MDS == 'Correspondence_MDS_Categories1'",
-            
-              p("This tool changes numerical variables into categorical.
-                    For example, if '5 is the input, numerical variable is divided into 5 ranges.
-                    And names of the ranges are used as categories."),
-              
-              numericInput('NumericalToCategorcalU', 'No of ranges', "3"),
-            ),
-            conditionalPanel(
-              condition = "input.Using_MDS != 'Correspondence_MDS_Categories1'",
-              
-              p("Tool changes categorical variables into numerical (dummy variables)."),
-              
-            ),
-          ),
+          p("Tool changes categorical variables into numerical (dummy variables)."),
+          
+          
           conditionalPanel(
             condition = "input.Among_all_columns == 'Log_Linear1'",
             
@@ -1154,7 +1186,7 @@ fluidPage(
         ),
         
         conditionalPanel(
-          condition = "input.Similarity_of_Variables_and_Categories == 'Between_label_column_and_others1'",
+          condition = "input.Similarity_of_Variables == 'Between_label_column_and_others1'",
          
           conditionalPanel(
             condition = "input.Between_label_column_and_others == 'One_class1'",
@@ -1312,9 +1344,9 @@ fluidPage(
       ),
       
       conditionalPanel(
-        condition = "input.analysis == 'Similarity_of_Variables_and_Categories1'",
+        condition = "input.analysis == 'Similarity_of_Variables1'",
         conditionalPanel(
-          condition = "input.Similarity_of_Variables_and_Categories == 'Among_all_columns1'",
+          condition = "input.Similarity_of_Variables == 'Among_all_columns1'",
           
           conditionalPanel(
             condition = "input.Among_all_columns == 'Line_graph1'",
@@ -1719,70 +1751,7 @@ fluidPage(
               a("(Japanese)   ",href="http://data-science.tokyo/R-J/R-J4-10.html")
             ),
             
-            conditionalPanel(
-              condition = "input.Variable_Network == 'Association1'",
-              h3("Associations Rules"),
-              p("Similarity among Categories"),
-              selectInput("network_library4", "Library of network",  choices = c("igraph", "visNetwork")),
-              #selectInput("network_library4", "Library of network",  choices = c("igraph","visNetwork")),
-              #selectInput("network_library4", "Library of network",  choices = c( "visNetwork")),
-              #selectInput("network_library4", "Library of network",  choices = c( "igraph")),
-              h4("Sets of high confidence"),
-              #plotOutput("plot12"),
-              conditionalPanel(
-                condition = "input.network_library4 == 'igraph'",
-                plotOutput("plotap32a"),
-              ),
-              conditionalPanel(
-                condition = "input.network_library4 == 'visNetwork'",
-                visNetworkOutput("plotap32b"),
-              ),
-              #plotOutput("plotap32"),
-              dataTableOutput("ap221"),
-              downloadButton("downloadData221", "Download analyzed data"),
-              
-              h4("Sets of high support"),
-              conditionalPanel(
-                condition = "input.network_library4 == 'igraph'",
-                plotOutput("plotap31a"),
-                
-              ),
-              conditionalPanel(
-                condition = "input.network_library4 == 'visNetwork'",
-                #simpleNetworkOutput("plotap31b"),
-                visNetworkOutput("plotap31b"),
-                h4("Graph of support is the unfirected network. But this graph is directed network because of bug"),
-              ),
-              #plotOutput("plotap31a"),
-              dataTableOutput("ap211"),
-              downloadButton("downloadData211", "Download analyzed data"),
-              
-              h4("Sets of high lift"),
-              conditionalPanel(
-                condition = "input.network_library4 == 'igraph'",
-                plotOutput("plotap33a"),
-              ),
-              conditionalPanel(
-                condition = "input.network_library4 == 'visNetwork'",
-                #simpleNetworkOutput("plotap33b"),
-                visNetworkOutput("plotap33b"),
-              ),
-              #plotOutput("plotap33"),
-              dataTableOutput("ap231"),
-              downloadButton("downloadData231", "Download analyzed data"),
-              
-              
-              h4("Algorithm"),
-              p("1. All numerical variables are changed into categorical variables"),
-              p("2. All categorical variables are changed into dummy variables"),
-              p("3. Association analysis."),
-              a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-04.html"),
-              a("(Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-04.html"),br(),
-              a("About similariy of categories (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-2.html"),
-              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-2.html"),br(),
-              a("About association analysis (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-2-1.html"),
-              a("(Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-2-1.html")
-            ),
+            
           ),
           
           conditionalPanel(
@@ -1806,29 +1775,6 @@ fluidPage(
               a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3-2.html")
             ),
             
-            conditionalPanel(
-              condition = "input.Using_MDS == 'Correspondence_MDS_Categories1'",
-              h3("Correspondence and MDS Analysis for Categories"),
-              #verbatimTextOutput("text409"),
-              plotlyOutput("plot13"),
-              h4("Contribution rate of eigenvalue"),
-              textOutput("text131"),
-              h4("No of dimensions used in the model"),
-              p("If contribution rate of eigenvalue is over 0.01, the dimension is used."),
-              textOutput("text132"),
-              h4("Algorithm"),
-              p("1. All numerical variables are changed into categorical variables"),
-              p("2. All categorical variables are changed into dummy variables"),
-              p("3. Correspondence analysis. Output is multi-dimensional data"),
-              p("4. MDS(sammon) or t-SNE as dimension reduction. Output is 2-dimension data"),
-              p("* Correspondence analysis is not used as the method of dimension reduction. In this tool, dimension reduction is MDS and t-SNE"),
-              a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-04.html"),
-              a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-04.html"),br(),
-              a("About similariy of categories (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-2.html"),
-              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-2.html"),br(),
-              a("About the reason to use MDS after Correspondence analysis (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-4-2-4.html"),
-              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-4-2-4.html")
-            ),
             conditionalPanel(
               condition = "input.Using_MDS == 'Factor_Analysis1'",
               h3("Factor analysis"),
@@ -1870,7 +1816,7 @@ fluidPage(
           
         ),  
         conditionalPanel(
-          condition = "input.Similarity_of_Variables_and_Categories == 'Between_label_column_and_others1'",
+          condition = "input.Similarity_of_Variables == 'Between_label_column_and_others1'",
           
           
           conditionalPanel(
@@ -2146,7 +2092,7 @@ fluidPage(
                 ),
                 p("Download analyzed data for the next step.
                 For example, if clust column is put on the first (left side) column,
-                we can analyze with the function 'Similarity_of_Variables_and_Categories'"),
+                we can analyze with the function 'Similarity_of_Variables'"),
                 downloadButton("downloadData", "Download analyzed data")
               ),
               a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-03.html"),
@@ -2187,7 +2133,7 @@ fluidPage(
               ),
               p("Download analyzed data for the next step.
               For example, if clust column is put on the first (left side) column,
-              we can analyze with the function 'Similarity_of_Variables_and_Categories'"),
+              we can analyze with the function 'Similarity_of_Variables'"),
               downloadButton("downloadData232", "Download analyzed data")
             ),
             a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-03.html"),
@@ -2235,14 +2181,14 @@ fluidPage(
             condition = "input.Method_Dimension_All == 'hclust1'", 
             p("Download analyzed data for the next step.
                 For example, if clust column is put on the first (left side) column,
-                we can analyze with the function 'Similarity_of_Variables_and_Categories'"),
+                we can analyze with the function 'Similarity_of_Variables'"),
             downloadButton("downloadData51", "Download analyzed data")
           ),
           conditionalPanel(
             condition = "input.Method_Dimension_All != 'hclust1'", 
             p("Download analyzed data for the next step.
                 For example, if clust column is put on the first (left side) column,
-                we can analyze with the function 'Similarity_of_Variables_and_Categories'"),
+                we can analyze with the function 'Similarity_of_Variables'"),
             downloadButton("downloadData5", "Download analyzed data")
           ),
           
@@ -2256,6 +2202,98 @@ fluidPage(
         a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-3-2.html"),
       ),
       
+      
+      conditionalPanel(
+        condition = "input.analysis == 'Similarity_of_Categories1'",
+        conditionalPanel(
+          condition = "input.Category_Network == 'Association1'",
+          h3("Associations Rules"),
+          p("Similarity among Categories"),
+          selectInput("network_library4", "Library of network",  choices = c("igraph", "visNetwork")),
+          #selectInput("network_library4", "Library of network",  choices = c("igraph","visNetwork")),
+          #selectInput("network_library4", "Library of network",  choices = c( "visNetwork")),
+          #selectInput("network_library4", "Library of network",  choices = c( "igraph")),
+          h4("Sets of high confidence"),
+          #plotOutput("plot12"),
+          conditionalPanel(
+            condition = "input.network_library4 == 'igraph'",
+            plotOutput("plotap32a"),
+          ),
+          conditionalPanel(
+            condition = "input.network_library4 == 'visNetwork'",
+            visNetworkOutput("plotap32b"),
+          ),
+          #plotOutput("plotap32"),
+          dataTableOutput("ap221"),
+          downloadButton("downloadData221", "Download analyzed data"),
+          
+          h4("Sets of high support"),
+          conditionalPanel(
+            condition = "input.network_library4 == 'igraph'",
+            plotOutput("plotap31a"),
+            
+          ),
+          conditionalPanel(
+            condition = "input.network_library4 == 'visNetwork'",
+            #simpleNetworkOutput("plotap31b"),
+            visNetworkOutput("plotap31b"),
+            h4("Graph of support is the unfirected network. But this graph is directed network because of bug"),
+          ),
+          #plotOutput("plotap31a"),
+          dataTableOutput("ap211"),
+          downloadButton("downloadData211", "Download analyzed data"),
+          
+          h4("Sets of high lift"),
+          conditionalPanel(
+            condition = "input.network_library4 == 'igraph'",
+            plotOutput("plotap33a"),
+          ),
+          conditionalPanel(
+            condition = "input.network_library4 == 'visNetwork'",
+            #simpleNetworkOutput("plotap33b"),
+            visNetworkOutput("plotap33b"),
+          ),
+          #plotOutput("plotap33"),
+          dataTableOutput("ap231"),
+          downloadButton("downloadData231", "Download analyzed data"),
+          
+          
+          h4("Algorithm"),
+          p("1. All numerical variables are changed into categorical variables"),
+          p("2. All categorical variables are changed into dummy variables"),
+          p("3. Association analysis."),
+          a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-04.html"),
+          a("(Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-04.html"),br(),
+          a("About similariy of categories (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-2.html"),
+          a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-2.html"),br(),
+          a("About association analysis (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-2-1.html"),
+          a("(Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-2-1.html")
+        ),
+        
+        conditionalPanel(
+          condition = "input.Category_Network == 'Correspondence_MDS_Categories1'",
+          h3("Correspondence and MDS Analysis for Categories"),
+          #verbatimTextOutput("text409"),
+          plotlyOutput("plot13"),
+          h4("Contribution rate of eigenvalue"),
+          textOutput("text131"),
+          h4("No of dimensions used in the model"),
+          p("If contribution rate of eigenvalue is over 0.01, the dimension is used."),
+          textOutput("text132"),
+          h4("Algorithm"),
+          p("1. All numerical variables are changed into categorical variables"),
+          p("2. All categorical variables are changed into dummy variables"),
+          p("3. Correspondence analysis. Output is multi-dimensional data"),
+          p("4. MDS(sammon) or t-SNE as dimension reduction. Output is 2-dimension data"),
+          p("* Correspondence analysis is not used as the method of dimension reduction. In this tool, dimension reduction is MDS and t-SNE"),
+          a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-04.html"),
+          a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-04.html"),br(),
+          a("About similariy of categories (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-2.html"),
+          a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-2.html"),br(),
+          a("About the reason to use MDS after Correspondence analysis (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-4-2-4.html"),
+          a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-4-2-4.html")
+        ),
+      ),
       
       conditionalPanel(
         condition = "input.analysis == 'Similarity_of_Names_in_Rows_and_Columns1'",
