@@ -1323,7 +1323,8 @@ shinyServer(function(input, output) {
             }
           }
           Data2 <- count(group_by(Data1,Data1[,1:nc],.drop=FALSE))
-          anova(step(glm(n~.^2, data=Data2,family=poisson)))
+          #anova(step(glm(n~.^2, data=Data2,family=poisson)))
+          summary(step(glm(n~.^2, data=Data2,family=poisson)))
         }
       }
     }
@@ -3386,15 +3387,25 @@ shinyServer(function(input, output) {
           )
           ggplotly(ggdendrogram(hc, segments = TRUE, labels = TRUE, leaf_labels = TRUE, rotate = FALSE, theme_dendro = TRUE))
           
-        } else{
-          library(dbscan)
+        
           
-          if(input$Method_Dimension_All == "DBSCAN1"){
-            dbs <- dbscan(Data3, eps = input$eps_value2)
+        } else {
+          
+          if(input$Method_Dimension_All == "GMM2"){
+            
+            library(mclust)
+            mc <- Mclust(Data3,input$k3)
+            Data7 <- transform(clust = mc$classification, Data)
           } else {
-            dbs <- hdbscan(Data3, minPts = input$minPts2)
+            library(dbscan)
+            if(input$Method_Dimension_All == "DBSCAN1"){
+              dbs <- dbscan(Data3, eps = input$eps_value2)
+            } else {
+              dbs <- hdbscan(Data3, minPts = input$minPts2)
+            }
+            Data7 <- transform(clust = dbs$cluster, Data)
           }
-          Data7 <- transform(clust = dbs$cluster, Data)
+          Data7$clust <- as.factor(Data7$clust)
           
           
           output$downloadData5 <- downloadHandler(
@@ -3406,10 +3417,23 @@ shinyServer(function(input, output) {
             }
           )
           
-          Data7$clust <- as.factor(Data7$clust)
+          library(C50)
+          library(partykit)
           
-          ggplotly(ggplot(Data7, aes(x=clust, y=clust)) + geom_bar(stat = "identity") +labs(x="Cluster name", y="Frequency"))
-        
+          for (i in 1:ncol(Data7)) { 
+            if (class(Data7[,i]) == "character") {
+              Data7[,i] <- as.factor(Data7[,i])
+            }
+          
+            if (class(Data7[,i]) == "logical") {
+              Data7[,i] <- as.factor(Data7[,i])
+            }
+          } 
+          treeModel <- C5.0(clust ~ ., data = Data7)
+          output$plot2021 <- renderPlot(plot(as.party(treeModel)))
+          
+          
+          ggplotly(ggplot(Data7, aes(x=clust)) + geom_bar()+labs(x="Cluster name") ) 
         }
       }
     }

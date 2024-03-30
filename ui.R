@@ -6,11 +6,6 @@ library(visNetwork)
 
 fluidPage(
   
-  titlePanel("R-EDA1 (R Exploratory Data Analysis)"),
-  HTML('<div id="fb-root"></div><script async defer crossorigin="anonymous" src="https://connect.facebook.net/ja_JP/sdk.js#xfbml=1&version=v10.0" nonce="Y3i7onlm"></script>'),
-  #HTML('<a href="https://twitter.com/share" class="twitter-share-button")>Twitter</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>'),
-  HTML('<a href="https://ecodata222.shinyapps.io/R-EDA1" class="twitter-share-button" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>'),
-  HTML('<div class="fb-like" data-href="https://ecodata222.shinyapps.io/R-EDA1" data-width="" data-layout="button" data-action="like" data-size="small" data-share="true"></div>'),
   
   sidebarLayout(
     
@@ -808,60 +803,64 @@ fluidPage(
                                        Only_Plot = "G15"),
                            selected = "G15")
             ),
-            
-            checkboxInput("AddClustering", "Add clustering methods", FALSE),
-              
-            
             conditionalPanel(
-              condition = "input.AddClustering == 1",
+              condition = "input.Dimension_Reduction != 'None1'",
+              conditionalPanel(
+                condition = "input.Dimension_Reduction != 'using_label_columns_more2'",
+                checkboxInput("AddClustering", "Add clustering methods", FALSE),
+                  
+                conditionalPanel(
+                  condition = "input.AddClustering == 1",
+                    
+                  selectInput("Clustering", "Clustering",
+                               choices = c(k_Means = "clust3",
+                                           GMM= "clust1",
+                                           DBSCAN = "clust2",
+                                           HDBSCAN = "HDBSCAN1",
+                                           One_class_SVM_Clustering = "One_class_SVM_Clustering1")
+                              ),
+                  
+                  conditionalPanel(
+                    condition = "input.Clustering == 'clust3' || input.Clustering == 'clust1'",
+                    numericInput('k', 'Number of Clusters', 2)
+                  ),
+                  
+                  conditionalPanel(
+                    condition = "input.Clustering == 'clust2'",
+                    numericInput('eps_value', 'eps of DBSCAN', 0.1),
+                  ),
+                  conditionalPanel(
+                    condition = "input.Clustering == 'HDBSCAN1'",
+                    numericInput('minPts1', 'minPts of HDBSCAN', 10),
+                  ),
+                  
+                  conditionalPanel(
+                    condition = "input.Clustering == 'One_class_SVM_Clustering1'",
+                    selectInput("Kernel_library", "Kernel_library",
+                                 choices = c(anovadot_kernlab= "anovadot",
+                                             rbfdot_kernlab= "rbfdot",
+                                             polydot_kernlab= "polydot",
+                                             vanilladot_kernlab= "vanilladot",
+                                             tanhdot_kernlab= "tanhdot",
+                                             laplacedot_kernlab= "laplacedot",
+                                             besseldot_kernlab= "besseldot",
+                                             splinedot_kernlab= "splinedot"),
+                                 selected = "rbfdot"),
+                    sliderInput("nu1",
+                                "nu (Adjust outliers)",
+                                min = 0.001,  max = 1, value = 0.2, step = 0.001)
+                  ),
+                  
                 
-              selectInput("Clustering", "Clustering",
-                           choices = c(k_Means = "clust3",
-                                       GMM= "clust1",
-                                       DBSCAN = "clust2",
-                                       HDBSCAN = "HDBSCAN1",
-                                       One_class_SVM_Clustering = "One_class_SVM_Clustering1")
-                          ),
-              
-              conditionalPanel(
-                condition = "input.Clustering == 'clust3' || input.Clustering == 'clust1'",
-                numericInput('k', 'Number of Clusters', 2)
+                  selectInput("plot_type", "Plot type",
+                               choices = c(Name_and_Clusering= "G1",
+                                           Index_and_Clusering1 = "G2",
+                                           Index_and_Clusering2 = "G3",
+                                           Only_Clustering = "G4"),
+                               selected = "G4"),
+                  
+                ),
               ),
-              
-              conditionalPanel(
-                condition = "input.Clustering == 'clust2'",
-                numericInput('eps_value', 'eps of DBSCAN', 0.1),
-              ),
-              conditionalPanel(
-                condition = "input.Clustering == 'HDBSCAN1'",
-                numericInput('minPts1', 'minPts of HDBSCAN', 10),
-              ),
-              
-              conditionalPanel(
-                condition = "input.Clustering == 'One_class_SVM_Clustering1'",
-                selectInput("Kernel_library", "Kernel_library",
-                             choices = c(anovadot_kernlab= "anovadot",
-                                         rbfdot_kernlab= "rbfdot",
-                                         polydot_kernlab= "polydot",
-                                         vanilladot_kernlab= "vanilladot",
-                                         tanhdot_kernlab= "tanhdot",
-                                         laplacedot_kernlab= "laplacedot",
-                                         besseldot_kernlab= "besseldot",
-                                         splinedot_kernlab= "splinedot"),
-                             selected = "rbfdot"),
-                sliderInput("nu1",
-                            "nu (Adjust outliers)",
-                            min = 0.001,  max = 1, value = 0.2, step = 0.001)
-              ),
-              
-            
-              selectInput("plot_type", "Plot type",
-                           choices = c(Name_and_Clusering= "G1",
-                                       Index_and_Clusering1 = "G2",
-                                       Index_and_Clusering2 = "G3",
-                                       Only_Clustering = "G4"),
-                           selected = "G4"),
-              
             ),
               
             
@@ -893,16 +892,22 @@ fluidPage(
           #                        None = "None4")),
           selectInput("Method_Dimension_All", "Method",
                        choices = c(Hierarchical = "hclust1",
+                                   GMM = "GMM2",
                                    DBSCAN = "DBSCAN1",
                                    HDBSCAN = "HDBSCAN2"),
                        selected = "hclust1"),
-            conditionalPanel(
-              condition = "input.Method_Dimension_All == 'hclust1'", 
-              selectInput("hclust_type1", "Type",
-                          choices = c(ward = "ward.D2",
-                                      single = "single")),
-              numericInput('k2', 'Number of Clusters', 2)
-            ),
+          conditionalPanel(
+            condition = "input.Method_Dimension_All == 'hclust1'", 
+            selectInput("hclust_type1", "Type",
+                        choices = c(ward = "ward.D2",
+                                    single = "single")),
+            numericInput('k2', 'Number of Clusters', 2)
+          ),
+          
+          conditionalPanel(
+            condition = "input.Method_Dimension_All == 'GMM2'", 
+            numericInput('k3', 'Number of Clusters', 2)
+          ),
         
         
           conditionalPanel(
@@ -1305,8 +1310,6 @@ fluidPage(
         ),
       ),
       
-      a("Guide (English)   ",href="http://data-science.tokyo/R-E/about_R-EDA1.html"),
-      a(" (Japanese)   ",href="http://data-science.tokyo/R-J/about_R-EDA1.html"),
       
       selectInput("sep2", "Separator of CSV",  choices = c("Separator_Comma", "Separator_Semicolon", "Separator_Tab")),
 
@@ -2175,8 +2178,8 @@ fluidPage(
         conditionalPanel(
           condition = "input.Dimension_for_clustering == 'Dimension_All'", 
           h3("Similarity of samples"),
+          h4("Clustering"),
           plotlyOutput("plot202"),
-          p("Clust name 0 is the samples judged as outliers"),
           conditionalPanel(
             condition = "input.Method_Dimension_All == 'hclust1'", 
             p("Download analyzed data for the next step.
@@ -2186,6 +2189,9 @@ fluidPage(
           ),
           conditionalPanel(
             condition = "input.Method_Dimension_All != 'hclust1'", 
+            p("Clust name 0 is the samples judged as outliers"),
+            h4("Decision tree analysis about clustering and data"),
+            plotOutput("plot2021"),
             p("Download analyzed data for the next step.
                 For example, if clust column is put on the first (left side) column,
                 we can analyze with the function 'Similarity_of_Variables'"),
@@ -2538,5 +2544,14 @@ fluidPage(
       )
       
     )
-  )
+  ),
+titlePanel("R-EDA1 (R Exploratory Data Analysis)"),
+
+a("Guide (English)   ",href="http://data-science.tokyo/R-E/about_R-EDA1.html"),
+a(" (Japanese)   ",href="http://data-science.tokyo/R-J/about_R-EDA1.html"),
+HTML('<div id="fb-root"></div><script async defer crossorigin="anonymous" src="https://connect.facebook.net/ja_JP/sdk.js#xfbml=1&version=v10.0" nonce="Y3i7onlm"></script>'),
+#HTML('<a href="https://twitter.com/share" class="twitter-share-button")>Twitter</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>'),
+HTML('<a href="https://ecodata222.shinyapps.io/R-EDA1" class="twitter-share-button" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>'),
+HTML('<div class="fb-like" data-href="https://ecodata222.shinyapps.io/R-EDA1" data-width="" data-layout="button" data-action="like" data-size="small" data-share="true"></div>'),
+
 )
