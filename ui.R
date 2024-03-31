@@ -2062,6 +2062,10 @@ fluidPage(
             conditionalPanel(
               condition = "input.Dimension_Reduction_Method1 != 'nMDS1'",
               plotlyOutput("plot201"),
+              
+              p("Change from High dimension data into 2 dimension data."),
+              p("Axis1 and axis2 do not have physical meaning"),
+              
             ),
             conditionalPanel(
               condition = "input.Dimension_Reduction_Method1 == 'nMDS1'",
@@ -2075,9 +2079,9 @@ fluidPage(
                 simpleNetworkOutput("plot203b"),
               ),
               #plotOutput("plot203"),
+              p("Change from High dimension data into 2 dimension data."),
+              p("Axis1 and axis2 do not have physical meaning"),
             ),
-            p("Axis1 and axis2 do not have physical meaning"),
-            p("Change from High dimension data into 2 dimension data."),
           
         
             conditionalPanel(
@@ -2085,6 +2089,9 @@ fluidPage(
               conditionalPanel(
                 condition = "input.AddClustering == 1",
                 p("Then find clusters for the 2 dimension data."),
+                
+                h4("Decision tree analysis about clustering and data"),
+                plotOutput("plot2011"),
                 conditionalPanel(
                   condition = "input.Clustering == 'clust2'",
                   p("If DBSCAN is used, clust name 0 is the samples judged as outliers")

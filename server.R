@@ -2931,16 +2931,20 @@ shinyServer(function(input, output) {
             
               if(input$Clustering == "clust1") {
                 mc <- Mclust(Data6[,1:2],input$k)
-                Data7 <- transform(Data6 ,clust = mc$classification)
+                clust <- mc$classification
+                Data7 <- cbind(Data6, clust)
               }else if(input$Clustering == "clust2"){
                 dbs <- dbscan(Data6[,1:2], eps = input$eps_value)
-                Data7 <- transform(Data6 ,clust = dbs$cluster)
+                clust <- dbs$cluster
+                Data7 <- cbind(Data6, clust)
               }else if(input$Clustering == "HDBSCAN1"){
                 dbs <- hdbscan(Data6[,1:2], minPts = input$minPts1)
-                Data7 <- transform(Data6 ,clust = dbs$cluster)
+                clust <- dbs$cluster
+                Data7 <- cbind(Data6, clust)
               }else if(input$Clustering == "clust3"){
                 km <- kmeans(Data6[,1:2],input$k)
-                Data7 <- transform(Data6 ,clust = km$cluster)
+                clust <- km$cluster
+                Data7 <- cbind(Data6, clust)
               }else if(input$Clustering == "One_class_SVM_Clustering1"){
                 if(input$Kernel_library == "anovadot" || input$Kernel_library == "rbfdot" || input$Kernel_library == "polydot" || input$Kernel_library == "vanilladot" || 
                    input$Kernel_library == "tanhdot" || input$Kernel_library == "laplacedot" || input$Kernel_library == "besseldot" || input$Kernel_library == "splinedot"){
@@ -2948,7 +2952,7 @@ shinyServer(function(input, output) {
                   
                   OC <- ksvm(type~.,data=Data8,type='one-svc', kernel=input$Kernel_library, nu = input$nu1)
                   clust <- predict(OC,Data8)
-                  Data7 <- cbind( Data6,clust)
+                  Data7 <- cbind(Data6,clust)
                 }else {
                   Data8 <- transform(Data6[,1:2])
                   OC <- svm(x=Data8, y=NULL, type='one-classification', kernel=input$Kernel_library, nu = input$nu1)
@@ -2966,6 +2970,23 @@ shinyServer(function(input, output) {
                   write.csv(Data7, file, row.names = FALSE)
                 }
               )
+              
+              
+              library(C50)
+              library(partykit)
+              Data71 <- cbind(Data,clust)
+              Data71$clust <- as.factor(Data71$clust)
+              for (i in 1:ncol(Data71)) { 
+                if (class(Data71[,i]) == "character") {
+                  Data71[,i] <- as.factor(Data71[,i])
+                }
+                
+                if (class(Data71[,i]) == "logical") {
+                  Data71[,i] <- as.factor(Data71[,i])
+                }
+              } 
+              treeModel <- C5.0(clust ~ ., data = Data71)
+              output$plot2011 <- renderPlot(plot(as.party(treeModel)))
               
               if(input$plot_type == "G1") {
                 ggplotly(ggplot(Data7, aes(x=Data7[,1], y=Data7[,2],label=Ydata)) + geom_text() + geom_point(aes(colour=clust))+ labs(y="axis2",x="axis1"))
