@@ -1162,11 +1162,12 @@ shinyServer(function(input, output) {
   
   
   
-  output$plot08 <- renderPlotly({
+  output$plot08 <- renderPlot({
+  #output$plot08 <- renderPlotly({
     if(input$analysis == "Similarity_of_Variables1"){
       if(input$Similarity_of_Variables == "Among_all_columns1"){
         if(input$Among_all_columns == "Using_MDS1"){
-          if(input$Using_MDS == 'PCA_MDS1') {
+          #if(input$Using_MDS == 'PCA_MDS1') {
       
             req(input$file1)
             
@@ -1178,12 +1179,9 @@ shinyServer(function(input, output) {
               Data[,1] <- NULL
             }
             
-            #library(dummies)
             library(fastDummies)
             library(ggplot2)
             library(MASS)
-            #Data1 <- dummy.data.frame(Data)
-            #Data1 <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
             Data1 <- Data
             for (i in 1:ncol(Data)) {
               if (class(Data[,i]) == "character") {
@@ -1191,107 +1189,140 @@ shinyServer(function(input, output) {
                 break
               }
             }
-            pc <- prcomp(Data1, scale=TRUE,tol=0.01)
+            pc <- prcomp(Data1, scale=TRUE,tol=0.001)
             output$text410 <- renderPrint(summary(pc))
-            pc2 <- sweep(pc$rotation, MARGIN=2, pc$sdev, FUN="*")
-            Data11 <- pc2
-            name1 <-  row.names(Data11)
-            if(input$Dimension_reduction6 == "MDS6"){
-              Data11_dist <- dist(Data11)
-              sn <- sammon(Data11_dist)
-              Data2 <- sn$points
-              Data2 <- cbind.data.frame(Data2 ,name1)
-            }else if(input$Dimension_reduction6 == "tSNE6"){
-              library(Rtsne)
-              ts <- Rtsne(Data11, perplexity = input$perplexity_value6)
-              Data2 <- ts$Y
-              Data2 <- cbind.data.frame(Data2 ,name1)
-            }else if(input$Dimension_reduction6 == "UMAP6"){
-              library(Rcpp)
-              library(umap)
-              UMAP_out62 <- umap(Data11,n_neighbors=input$n_neighbors6)
-              Data2 <- UMAP_out62$layout
-              Data2 <- cbind.data.frame(Data2 ,name1)
-            }
-            ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=name1)) + geom_text()+ labs(y="axis2",x="axis1"))
-          }
-        }
-      }
-    }
-  })
-  
-  
-  
-  output$text406 <- renderPrint({
-    if(input$analysis == "Similarity_of_Variables1"){
-      if(input$Similarity_of_Variables == "Among_all_columns1"){
-        if(input$Among_all_columns == "Using_MDS1"){
-          if(input$Using_MDS == "Factor_Analysis1"){
             
-            req(input$file1)
-            
-            if(input$sep2 == "Separator_Comma"){sep <- ","}
-            if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
-            if(input$sep2 == "Separator_Tab"){sep <- "\t"}
-            Data <- read.csv(input$file1$datapath, header=T,sep = sep)
-            if(input$DoNotUseFirst == 1){
-              Data[,1] <- NULL
-            }
-            
-            
-            library(psych)
-            library(GPArotation)
-            library(heatmaply)
-            library(fastDummies) 
-            library(ggplot2)
-            library(MASS)
-            
-            
-            Check_variable <- "0"
-            for (i in 1:ncol(Data)) {
-              if (class(Data[,i]) != "numeric") {
-                if (class(Data[,i]) != "integer") {
-                  Check_variable <- "1"
-                }
-              }  
-            }
-            if(Check_variable == "1"){
-              Data1 <- dummy_cols(Data,remove_first_dummy = TRUE,remove_selected_columns = TRUE)
+            if(input$Using_MDS == 'PCA_MDS1') {
+              as.data.frame(Data3 <- pc$x)
+            } else if(input$Using_MDS == 'ICA_MDS1') {
+              library(fastICA)
+              ICA <- fastICA(Data1, input$Factors)
+              as.data.frame(Data3 <- ICA$S)
             } else {
-              Data1 <- Data
+              fa_result <- fa(Data1, nfactors = input$Factors, fm = "ml", rotate = input$Factor_Rotation)
+              as.data.frame(Data3 <- fa_result$scores)
             }
+            ncol2 <- ncol(Data1)
+            ncol3 <- ncol(Data3)
+            n3 <- ncol2 + 1
+            n4 <- ncol2 + ncol3
             
-            fa_result <- fa(Data1, nfactors = input$Factors, fm = "ml", rotate = input$Factor_Rotation)
-            output$plot406 <- renderPlotly(heatmaply(fa_result$loadings, scale="none"))
+            Data4<-cbind(Data1,Data3)
+            cor2all <- cor(Data4)^2
+            Data11 <- round(cor2all[n3:n4,1:ncol2],4)
+            output$text411 <- renderPrint(Data11)
             
-            fa_loadings <- fa_result$loadings[,1:input$Factors]
-            Data11 <- as.data.frame(fa_loadings)
-            Data11_dist <- dist(Data11)
-            name1 <-  row.names(Data11)
-            if(input$Dimension_reduction6 == "MDS6"){
-              Data11_dist <- dist(Data11)
-              sn <- sammon(Data11_dist)
-              Data2 <- sn$points
-              Data2 <- cbind.data.frame(Data2 ,name1)
-            }else if(input$Dimension_reduction6 == "tSNE6"){
-              library(Rtsne)
-              ts <- Rtsne(Data11, perplexity = input$perplexity_value6)
-              Data2 <- ts$Y
-              Data2 <- cbind.data.frame(Data2 ,name1)
-            }else if(input$Dimension_reduction6 == "UMAP6"){
-              library(Rcpp)
-              library(umap)
-              UMAP_out61 <- umap(Data11,n_neighbors=input$n_neighbors6)
-              Data2 <- UMAP_out61$layout
-              Data2 <- cbind.data.frame(Data2 ,name1)
-            }
-            output$plot408 <- renderPlotly(ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=name1)) + geom_text()+ labs(y="axis2",x="axis1")))
-            fa_result$loadings
-          }
+            #pc2 <- sweep(pc$rotation, MARGIN=2, pc$sdev, FUN="*")
+            #Data11 <- pc2
+            #name1 <-  row.names(Data11)
+            library(igraph)
+            
+            
+            DM.mat = as.matrix(Data11) 
+            DM.mat[DM.mat<0.1] <- 0
+            DM.mat <- DM.mat*10
+            
+            DM.g<-graph_from_incidence_matrix(DM.mat,weighted=T)
+            V(DM.g)$color <- c("steel blue", "orange")[V(DM.g)$type+1]
+            V(DM.g)$shape <- c("square", "circle")[V(DM.g)$type+1]
+            plot(DM.g, edge.width=E(DM.g)$weight) # グラフ
+            
+            #if(input$Dimension_reduction6 == "MDS6"){
+            #  Data11_dist <- dist(Data11)
+            #  sn <- sammon(Data11_dist)
+            #  Data2 <- sn$points
+            #  Data2 <- cbind.data.frame(Data2 ,name1)
+            #}else if(input$Dimension_reduction6 == "tSNE6"){
+            #  library(Rtsne)
+            #  ts <- Rtsne(Data11, perplexity = input$perplexity_value6)
+            #  Data2 <- ts$Y
+            #  Data2 <- cbind.data.frame(Data2 ,name1)
+            #}else if(input$Dimension_reduction6 == "UMAP6"){
+            #  library(Rcpp)
+            #  library(umap)
+            #  UMAP_out62 <- umap(Data11,n_neighbors=input$n_neighbors6)
+            #  Data2 <- UMAP_out62$layout
+            #  Data2 <- cbind.data.frame(Data2 ,name1)
+            #}
+            #ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=name1)) + geom_text()+ labs(y="axis2",x="axis1"))
+          #}
         }
       }
     }
   })
+  
+  
+  
+  #output$text406 <- renderPrint({
+  #  if(input$analysis == "Similarity_of_Variables1"){
+  #    if(input$Similarity_of_Variables == "Among_all_columns1"){
+  #      if(input$Among_all_columns == "Using_MDS1"){
+  #        if(input$Using_MDS == "Factor_Analysis1"){
+            
+  #          req(input$file1)
+            
+  #          if(input$sep2 == "Separator_Comma"){sep <- ","}
+  #          if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+  #          if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+  #          Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+  #          if(input$DoNotUseFirst == 1){
+  #            Data[,1] <- NULL
+  #          }
+            
+            
+  #          library(psych)
+  #          library(GPArotation)
+  #          library(heatmaply)
+  #          library(fastDummies) 
+  #          library(ggplot2)
+  #          library(MASS)
+  #          
+  #          
+  #          Check_variable <- "0"
+  #          for (i in 1:ncol(Data)) {
+  #            if (class(Data[,i]) != "numeric") {
+  #              if (class(Data[,i]) != "integer") {
+  #                Check_variable <- "1"
+  #              }
+  #            }  
+  #          }
+  #          if(Check_variable == "1"){
+  #            Data1 <- dummy_cols(Data,remove_first_dummy = TRUE,remove_selected_columns = TRUE)
+  #          } else {
+  #            Data1 <- Data
+  #          }
+  #          
+  #          fa_result <- fa(Data1, nfactors = input$Factors, fm = "ml", rotate = input$Factor_Rotation)
+  #          output$plot406 <- renderPlotly(heatmaply(fa_result$loadings, scale="none"))
+  #          
+  #          fa_loadings <- fa_result$loadings[,1:input$Factors]
+  #          Data11 <- as.data.frame(fa_loadings)
+  #          Data11_dist <- dist(Data11)
+  #          name1 <-  row.names(Data11)
+  #          if(input$Dimension_reduction6 == "MDS6"){
+  #            Data11_dist <- dist(Data11)
+  #            sn <- sammon(Data11_dist)
+  #            Data2 <- sn$points
+  #            Data2 <- cbind.data.frame(Data2 ,name1)
+  #          }else if(input$Dimension_reduction6 == "tSNE6"){
+  #            library(Rtsne)
+  #            ts <- Rtsne(Data11, perplexity = input$perplexity_value6)
+  #            Data2 <- ts$Y
+  #            Data2 <- cbind.data.frame(Data2 ,name1)
+  #          }else if(input$Dimension_reduction6 == "UMAP6"){
+  #            library(Rcpp)
+  #            library(umap)
+  #            UMAP_out61 <- umap(Data11,n_neighbors=input$n_neighbors6)
+  #            Data2 <- UMAP_out61$layout
+  #            Data2 <- cbind.data.frame(Data2 ,name1)
+  #          }
+  #          output$plot408 <- renderPlotly(ggplotly(ggplot(Data2, aes(x=Data2[,1], y=Data2[,2],label=name1)) + geom_text()+ labs(y="axis2",x="axis1")))
+  #          fa_result$loadings
+  #        }
+  #      }
+  #    }
+  #  }
+  #})
   
   output$text404 <- renderPrint({
     if(input$analysis == "Similarity_of_Variables1"){
@@ -1405,7 +1436,7 @@ shinyServer(function(input, output) {
     if(input$analysis == "Similarity_of_Variables1"){
       if(input$Similarity_of_Variables == "Between_label_column_and_others1"){
         if(input$Between_label_column_and_others == "Hidden1"){
-          if(input$finder == "Hidden_PCA1"){
+          if(input$finder != "Hidden_None1"){
             
             
             if(input$sep2 == "Separator_Comma"){sep <- ","}
@@ -1447,8 +1478,6 @@ shinyServer(function(input, output) {
             Y <- names(Data1[input$Label_column])
             Ydata <- Data1[,input$Label_column]
             Data1[,input$Label_column] <- NULL
-            #Data2 <- dummy.data.frame(Data1)
-            #Data2 <- dummy_cols(Data1,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
             Data2 <- Data1
             for (i in 1:ncol(Data1)) {
               if (class(Data1[,i]) == "character") {
@@ -1456,8 +1485,26 @@ shinyServer(function(input, output) {
                 break
               }
             }
-            pc <- prcomp(Data2, scale=TRUE)
-            Data4 <- cbind(Ydata, pc$x, Data2)
+            #pc <- prcomp(Data2, scale=TRUE)
+            
+            pc <- prcomp(Data2, scale=TRUE, tol=input$tol_PCRA3)
+            output$text1144 <- renderPrint({summary(pc)})
+            
+            
+            if(input$finder == 'PCA_MDS3') {
+              Data3 <- pc$x
+            } else if(input$finder == 'ICA_MDS3') {
+              library(fastICA)
+              ICA <- fastICA(Data1, input$Factors_MDS3)
+              Data3 <- as.data.frame(ICA$S)
+            } else {
+              fa_result <- fa(Data1, nfactors = input$Factors_MDS3, fm = "ml", rotate = input$Factor_Rotation_MDS3)
+              Data3 <- as.data.frame(fa_result$scores)
+            }
+            
+            #Data4 <- cbind(Ydata, pc$x, Data2)
+            Data4 <- cbind(Ydata, Data3, Data2)
+            
             Data_long <- tidyr::gather(Data4, key="X", value = Xs, -Ydata)
             if(class(Ydata) == "numeric") {
               ggplotly(ggplot(Data_long, aes(x=Xs,y=Data_long[,1])) + geom_point() + facet_wrap(~X,scales=input$Stratifeid_scaling4)+ labs(y=Y))
@@ -1470,77 +1517,77 @@ shinyServer(function(input, output) {
     }
   })
   
-  output$plot11 <- renderPlotly({
-    if(input$analysis == "Similarity_of_Variables1"){
-      if(input$Similarity_of_Variables == "Between_label_column_and_others1"){
-        if(input$Between_label_column_and_others == "Hidden1"){
-          if(input$finder == "Hidden_ICA1"){
+#  output$plot11 <- renderPlotly({
+#    if(input$analysis == "Similarity_of_Variables1"){
+#      if(input$Similarity_of_Variables == "Between_label_column_and_others1"){
+#        if(input$Between_label_column_and_others == "Hidden1"){
+#          if(input$finder == "Hidden_ICA1"){
+#            
+#            req(input$file1)
             
-            req(input$file1)
+#            if(input$sep2 == "Separator_Comma"){sep <- ","}
+#            if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+#            if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+#            Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+#            if(input$DoNotUseFirst == 1){
+#              Data[,1] <- NULL
+#            }
             
-            if(input$sep2 == "Separator_Comma"){sep <- ","}
-            if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
-            if(input$sep2 == "Separator_Tab"){sep <- "\t"}
-            Data <- read.csv(input$file1$datapath, header=T,sep = sep)
-            if(input$DoNotUseFirst == 1){
-              Data[,1] <- NULL
-            }
-            
-            if(input$Change_class2 == 1){
-              if(input$Na_analysis2 == "NA_or_numeric2"){
-                if(input$Variable_for2 == "Only_label2"){
-                  Data[,input$Label_column][!is.na(Data[,input$Label_column])] <-  "Numeric_data"
-                  Data[,input$Label_column][is.na(Data[,input$Label_column])] <- "NA_data"
-                } else {
-                  Data[!is.na(Data)] <- "Numeric_data"
-                  Data[is.na(Data)] <-  "NA_data"
-                }
-                Data[,input$Label_column] <- as.factor(Data[,input$Label_column])
+#            if(input$Change_class2 == 1){
+#              if(input$Na_analysis2 == "NA_or_numeric2"){
+#                if(input$Variable_for2 == "Only_label2"){
+#                  Data[,input$Label_column][!is.na(Data[,input$Label_column])] <-  "Numeric_data"
+#                  Data[,input$Label_column][is.na(Data[,input$Label_column])] <- "NA_data"
+#                } else {
+#                  Data[!is.na(Data)] <- "Numeric_data"
+#                  Data[is.na(Data)] <-  "NA_data"
+#                }
+#                Data[,input$Label_column] <- as.factor(Data[,input$Label_column])
                 
-              } else { 
-                if(input$Variable_for2 == "Only_label2"){
-                  Data[,input$Label_column] <- droplevels(cut(Data[,input$Label_column], breaks = input$NumericalToCategorcalD, include.lowest = TRUE))
-                } else {
-                  for (i in 1:n) {
-                    if (class(Data[,i]) == "numeric" || class(Data[,i]) == "integer") {
-                      Data[,i] <- droplevels(cut(Data[,i], breaks = input$NumericalToCategorcalD, include.lowest = TRUE))
-                    }
-                  }
-                }
-              }
-            }
-            library(fastICA)
-            #library(dummies)
-            library(fastDummies) 
-            library(ggplot2)
-            library(tidyr)
-            Data1 <- Data
-            Y <- names(Data1[input$Label_column])
-            Ydata <- Data1[,input$Label_column]
-            Data1[,input$Label_column] <- NULL
-            #Data2 <- dummy.data.frame(Data1)
-            #Data2 <- dummy_cols(Data1,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
-            Data2 <- Data1
-            for (i in 1:ncol(Data1)) {
-              if (class(Data1[,i]) == "character") {
-                Data2 <- dummy_cols(Data1,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
-                break
-              }
-            }
-            pc <- prcomp(Data2, scale=TRUE, tol=0.01)
-            ic <- fastICA(Data2, ncol(pc$x))$S
-            Data4 <- cbind(Ydata, ic, Data2)
-            Data_long <- tidyr::gather(Data4, key="X", value = Xs, -Ydata)
-            if(class(Ydata) == "numeric") {
-              ggplotly(ggplot(Data_long, aes(x=Xs,y=Data_long[,1])) + geom_point() + facet_wrap(~X,scales=input$Stratifeid_scaling5)+ labs(y=Y))
-            } else {
-              ggplotly(ggplot(Data_long, aes(x=Data_long[,1],y=Xs)) + geom_jitter(size=1, position=position_jitter(0.1)) + facet_wrap(~X,scales=input$Stratifeid_scaling5)+ labs(x=Y))
-            }
-          }
-        }
-      }
-    }
-  })
+#              } else { 
+#                if(input$Variable_for2 == "Only_label2"){
+#                  Data[,input$Label_column] <- droplevels(cut(Data[,input$Label_column], breaks = input$NumericalToCategorcalD, include.lowest = TRUE))
+#                } else {
+#                  for (i in 1:n) {
+#                    if (class(Data[,i]) == "numeric" || class(Data[,i]) == "integer") {
+#                      Data[,i] <- droplevels(cut(Data[,i], breaks = input$NumericalToCategorcalD, include.lowest = TRUE))
+#                    }
+#                  }
+#                }
+#              }
+#            }
+#            library(fastICA)
+#            #library(dummies)
+#            library(fastDummies) 
+#            library(ggplot2)
+#            library(tidyr)
+#            Data1 <- Data
+#            Y <- names(Data1[input$Label_column])
+#            Ydata <- Data1[,input$Label_column]
+#            Data1[,input$Label_column] <- NULL
+#            #Data2 <- dummy.data.frame(Data1)
+#            #Data2 <- dummy_cols(Data1,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+#            Data2 <- Data1
+#            for (i in 1:ncol(Data1)) {
+#              if (class(Data1[,i]) == "character") {
+#                Data2 <- dummy_cols(Data1,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+#                break
+#              }
+#            }
+#            pc <- prcomp(Data2, scale=TRUE, tol=0.01)
+#            ic <- fastICA(Data2, ncol(pc$x))$S
+#            Data4 <- cbind(Ydata, ic, Data2)
+#            Data_long <- tidyr::gather(Data4, key="X", value = Xs, -Ydata)
+#            if(class(Ydata) == "numeric") {
+#              ggplotly(ggplot(Data_long, aes(x=Xs,y=Data_long[,1])) + geom_point() + facet_wrap(~X,scales=input$Stratifeid_scaling5)+ labs(y=Y))
+#            } else {
+#              ggplotly(ggplot(Data_long, aes(x=Data_long[,1],y=Xs)) + geom_jitter(size=1, position=position_jitter(0.1)) + facet_wrap(~X,scales=input$Stratifeid_scaling5)+ labs(x=Y))
+#            }
+#          }
+#        }
+#      }
+#    }
+#  })
   
   output$text113 <- renderPrint({
     if(input$analysis == "Similarity_of_Variables1"){
@@ -1687,7 +1734,37 @@ shinyServer(function(input, output) {
             Data1[,input$Label_column]<-NULL
             pc <- prcomp(Data1, scale=TRUE, tol=input$tol_PCRA1)
             output$text1141 <- renderPrint({summary(pc)})
-            pcd <- as.data.frame(pc$x)
+            
+            
+            if(input$Using_MDS2 == 'PCA_MDS2') {
+              Data3 <- pc$x
+            } else if(input$Using_MDS2 == 'ICA_MDS2') {
+              library(fastICA)
+              ICA <- fastICA(Data1, input$Factors_MDS2)
+              Data3 <- ICA$S
+            } else {
+              fa_result <- fa(Data1, nfactors = input$Factors_MDS2, fm = "ml", rotate = input$Factor_Rotation_MDS2)
+              Data3 <- fa_result$scores
+            }
+            ncol2 <- ncol(Data1)
+            ncol3 <- ncol(Data3)
+            n3 <- ncol2 + 1
+            n4 <- ncol2 + ncol3
+            
+            Data4<-cbind(Data1,Data3)
+            cor2all <- cor(Data4)^2
+            Data11 <- round(cor2all[n3:n4,1:ncol2],4)
+            
+            #library(MASS)
+            #pc2 <- sweep(pc$rotation, MARGIN=2, pc$sdev, FUN="*") 
+            #pc3 <- pc2^2
+            #pc3[pc3 < 0.3] <- 0 
+            #output$text1143 <- renderPrint({pc3})
+            output$text1143 <- renderPrint({Data11})
+            
+            
+            #pcd <- as.data.frame(pc$x)
+            pcd <- as.data.frame(Data3)
             DataPCR <- transform(pcd, Y = Ydata)
             pcr <- lm(Y ~ . ,DataPCR)
             
@@ -1697,17 +1774,12 @@ shinyServer(function(input, output) {
             cor1 <- cor1[,1:MaxN]
             cor1 <- cor1[MaxN+1,]
             cor2 <- data.matrix(cor1^2) 
-            output$text1142 <- renderPrint({cor2})
+            output$text1142 <- renderPrint({round(cor2,4)})
             
-            library(MASS)
-            pc2 <- sweep(pc$rotation, MARGIN=2, pc$sdev, FUN="*") 
-            pc3 <- pc2^2
-            pc3[pc3 < 0.3] <- 0 
-            output$text1143 <- renderPrint({pc3})
             
-            library(igraph) # パッケージを読み込み
-            pc4<-pc3*2　 # 線の太さを変更
-            
+            library(igraph)
+            #pc4<-pc3*2
+            pc4<-Data11
             #Data11 <- pc2
             #Data11_dist <- dist(Data11)
             #library(igraph) 

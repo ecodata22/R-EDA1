@@ -251,10 +251,15 @@ fluidPage(
             condition = "input.Among_all_columns == 'Using_MDS1'",
             selectInput("Using_MDS", "Analysis_of_variables",
                          choices = c(PCA = "PCA_MDS1",
-                                     Factor_Analysis = "Factor_Analysis1")),
+                                     ICA = "ICA_MDS1",
+                                     Factor = "Factor_Analysis1")),
+            
+            conditionalPanel(
+              condition = "input.Using_MDS != 'PCA_MDS1'",
+              numericInput('Factors', 'Number of components', "2"),
+            ),
             conditionalPanel(
               condition = "input.Using_MDS == 'Factor_Analysis1'",
-              numericInput('Factors', 'Number of factors', "2"),
               selectInput("Factor_Rotation", "Rotation_Type",
                            choices = c(varimax = "varimax",
                                        quartimax = "quartimax",
@@ -265,22 +270,22 @@ fluidPage(
                                        geominQ = "geominQ"))
             ),
             
-            selectInput("Dimension_reduction6", "Change into 2 dimension data",
-                         choices = c(MDS = "MDS6",
-                                     tSNE = "tSNE6",
-                                     UMAP = "UMAP6")),
-            conditionalPanel(
-              condition = "input.Dimension_reduction6 == 'tSNE6'",
-              numericInput('perplexity_value6', 'perplexity of t-SNE', "1"),
-              #sliderInput("perplexity_value6",
-              #            "perplexity of t-SNE",
-              #            min = 1,  max = 100, value = 1, step = 1)
-            ),
+            #selectInput("Dimension_reduction6", "Change into 2 dimension data",
+            #             choices = c(MDS = "MDS6",
+            #                         tSNE = "tSNE6",
+            #                         UMAP = "UMAP6")),
+            #conditionalPanel(
+            #  condition = "input.Dimension_reduction6 == 'tSNE6'",
+            #  numericInput('perplexity_value6', 'perplexity of t-SNE', "1"),
+            #  #sliderInput("perplexity_value6",
+            #  #            "perplexity of t-SNE",
+            #  #            min = 1,  max = 100, value = 1, step = 1)
+            #),
             
-            conditionalPanel(
-              condition = "input.Dimension_reduction6 == 'UMAP6'",
-              numericInput('n_neighbors6', 'n_neighbors of UMAP', "5"),
-            ),
+            #conditionalPanel(
+            #  condition = "input.Dimension_reduction6 == 'UMAP6'",
+            #  numericInput('n_neighbors6', 'n_neighbors of UMAP', "5"),
+            #),
           ),
           conditionalPanel(
             condition = "input.Among_all_columns == 'Line_graph1'",
@@ -460,10 +465,39 @@ fluidPage(
           
           conditionalPanel(
             condition = "input.Between_label_column_and_others == 'Hidden1'",
+            #selectInput("finder", "finder",
+            #            choices = c(None = "Hidden_None1",
+            #                        With_PCA = "Hidden_PCA1",
+            #                        With_ICA = "Hidden_ICA1"))
+            
             selectInput("finder", "finder",
                         choices = c(None = "Hidden_None1",
-                                    With_PCA = "Hidden_PCA1",
-                                    With_ICA = "Hidden_ICA1"))
+                                    PCA = "PCA_MDS3",
+                                    ICA = "ICA_MDS3",
+                                    Factor = "Factor_Analysis3")),
+            
+            conditionalPanel(
+              condition = "input.finder != 'Hidden_None1'",
+              sliderInput("tol_PCRA3",
+                          "Components should be omitted",
+                          min = 0,  max = 1, value = 0.1, step = 0.01),
+              
+              conditionalPanel(
+                condition = "input.finder != 'PCA_MDS3'",
+                numericInput('Factors_MDS3', 'Number of components', "2"),
+              ),
+              conditionalPanel(
+                condition = "input.finder == 'Factor_Analysis3'",
+                selectInput("Factor_Rotation_MDS3", "Rotation_Type",
+                            choices = c(varimax = "varimax",
+                                        quartimax = "quartimax",
+                                        geominT = "geominT",
+                                        promax = "promax",
+                                        cluster = "cluster",
+                                        oblimin = "oblimin",
+                                        geominQ = "geominQ"))
+              ),
+            ),
           ),
           
           conditionalPanel(
@@ -513,6 +547,27 @@ fluidPage(
               sliderInput("tol_PCRA1",
                           "Components should be omitted",
                           min = 0,  max = 1, value = 0.1, step = 0.01),
+              
+              selectInput("Using_MDS2", "Analysis_of_variables",
+                          choices = c(PCA = "PCA_MDS2",
+                                      ICA = "ICA_MDS2",
+                                      Factor = "Factor_Analysis_MDS2")),
+              
+              conditionalPanel(
+                condition = "input.Using_MDS2 != 'PCA_MDS2'",
+                numericInput('Factors_MDS2', 'Number of components', "2"),
+              ),
+              conditionalPanel(
+                condition = "input.Using_MDS2 == 'Factor_Analysis_MDS2'",
+                selectInput("Factor_Rotation_MDS2", "Rotation_Type",
+                            choices = c(varimax = "varimax",
+                                        quartimax = "quartimax",
+                                        geominT = "geominT",
+                                        promax = "promax",
+                                        cluster = "cluster",
+                                        oblimin = "oblimin",
+                                        geominQ = "geominQ"))
+              ),
               
             ),
           ),
@@ -1759,43 +1814,45 @@ fluidPage(
           
           conditionalPanel(
             condition = "input.Among_all_columns == 'Using_MDS1'",
+            
+            h3("Component analysis"),
+            h4("PCA to analyze the number of factors"),
+            verbatimTextOutput("text410"),
+            h4("Relationship between variables and components"),
+            verbatimTextOutput("text411"),
+            #plotlyOutput("plot08"),
+            plotOutput("plot08"),
             conditionalPanel(
               condition = "input.Using_MDS == 'PCA_MDS1'",
-              h3("PCA and dimension reduction"),
+              h3("PCA"),
               
-              verbatimTextOutput("text410"),
-              plotlyOutput("plot08"),
               h4("Algorithm"),
               p("1. All categorical variables are changed into dummy variables"),
               p("2. PCA to calculate factor loading. Output is multi-dimensional data"),
-              p("3. MDS(sammon) or t-SNE as dimension reduction. Output is 2-dimension data"),
-              p("* PCA is not used as the method of dimension reduction. In this tool, dimension reduction is MDS and t-SNE"),
-              a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-02.html"),
-              a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-02.html"),br(),
-              a("About similariy of categories (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-2.html"),
-              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-2.html"),br(),
-              a("About the reason to use MDS after PCA (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-3-2.html"),
-              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3-2.html")
+              a("Code (Japanese)   ",href="http://data-science.tokyo/R-J/R-J4-27.html"),br(),
+            ),
+            conditionalPanel(
+              condition = "input.Using_MDS == 'ICA_MDS1'",
+              h3("ICA"),
+              
+              h4("Algorithm"),
+              p("1. All categorical variables are changed into dummy variables"),
+              p("2. ICA to calculate factor loading. Output is multi-dimensional data"),
+              a("Code (Japanese)   ",href="http://data-science.tokyo/R-J/R-J4-27.html"),br(),
             ),
             
             conditionalPanel(
               condition = "input.Using_MDS == 'Factor_Analysis1'",
               h3("Factor analysis"),
-              verbatimTextOutput("text406"),
-              plotlyOutput("plot406"),
-              plotlyOutput("plot408"),
+              #verbatimTextOutput("text406"),
+              #plotlyOutput("plot406"),
+              #plotlyOutput("plot408"),
               
               
               h4("Algorithm"),
               p("1. All categorical variables are changed into dummy variables"),
               p("2. Factor analysis to calculate factor loading. Output is multi-dimensional data"),
-              p("3. MDS(sammon) or t-SNE as dimension reduction. Output is 2-dimension data"),
-              p("* Factor analysis is not used as the method of dimension reduction. In this tool, dimension reduction is MDS and t-SNE"),
-              
-              a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E4-09.html"),
-              a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J4-09.html"),br(),
-              a("About Factor analysis (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-4.html"),br(),
-              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-4.html"),br(),
+              a("Code (Japanese)   ",href="http://data-science.tokyo/R-J/R-J4-27.html"),br(),
             ),
           ),
           
@@ -1840,16 +1897,17 @@ fluidPage(
               a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-02.html")
             ),
             conditionalPanel(
-              condition = "input.finder == 'Hidden_PCA1'",
-              h3("Label column vs (Other variables and Principal components)"),
+              condition = "input.finder != 'Hidden_None1'",
+              h3("Label column vs (Other variables and components)"),
               selectInput("Stratifeid_scaling4", "Scaling of stratified graph",
                           choices = c(fixed = "fixed",
                                       free = "free")),
               plotlyOutput("plot10"),
-              
+              p("Principal component analysis for explanatory variables"),
+              verbatimTextOutput("text1144"),
               h4("Algorithm"),
               p("1. All categorical variables except label column are changed into dummy variables"),
-              p("2. Principal  components are calculated except the label column variable"),
+              p("2. Components are calculated except the label column variable"),
               p("to find hidden factor."),
               br(),
               p("If label column is numerical, 2 dimension scatter plot. 
@@ -1859,27 +1917,27 @@ fluidPage(
               a("About hidden variable (English)   ",href="http://data-science.tokyo/ed-e/ede1-9-1-2-1-1.html"),
               a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-9-1-2-1-1.html")
             ),
-            conditionalPanel(
-              condition = "input.finder == 'Hidden_ICA1'",
-              h3("Label column vs (Other variables and Independent components)"),
-              selectInput("Stratifeid_scaling5", "Scaling of stratified graph",
-                          choices = c(fixed = "fixed",
-                                      free = "free")),
-              plotlyOutput("plot11"),
-              h4("Algorithm"),
-              p("1. All categorical variables except label column are changed into dummy variables"),
-              p("2. Independent components are calculated except the label column variable"),
-              p("to find hidden factor."),
-              br(),
-              p("If label column is numerical, 2 dimension scatter plot. 
-                If label column is categorical, 1 dimension scatter plot stratidied by categories."),
-              a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-05.html"),
-              a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-05.html"),br(),
-              a("Abput hidden variable (English)   ",href="http://data-science.tokyo/ed-e/ede1-9-1-2-1-1.html"),
-              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-9-1-2-1-1.html"),br(),
-              a("Abput ICA (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-4-2.html"),
-              a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-4-2.html")
-            ),
+            #conditionalPanel(
+            #  condition = "input.finder == 'Hidden_ICA1'",
+            #  h3("Label column vs (Other variables and Independent components)"),
+            #  selectInput("Stratifeid_scaling5", "Scaling of stratified graph",
+            #              choices = c(fixed = "fixed",
+            #                          free = "free")),
+            #  plotlyOutput("plot11"),
+            #  h4("Algorithm"),
+            #  p("1. All categorical variables except label column are changed into dummy variables"),
+            #  p("2. Independent components are calculated except the label column variable"),
+            #  p("to find hidden factor."),
+            #  br(),
+            #  p("If label column is numerical, 2 dimension scatter plot. 
+            #    If label column is categorical, 1 dimension scatter plot stratidied by categories."),
+            #  a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E1-05.html"),
+            #  a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-05.html"),br(),
+            #  a("Abput hidden variable (English)   ",href="http://data-science.tokyo/ed-e/ede1-9-1-2-1-1.html"),
+            #  a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-9-1-2-1-1.html"),br(),
+            #  a("Abput ICA (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-4-2.html"),
+            #  a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-4-2.html")
+            #),
           ),
           conditionalPanel(
             condition = "input.Between_label_column_and_others == 'Regression_analysis1'",
@@ -1904,17 +1962,29 @@ fluidPage(
             
             conditionalPanel(
               condition = "input.Regression_analysis == 'PCRA1'",
-              h3("Principal Component Regression Analysis"),
-              
-              p("Principal component analysis for explanatory variables"),
+              conditionalPanel(
+                condition = "input.Using_MDS2 == 'PCA_MDS2'",
+                h3("Principal Component Regression Analysis"),
+                p("Principal component analysis for explanatory variables")
+              ),
+              conditionalPanel(
+                condition = "input.Using_MDS2 == 'ICA_MDS2'",
+                h3("Independent Component Regression Analysis"),
+                p("Independent component analysis for explanatory variables")
+              ),
+              conditionalPanel(
+                condition = "input.Using_MDS2 == 'Factor_Analysis_MDS2'",
+                h3("Factor Regression Analysis"),
+                p("Factor analysis for explanatory variables")
+              ),
               verbatimTextOutput("text1141"),
-              p("Relationship among explanatory variables and principal components"),
+              p("Relationship among explanatory variables and components"),
               verbatimTextOutput("text1143"),
               plotOutput("plot18"),
-              p("Principal component regression analysis"),
+              p("Regression analysis"),
               verbatimTextOutput("text114"),
               plotlyOutput("plot114"),
-              p("Contribution rates of principal components in the regression model"),
+              p("Contribution rates of components in the regression model"),
               verbatimTextOutput("text1142"),
               a("About PCRA (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-1-2-1-1.html"),
               a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-1-2-1-1.html"),br(),
