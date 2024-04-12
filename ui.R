@@ -256,8 +256,16 @@ fluidPage(
             
             conditionalPanel(
               condition = "input.Using_MDS != 'PCA_MDS1'",
-              numericInput('Factors', 'Number of components', "2"),
+              #numericInput('Limit_pca', 'Number of components', "2"),
+              
             ),
+            
+            sliderInput("tol_using_MDS",
+                        "Components should be omitted",
+                        min = 0,  max = 1, value = 0.1, step = 0.01),
+            sliderInput("Limit_pca",
+                        "Use absolute value more than",
+                        min = 0,  max = 1, value = 0.1, step = 0.01),
             conditionalPanel(
               condition = "input.Using_MDS == 'Factor_Analysis1'",
               selectInput("Factor_Rotation", "Rotation_Type",
@@ -547,16 +555,19 @@ fluidPage(
               sliderInput("tol_PCRA1",
                           "Components should be omitted",
                           min = 0,  max = 1, value = 0.1, step = 0.01),
+              sliderInput("Limit_PCRA1",
+                          "Use absolute value more than",
+                          min = 0,  max = 1, value = 0.1, step = 0.01),
               
               selectInput("Using_MDS2", "Analysis_of_variables",
                           choices = c(PCA = "PCA_MDS2",
                                       ICA = "ICA_MDS2",
                                       Factor = "Factor_Analysis_MDS2")),
               
-              conditionalPanel(
-                condition = "input.Using_MDS2 != 'PCA_MDS2'",
-                numericInput('Factors_MDS2', 'Number of components', "2"),
-              ),
+              #conditionalPanel(
+              #  condition = "input.Using_MDS2 != 'PCA_MDS2'",
+              #  numericInput('Factors_MDS2', 'Number of components', "2"),
+              #),
               conditionalPanel(
                 condition = "input.Using_MDS2 == 'Factor_Analysis_MDS2'",
                 selectInput("Factor_Rotation_MDS2", "Rotation_Type",
@@ -1978,7 +1989,7 @@ fluidPage(
                 p("Factor analysis for explanatory variables")
               ),
               verbatimTextOutput("text1141"),
-              p("Relationship among explanatory variables and components"),
+              p("Relationship among variables and components"),
               verbatimTextOutput("text1143"),
               plotOutput("plot18"),
               p("Regression analysis"),
@@ -1992,7 +2003,6 @@ fluidPage(
               a(" (Japanese)   ",href="http://data-science.tokyo/R-J/R-J4-01.html")
             ),
           ),
-          
           
           conditionalPanel(
             condition = "input.Between_label_column_and_others == 'Decision_Tree1'",

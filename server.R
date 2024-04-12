@@ -8,7 +8,6 @@ shinyServer(function(input, output) {
   #eventReactive(input$button,{
   output$text00 <- renderDataTable({
     if(input$analysis == "Basic_EDA1"){
-      
           
       req(input$file1)
       
@@ -1183,23 +1182,25 @@ shinyServer(function(input, output) {
             library(ggplot2)
             library(MASS)
             Data1 <- Data
-            for (i in 1:ncol(Data)) {
-              if (class(Data[,i]) == "character") {
-                Data1 <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+            for (i in 1:ncol(Data1)) {
+              if (class(Data1[,i]) == "character") {
+                Data1 <- dummy_cols(Data1,remove_first_dummy =TRUE,remove_selected_columns = TRUE)
                 break
               }
             }
-            pc <- prcomp(Data1, scale=TRUE,tol=0.001)
+            pc <- prcomp(Data1, scale=TRUE,tol=input$tol_using_MDS)
             output$text410 <- renderPrint(summary(pc))
+            nc_pca <- ncol(pc$x)
             
             if(input$Using_MDS == 'PCA_MDS1') {
               as.data.frame(Data3 <- pc$x)
             } else if(input$Using_MDS == 'ICA_MDS1') {
               library(fastICA)
-              ICA <- fastICA(Data1, input$Factors)
+              ICA <- fastICA(Data1, nc_pca)
               as.data.frame(Data3 <- ICA$S)
             } else {
-              fa_result <- fa(Data1, nfactors = input$Factors, fm = "ml", rotate = input$Factor_Rotation)
+              library(psych)
+              fa_result <- fa(Data1, nfactors = nc_pca, fm = "ml", rotate = input$Factor_Rotation)
               as.data.frame(Data3 <- fa_result$scores)
             }
             ncol2 <- ncol(Data1)
@@ -1219,7 +1220,7 @@ shinyServer(function(input, output) {
             
             
             DM.mat = as.matrix(Data11) 
-            DM.mat[DM.mat<0.1] <- 0
+            DM.mat[DM.mat< input$Limit_pca] <- 0
             DM.mat <- DM.mat*10
             
             DM.g<-graph_from_incidence_matrix(DM.mat,weighted=T)
@@ -1479,9 +1480,9 @@ shinyServer(function(input, output) {
             Ydata <- Data1[,input$Label_column]
             Data1[,input$Label_column] <- NULL
             Data2 <- Data1
-            for (i in 1:ncol(Data1)) {
+            for (i in 1:ncol(Data2)) {
               if (class(Data1[,i]) == "character") {
-                Data2 <- dummy_cols(Data1,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+                Data2 <- dummy_cols(Data2,remove_first_dummy = TRUE,remove_selected_columns = TRUE)
                 break
               }
             }
@@ -1498,6 +1499,7 @@ shinyServer(function(input, output) {
               ICA <- fastICA(Data1, input$Factors_MDS3)
               Data3 <- as.data.frame(ICA$S)
             } else {
+              library(psych)
               fa_result <- fa(Data1, nfactors = input$Factors_MDS3, fm = "ml", rotate = input$Factor_Rotation_MDS3)
               Data3 <- as.data.frame(fa_result$scores)
             }
@@ -1732,26 +1734,36 @@ shinyServer(function(input, output) {
             Data1 <- Data
             Ydata <- Data[,input$Label_column]
             Data1[,input$Label_column]<-NULL
+            
+            for (i in 1:ncol(Data1)) {
+              if (class(Data1[,i]) == "character") {
+                Data1 <- dummy_cols(Data1,remove_first_dummy = TRUE,remove_selected_columns = TRUE)
+                break
+              }
+            }
             pc <- prcomp(Data1, scale=TRUE, tol=input$tol_PCRA1)
             output$text1141 <- renderPrint({summary(pc)})
+            nc_PCRA1 <- ncol(pc$x)
             
             
             if(input$Using_MDS2 == 'PCA_MDS2') {
               Data3 <- pc$x
             } else if(input$Using_MDS2 == 'ICA_MDS2') {
               library(fastICA)
-              ICA <- fastICA(Data1, input$Factors_MDS2)
+              ICA <- fastICA(Data1, nc_PCRA1)
               Data3 <- ICA$S
             } else {
-              fa_result <- fa(Data1, nfactors = input$Factors_MDS2, fm = "ml", rotate = input$Factor_Rotation_MDS2)
+              library(psych)
+              fa_result <- fa(Data1, nfactors = nc_PCRA1, fm = "ml", rotate = input$Factor_Rotation_MDS2)
               Data3 <- fa_result$scores
             }
-            ncol2 <- ncol(Data1)
+            ncol2 <- ncol(Data1)+1
             ncol3 <- ncol(Data3)
             n3 <- ncol2 + 1
             n4 <- ncol2 + ncol3
             
-            Data4<-cbind(Data1,Data3)
+            label <- Ydata
+            Data4<-cbind(label,Data1,Data3)
             cor2all <- cor(Data4)^2
             Data11 <- round(cor2all[n3:n4,1:ncol2],4)
             
@@ -1765,21 +1777,28 @@ shinyServer(function(input, output) {
             
             #pcd <- as.data.frame(pc$x)
             pcd <- as.data.frame(Data3)
-            DataPCR <- transform(pcd, Y = Ydata)
-            pcr <- lm(Y ~ . ,DataPCR)
+            DataPCR <- transform(pcd, label = Ydata)
+            pcr <- lm(label ~ . ,DataPCR)
             
             
             MaxN <- ncol(pcd)
             cor1 <- cor(DataPCR)
             cor1 <- cor1[,1:MaxN]
             cor1 <- cor1[MaxN+1,]
-            cor2 <- data.matrix(cor1^2) 
+            cor2 <- round(data.matrix(cor1^2),4) 
             output$text1142 <- renderPrint({round(cor2,4)})
             
             
             library(igraph)
             #pc4<-pc3*2
-            pc4<-Data11
+            DM.mat = as.matrix(Data11) 
+            DM.mat[DM.mat< input$Limit_PCRA1] <- 0
+            #pc4 <- DM.mat*10
+            DM.mat <- DM.mat*10
+            
+            
+            
+            #pc4<-round(Data11,1)*10
             #Data11 <- pc2
             #Data11_dist <- dist(Data11)
             #library(igraph) 
@@ -1797,7 +1816,7 @@ shinyServer(function(input, output) {
             #V(DM.g)$color <- c("steel blue", "orange")[V(DM.g)$type+1] 
             #V(DM.g)$shape <- c("square", "circle")[V(DM.g)$type+1] 
             #output$plot18<-renderPlot(plot(DM.g, edge.width=E(DM.g)$weight))
-            DM.g<-graph_from_incidence_matrix(pc4,weighted=T)
+            DM.g<-graph_from_incidence_matrix(DM.mat,weighted=T)
             V(DM.g)$color <- c("steel blue", "orange")[V(DM.g)$type+1]
             V(DM.g)$shape <- c("square", "circle")[V(DM.g)$type+1]
             output$plot18<-renderPlot(plot(DM.g, edge.width=E(DM.g)$weight))
@@ -3685,7 +3704,6 @@ shinyServer(function(input, output) {
             library(GPArotation)
             library(heatmaply)
             library(fastDummies) 
-            library(psych)
             library(ggplot2)
             library(MASS)
             
