@@ -1,0 +1,12 @@
+name: R-EDA1
+title: R-EDA1
+username:
+account: ecodata222
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3853777
+bundleId: 8599052
+url: https://ecodata222.shinyapps.io/R-EDA1/
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: server - コピー.R|ui - コピー.R

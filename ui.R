@@ -314,6 +314,7 @@ fluidPage(
             
             selectInput("Variable_Network", "Link Type",
                         choices = c(Correlation_Network = "Correlation_Network1",
+                                    Directed_Correlation = "Directed_Correlation1",
                                     Graphical_Lasso = "Graphical_Lasso1",
                                     LiNGAM = "LiNGAM1",
                                     Cramer_Network = "Cramer_Network1",
@@ -323,12 +324,12 @@ fluidPage(
               condition = "input.Variable_Network != 'Bayesian_Network1'",
               conditionalPanel(
                 condition = "input.Variable_Network != 'LiNGAM1'",
-#                conditionalPanel(
-#                  condition = "input.Variable_Network != 'Association1'",
+                conditionalPanel(
+                  condition = "input.Variable_Network != 'Directed_Correlation1'",
                   selectInput("Graph_type1", "Graph type",
                               choices = c(network = "network1",
                                           scatter_plot = "scatter_plot1")),
-#                ),
+                ),
               ),
             ),
             
@@ -337,8 +338,18 @@ fluidPage(
               conditionalPanel(
                 condition = "input.Variable_Network == 'Correlation_Network1'",
                 sliderInput("correlation_limit",
-                            "Use absolute value of correlation coefficient more than",
+                            "Use absolute squae value of correlation coefficient more than",
                             min = 0,  max = 1, value = 0.9, step = 0.1)
+              ),
+              conditionalPanel(
+                condition = "input.Variable_Network == 'Directed_Correlation1'",
+                sliderInput("Directed_correlation_limit",
+                            "Use absolute value of correlation coefficient more than",
+                            min = 0,  max = 1, value = 0.1, step = 0.1),
+                
+                sliderInput("SD_limit",
+                            "Use absolute value of standard deviation more than",
+                            min = 0.1,  max = 0.4, value = 0.2, step = 0.05)
               ),
               conditionalPanel(
                 condition = "input.Variable_Network == 'Graphical_Lasso1'",
@@ -1721,6 +1732,45 @@ fluidPage(
               a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3.html"),br(),
               a("About Correlation Coefficient Network graph (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-3-1.html"),
               a("(Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3-1.html")
+            ),
+            
+            
+            conditionalPanel(
+              condition = "input.Variable_Network == 'Directed_Correlation1'",
+              h3("Hybrid Directed Correlation Analysis (HDCA)"),
+              plotOutput("plot19"),
+              h3("Correlation - Partial correlation Analysis (CPCA)"),
+              plotOutput("plot191"),
+              h3("Directed Correlation - Partial correlation Analysis (DCPCA)"),
+              plotOutput("plot192"),
+              
+              #dataTableOutput("Data_Output2"),
+              
+              #downloadButton("downloadData2", "Download analyzed data"),
+              
+              h4("Algorithm"),
+              
+              h4("Correlation - Partial correlation Analysis (CPCA)"),
+              p("If correlation coefficient is cor and partial correlation coefficient is pcor, each edge is minimum(cor^2, pcor^2)"),
+              a("About CPCA (Japanese)   https://data-science.tokyo/ed/edj1-2-3-1-1-4.html",href="https://data-science.tokyo/ed/edj1-2-3-1-1-4.html"),
+              
+              h4("Directed Correlation - Partial correlation Analysis (DCPCA)"),
+              p("For example, if the node C is connecetd A and E in CPCA, this method analyze C is the sink node or not by correlation coefficient matrix and partial correlation coefficient matrix."),
+              p("Then if C is the sink node, directed graph is made among C, A and E.(PCDCA)"),
+              a("About DCPCA (Japanese)   https://data-science.tokyo/ed/edj1-2-3-1-1-5.html",href="https://data-science.tokyo/ed/edj1-2-3-1-1-5.html"),br(),
+              a("About PCDCA (Japanese)   https://data-science.tokyo/ed/edj1-2-3-1-1-5.html",href="https://data-science.tokyo/ed/edj1-2-3-1-1-3.html"),
+
+              h4("Hybrid Directed Correlation Analysis (HDCA)"),
+              p("HDCA is used for the node that direction is not clear in DCPCA."),
+              p("For example, if the direction of the node between A and B is not clear in DCPCA,
+                then noA (normalized A) and noB (normalized B) are calculated.
+                If standard deviation of noA is less than standard deviation of noB,
+                A is the sink node. And B is the source node.
+                The parameter 'Use absolute value of standard deviation more than' is used to check B is similar to the uniform distribution or not.(NDCA)"),
+              a("About HDCA (Japanese)   https://data-science.tokyo/ed/edj1-2-3-1-1-6.html",href="https://data-science.tokyo/ed/edj1-2-3-1-1-6.html"),br(),
+              a("About NDCA (Japanese)   https://data-science.tokyo/ed/edj1-2-1-1-7.html",href="https://data-science.tokyo/ed/edj1-2-1-1-7.html"),br(),
+
+              a("Code (Japanese)   https://data-science.tokyo/R-J/R-J1-24.html",href="https://data-science.tokyo/R-J/R-J1-24.html"),br(),
             ),
             
             conditionalPanel(

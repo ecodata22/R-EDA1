@@ -608,6 +608,157 @@ shinyServer(function(input, output) {
     }
   })
   
+  
+  output$plot19 <- renderPlot({
+    if(input$analysis == "Similarity_of_Variables1"){
+      if(input$Similarity_of_Variables == "Among_all_columns1"){
+        if(input$Among_all_columns == "Variable_Network1"){
+          if(input$Variable_Network == 'Directed_Correlation1') {
+            
+            req(input$file1)
+            
+            if(input$sep2 == "Separator_Comma"){sep <- ","}
+            if(input$sep2 == "Separator_Semicolon"){sep <- ";"}
+            if(input$sep2 == "Separator_Tab"){sep <- "\t"}
+            Data <- read.csv(input$file1$datapath, header=T,sep = sep)
+            if(input$DoNotUseFirst == 1){
+              Data[,1] <- NULL
+            }
+            
+            library(fastDummies)
+            library(ppcor)
+            library(tidyr)
+            library(dplyr)
+            library(igraph)
+            for (i in 1:ncol(Data)) {
+              if (class(Data[,i]) == "character") {
+                Data <- dummy_cols(Data,remove_first_dummy = FALSE,remove_selected_columns = TRUE)
+                break
+              }
+            }
+            cor2<-cor(Data)^2
+            pcor2 <- (pcor(Data)$estimate)^2
+            directed_cor2 <- cor2
+            n <- ncol(cor2)
+            for (j in 1:n) {
+              for (i in 1:n) {
+                if(i < j){
+                  if(cor2[i,j] < pcor2[i,j]){
+                    directed_cor2[i,j] <- cor2[i,j]
+                    directed_cor2[j,i] <- cor2[i,j]
+                  } else {
+                    directed_cor2[i,j] <- pcor2[i,j]
+                    directed_cor2[j,i] <- pcor2[i,j]
+                  }
+                }
+              }
+            }
+            directed_cor2[directed_cor2 < input$Directed_correlation_limit] <- 0
+            GM1 <- directed_cor2
+            diag(GM1) <- 0
+            GM3 <- GM1*10
+            GM4 <- graph.adjacency(GM3,weighted=T, mode = "undirected")
+            output$plot191 <- renderPlot(plot(GM4, edge.width=E(GM4)$weight))
+            
+            
+            for (k in 1:n) {
+              Data1 <- Data
+              for (j2 in n:1) {
+                if(directed_cor2[k,j2] < input$Directed_correlation_limit){
+                  Data1[,j2] <- NULL
+                }
+              }
+              cor2b <- cor(Data1)^2
+              pcor2b <- (pcor(Data1)$estimate)^2
+              nb <- ncol(cor2b)
+              for(j2 in 1:nb){
+                if(colnames(Data1[j2]) == colnames(Data[k])){
+                  na <- j2
+                }
+              }
+              if(k == 1){
+                directed_cor24 <- NULL
+              }
+              if(ncol(cor2b) > 1){
+                directed_cor2b <- cor2b
+                for (j in 1:nb) {
+                  if(j != na){
+                    directed_cor2b[,j] <- 0
+                  }
+                }
+                for (i in 1:nb) {
+                  if(cor2b[i,na] > pcor2b[i,na]){
+                    directed_cor2b[i,na] <- pcor2b[i,na]
+                  }
+                }
+                if(min(cor2b) > 0.1){
+                  directed_cor2b[,1:nb] <- 0
+                }
+                diag(directed_cor2b) <- 0
+                directed_cor22 <- data.frame(directed_cor2b)
+                directed_cor22$Name <- row.names(directed_cor22)
+                directed_cor23 <- tidyr::gather(directed_cor22, key="X", value = Xs, -Name)
+                directed_cor24 <- rbind(directed_cor24,directed_cor23)
+                directed_cor24 <- directed_cor24[!(directed_cor24$Xs < 0.001),]
+              }
+            }
+            directed_cor31 <- directed_cor2
+            directed_cor31[,1:n] <- 0
+            if(nrow(directed_cor24) > 1){
+              for (k in 1:nrow(directed_cor24)) {
+                for (i in 1:n) {
+                  for (j in 1:n) {
+                    if(directed_cor24[k,1] == rownames(directed_cor31)[i] & directed_cor24[k,2] == colnames(directed_cor31)[j]){
+                      directed_cor31[i,j] <- directed_cor24[k,3]
+                    }
+                  }
+                }
+              }
+            }
+            directed_cor31[directed_cor31<input$Directed_correlation_limit] <- 0
+            GM1 <- directed_cor31
+            GM1 <- ceiling(GM1)
+            diag(GM1) <- 0
+            GM5 <- graph.adjacency(GM1,weighted=F, mode = "directed")
+            output$plot192 <- renderPlot(plot(GM5))
+            
+            
+            Data2 <- Data
+            directed_cor201 <- directed_cor2
+            directed_cor201[,1:n] <-0
+            for (k in 1:n) {
+              Data2[,k] <- (Data[,k] - min(Data[,k]))/(max(Data[,k]) - min(Data[,k]))
+            }
+            for (i in 1:n) {
+              for (j in 1:n) {
+                if(i !=j){
+                  if(directed_cor2[i,j] > input$Directed_correlation_limit){
+                    if(directed_cor31[i,j] < input$Directed_correlation_limit & directed_cor31[j,i] < input$Directed_correlation_limit){
+                      directed_cor201[i,j] <- sd(Data2[,j]) / sd(Data2[,i])
+                      if(directed_cor201[i,j] > 1){
+                        directed_cor201[i,j] <- 0
+                      }
+                      if(max(sd(Data2[,j]) , sd(Data2[,i])) < input$SD_limit){
+                        directed_cor201[i,j] <- 0
+                      }
+                    }
+                  } else {
+                    directed_cor201[i,j] <- 0
+                  }
+                }
+              }
+            }
+            GM1 <- ceiling(directed_cor201+directed_cor31)
+            diag(GM1) <- 0
+            GM6 <- graph.adjacency(GM1,weighted=F, mode = "directed")
+            plot(GM6)
+            
+          }
+        }
+      }  
+    }
+  })
+  
   output$Data_Output3 <- renderDataTable({
     if(input$analysis == "Similarity_of_Variables1"){
       if(input$Similarity_of_Variables == "Among_all_columns1"){
@@ -894,10 +1045,13 @@ shinyServer(function(input, output) {
             K <- fICA$K
             W <- fICA$W
             tKW <- t(K %*% W)
+            rownames(tKW) <- colnames(Data)
+            colnames(tKW) <- colnames(Data)
             MintKW <- tKW
             MinSum <- sum(diag(1/abs(tKW)))
             for (i in 1:10000) {
-              tKW2 <- tKW[order(sample(tKW,n)),]
+              Randomized <- order(sample(tKW,n))
+              tKW2 <- tKW[Randomized,Randomized]
               SumdiagRabstKW <- sum(diag(1/abs(tKW2)))
               if(MinSum > SumdiagRabstKW){
                 MinSum <- SumdiagRabstKW
@@ -907,11 +1061,10 @@ shinyServer(function(input, output) {
             MintKW2 <- MintKW
             for (i in 1:n) {
               MintKW2[i,] <- MintKW2[i,]/MintKW2[i,i] 
+              
             }
             Str <- MintKW2
             diag(Str) <- 0
-            rownames(Str) <- colnames(Data)
-            colnames(Str) <- colnames(Data)
             GM2 <- t(abs(Str))
             GM3 <- GM2*5/max(GM2)
             GM3[GM3<input$coefficient_limit1] <- 0
