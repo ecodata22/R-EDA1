@@ -79,12 +79,13 @@ fluidPage(
       selectInput("analysis", "Analysis",
                    choices = c(Basic_EDA ="Basic_EDA1",
                                Heat_map = "Heat_map1",
-                                Similarity_of_Variables = "Similarity_of_Variables1",
+                               Similarity_of_Variables = "Similarity_of_Variables1", 
                                Similarity_of_Samples = "Similarity_of_Samples1",
                                Similarity_of_Categories = "Similarity_of_Categories1",
                                Many_vs_many = "Similarity_of_Names_in_Rows_and_Columns1",
                                Time_series = "Time_series1"),
-                   selected = "Basic_EDA1"),
+                   #selected = "Basic_EDA1"),
+                    ),
       
       conditionalPanel(
         condition = "input.analysis == 'Heat_map1'",
@@ -304,21 +305,16 @@ fluidPage(
           
           conditionalPanel(
             condition = "input.Among_all_columns == 'Variable_Network1'",
-#            selectInput("Variable_Network", "Link Type",
-#                         choices = c(Correlation_Network = "Correlation_Network1",
-#                                     Graphical_Lasso = "Graphical_Lasso1",
-#                                     LiNGAM = "LiNGAM1",
-#                                     Cramer_Network = "Cramer_Network1",
-#                                     Bayesian_Network = "Bayesian_Network1",
-#                                     Association_rules = "Association1")),
+
             
             selectInput("Variable_Network", "Link Type",
                         choices = c(Correlation_Network = "Correlation_Network1",
-                                    Directed_Correlation = "Directed_Correlation1",
-                                    Graphical_Lasso = "Graphical_Lasso1",
-                                    LiNGAM = "LiNGAM1",
                                     Cramer_Network = "Cramer_Network1",
-                                    Bayesian_Network = "Bayesian_Network1")),
+                                    Directed_Correlation = "Directed_Correlation1",
+                                    Directed_Information = "Directed_Information1",
+                                    Bayesian_Network = "Bayesian_Network1",
+                                    Graphical_Lasso = "Graphical_Lasso1",
+                                    LiNGAM = "LiNGAM1")),
             
             conditionalPanel(
               condition = "input.Variable_Network != 'Bayesian_Network1'",
@@ -326,9 +322,13 @@ fluidPage(
                 condition = "input.Variable_Network != 'LiNGAM1'",
                 conditionalPanel(
                   condition = "input.Variable_Network != 'Directed_Correlation1'",
-                  selectInput("Graph_type1", "Graph type",
-                              choices = c(network = "network1",
-                                          scatter_plot = "scatter_plot1")),
+                  
+                  conditionalPanel(
+                    condition = "input.Variable_Network != 'Directed_Information1'",
+                    selectInput("Graph_type1", "Graph type",
+                                choices = c(network = "network1",
+                                            scatter_plot = "scatter_plot1")),
+                  ),
                 ),
               ),
             ),
@@ -350,6 +350,16 @@ fluidPage(
                 sliderInput("SD_limit",
                             "Use absolute value of standard deviation more than",
                             min = 0.1,  max = 0.4, value = 0.2, step = 0.05)
+              ),
+              conditionalPanel(
+                condition = "input.Variable_Network == 'Directed_Information1'",
+                sliderInput("Mutual_Information_limit",
+                            "Use absolute value of mutual Information more than",
+                            min = 0,  max = 1, value = 0.1, step = 0.05),
+                
+                sliderInput("Entropy_limit",
+                            "Use absolute value of the difference of entropy more than",
+                            min = 0,  max = 0.1, value = 0.0001, step = 0.00001)
               ),
               conditionalPanel(
                 condition = "input.Variable_Network == 'Graphical_Lasso1'",
@@ -374,6 +384,14 @@ fluidPage(
             
             conditionalPanel(
               condition = "input.Variable_Network == 'LiNGAM1'",
+              #selectInput("Change_categorical_data_into", "Change categorical data into",
+              #            choices = c(None = "None6L",
+              #                        Dummy_Varaiables = "Dummy_Varaiables2")),
+              
+              selectInput("Use_scale_transformation1", "Scaling",
+                          choices = c(None = "None6",
+                                      Normalization = "Normalization6",
+                                      Standardization = "Standardization6")),
               sliderInput("coefficient_limit1",
                           "Use absolute value more than",
                           min = 0,  max = 5, value = 3, step = 0.1),
@@ -597,15 +615,23 @@ fluidPage(
           conditionalPanel(
             condition = "input.Between_label_column_and_others == 'Decision_Tree1'",
             selectInput("Decision_Tree", "Tree Method",
-                         choices = c(C5.0 = "C501",
+                         choices = c(
                                      CART = "CART",
                                      RandomForest = "RandomForest1",
-                                     C5.0_based_RandomForest = "C50_based_RandomForest1",
-                                     Model_tree = "Model_tree1")),
+                                     CART_based_RandomForest = "CART_based_RandomForest1",
+                                     Model_tree = "Model_tree1",
+                                     C5.0 = "C501",
+                                     C5.0_based_RandomForest = "C50_based_RandomForest1"
+                                     )),
             conditionalPanel(
               condition = "input.Decision_Tree == 'C50_based_RandomForest1'",
-              checkboxInput("Use_sampling_variables", "Random sampling of variables (rows)", TRUE),
-              checkboxInput("Use_sampling_samples", "Random sampling of samples (columns)", TRUE),
+              checkboxInput("Use_sampling_variables", "Random sampling of variables (columns)", TRUE),
+              checkboxInput("Use_sampling_samples", "Random sampling of samples (rows)", TRUE),
+            ),
+            conditionalPanel(
+              condition = "input.Decision_Tree == 'CART_based_RandomForest1'",
+              checkboxInput("Use_sampling_variables2", "Random sampling of variables (columns)", TRUE),
+              checkboxInput("Use_sampling_samples2", "Random sampling of samples (rows)", TRUE),
             ),
             conditionalPanel(
               condition = "input.Decision_Tree != 'RandomForest1'",
@@ -1774,6 +1800,26 @@ fluidPage(
             ),
             
             conditionalPanel(
+              condition = "input.Variable_Network == 'Directed_Information1'",
+              h3("Directed Information Analysis (DIA)"),
+              plotOutput("plot21"),
+              h3("Mutual Informationn Analysis (MIA)"),
+              plotOutput("plot211"),
+              
+              #dataTableOutput("Data_Output2"),
+              
+              #downloadButton("downloadData2", "Download analyzed data"),
+              
+              h4("Algorithm"),
+              p("1. quantitative variables are changed into qualitatibe variables"),
+              p("2. mutual information analysis (MIA)."),
+              p("3. Direction is set using the difference of entropy (DIA)."),
+              a("About DIA (Japanese)   https://data-science.tokyo/ed/edj1-2-3-3-4-2.html",href="https://data-science.tokyo/ed/edj1-2-3-3-4-2.html"),br(),
+              
+              a("Code (Japanese)   https://data-science.tokyo/R-J/R-J1-29.html",href="https://data-science.tokyo/R-J/R-J1-29.html"),br(),
+            ),
+            
+            conditionalPanel(
               condition = "input.Variable_Network == 'Graphical_Lasso1'",
               h3("Graphical Lasso analysis"),
               conditionalPanel(
@@ -1852,18 +1898,22 @@ fluidPage(
             ),
             conditionalPanel(
               condition = "input.Variable_Network == 'LiNGAM1'",
-              h3("LiNGAM --> Network graph"),
+              #h3("LiNGAM --> Network graph"),
+              h3("LiNGAM"),
               plotOutput("plot17"),
-              dataTableOutput("Data_Output17"),
+              #dataTableOutput("Data_Output17"),
+
+              verbatimTextOutput("Data_Output17"),
+
+              #textOutput("Data_Output17"),
               
               downloadButton("downloadData17", "Download analyzed data"),
               
               h4("Algorithm"),
-              p("1. All numerical variables are standardized"),
+              p("1. All categorical variables are changed into dummy data"),
               p("2. Calculate LiNGAM"),
               p("3. Absolute values of coefficients are calculated"),
               p("4. Draw network graph"),
-              p("In this method, we cannot use categorical variables"),
               a("About LiNGAM (English)   ",href="http://data-science.tokyo/ed-e/ede1-2-3-1-2.html"),
               a("(Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-3-1-2.html"),br(),
               a("Code (English)   ",href="http://data-science.tokyo/R-E/R-E4-10.html"),
@@ -2067,11 +2117,21 @@ fluidPage(
               plotOutput("plotDT05"),br(),
             ),
             conditionalPanel(
+              condition = "input.Decision_Tree == 'CART_based_RandomForest1'",
+              plotOutput("plotDT11"),br(),
+              plotOutput("plotDT12"),br(),
+              plotOutput("plotDT13"),br(),
+              plotOutput("plotDT14"),br(),
+              plotOutput("plotDT15"),br(),
+            ),
+            conditionalPanel(
               condition = "input.Decision_Tree != 'C50_based_RandomForest1'",
-              
               conditionalPanel(
-                condition = "input.Decision_Tree != 'Model_tree1'",
-                plotOutput("plot15"),
+                condition = "input.Decision_Tree != 'CART_based_RandomForest1'",
+                conditionalPanel(
+                  condition = "input.Decision_Tree != 'Model_tree1'",
+                  plotOutput("plot15"),
+                ),
               ),
             ),
             conditionalPanel(
@@ -2686,9 +2746,5 @@ titlePanel("R-EDA1 (R Exploratory Data Analysis)"),
 
 a("Guide (English)   ",href="http://data-science.tokyo/R-E/about_R-EDA1.html"),
 a(" (Japanese)   ",href="http://data-science.tokyo/R-J/about_R-EDA1.html"),
-HTML('<div id="fb-root"></div><script async defer crossorigin="anonymous" src="https://connect.facebook.net/ja_JP/sdk.js#xfbml=1&version=v10.0" nonce="Y3i7onlm"></script>'),
-#HTML('<a href="https://twitter.com/share" class="twitter-share-button")>Twitter</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>'),
-HTML('<a href="https://ecodata222.shinyapps.io/R-EDA1" class="twitter-share-button" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>'),
-HTML('<div class="fb-like" data-href="https://ecodata222.shinyapps.io/R-EDA1" data-width="" data-layout="button" data-action="like" data-size="small" data-share="true"></div>'),
 
 )
