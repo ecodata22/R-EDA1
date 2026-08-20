@@ -1,4 +1,5 @@
 library(shiny)
+library(DT)
 library(heatmaply)
 library(plotly)
 library(networkD3)
@@ -233,14 +234,23 @@ fluidPage(
                                             binomial_logit = "binomial_logit",
                                             binomial_probit = "binomial_probit"),
                                 selected = "gaussian_identity"),
-                    p("'gaussian_identity' = Simple mutli regression analysis"),
-                    p("'poisson_log' = Regression analysis for count data of Y"),
-                    p("'binomial_logit' = Logistic regression analysis")
+                    conditionalPanel(
+                      condition = "family_link2 == 'gaussian_identity'",
+                      p("'gaussian_identity' = Simple mutli regression analysis"),
+                    ),
+                    conditionalPanel(
+                      condition = "family_link2 == 'poisson_log'",
+                      p("'poisson_log' = Regression analysis for count data of Y"),
+                    ),
+                    conditionalPanel(
+                      condition = "family_link2 == 'binomial_logit'",
+                      p("'binomial_logit' = Logistic regression analysis. Y must be 0 or 1")
+                    ),
                   ),
                   
                   conditionalPanel(
                     condition = "input.Ccol == 0 && input.Scol == 0",
-                    checkboxInput("Check_difference_between_two_variablesl", "Check difference between two variables", FALSE),
+                    checkboxInput("Check_difference_between_two_variablesl", "Difference between two variables", FALSE),
                   ),
                 ),
                 
@@ -338,14 +348,14 @@ fluidPage(
               conditionalPanel(
                 condition = "input.Variable_Network == 'Correlation_Network1'",
                 sliderInput("correlation_limit",
-                            "Use absolute squae value of correlation coefficient more than",
-                            min = 0,  max = 1, value = 0.9, step = 0.1)
+                            "Use absolute value of correlation coefficient more than",
+                            min = 0,  max = 1, value = 0.9, step = 0.05)
               ),
               conditionalPanel(
                 condition = "input.Variable_Network == 'Directed_Correlation1'",
                 sliderInput("Directed_correlation_limit",
-                            "Use absolute value of correlation coefficient more than",
-                            min = 0,  max = 1, value = 0.1, step = 0.1),
+                            "Use absolute value of squae correlation coefficient more than",
+                            min = 0,  max = 1, value = 0.1, step = 0.05),
                 
                 sliderInput("SD_limit",
                             "Use absolute value of standard deviation more than",
@@ -355,23 +365,23 @@ fluidPage(
                 condition = "input.Variable_Network == 'Directed_Information1'",
                 sliderInput("Mutual_Information_limit",
                             "Use absolute value of mutual Information more than",
-                            min = 0,  max = 1, value = 0.1, step = 0.05),
+                            min = 0,  max = 1, value = 0.5, step = 0.05),
                 
-                sliderInput("Entropy_limit",
-                            "Use absolute value of the difference of entropy more than",
-                            min = 0,  max = 0.1, value = 0.0001, step = 0.00001)
+                #sliderInput("Entropy_limit",
+                #            "Use absolute value of the difference of entropy more than",
+                #            min = 0,  max = 0.1, value = 0.0001, step = 0.00001)
               ),
               conditionalPanel(
                 condition = "input.Variable_Network == 'Graphical_Lasso1'",
                 sliderInput("inverse_covarianve_limit",
                             "Use absolute value of estimated inverse covariance more than",
-                            min = 0,  max = 1, value = 0.9, step = 0.1),
+                            min = 0,  max = 1, value = 0.9, step = 0.05),
               ),
               conditionalPanel(
                 condition = "input.Variable_Network == 'Cramer_Network1'",
                 sliderInput("association_limit",
                             "Use absolute value of Cramer's coefficient of association more than",
-                            min = 0,  max = 1, value = 0.9, step = 0.1)
+                            min = 0,  max = 1, value = 0.9, step = 0.05)
               ),
             ),
             
@@ -379,7 +389,7 @@ fluidPage(
               condition = "input.Variable_Network == 'Graphical_Lasso1'",
               sliderInput("RHO",
                           "RHO (regularization)",
-                          min = 0,  max = 1, value = 0.2, step = 0.01)
+                          min = 0,  max = 1, value = 0.2, step = 0.05)
             ),
             
             conditionalPanel(
@@ -560,7 +570,7 @@ fluidPage(
                             selected = "gaussian_identity"),
                 p("'gaussian_identity' = Simple mutli regression analysis"),
                 p("'poisson_log' = Regression analysis for count data of Y"),
-                p("'binomial_logit' = Logistic regression analysis")
+                p("'binomial_logit' = Logistic regression analysis. Y must be 0 or 1")
               ),
               conditionalPanel(
                 condition = "input.Variable_selection == 'Lasso1'",
@@ -575,7 +585,7 @@ fluidPage(
                             selected = "gaussian"),
                 p("'gaussian' = Simple mutli regression analysis"),
                 p("'poisson' = Regression analysis for count data of Y"),
-                p("'binomial' = Logistic regression analysis")
+                p("'binomial' = Logistic regression analysis. Y must be 0 or 1")
               ),
             ),
             conditionalPanel(
@@ -1032,8 +1042,15 @@ fluidPage(
       conditionalPanel(
         condition = "input.analysis == 'Similarity_of_Categories1'",
         selectInput("Category_Network", "Link Type",
-                                             choices = c(Correspondence_Analysis = "Correspondence_MDS_Categories1",
+                                             choices = c(One_Association_rules = "One_Association1",
+                                                         Correspondence_Analysis = "Correspondence_MDS_Categories1",
                                                          Association_rules = "Association1")),
+        
+        conditionalPanel(
+          condition = "input.Category_Network == 'One_Association1'",
+          numericInput('Label_column1', 'Column number for label', "1"),
+          p("Label must be 0 or 1 data")
+        ),
         conditionalPanel(
           condition = "input.Category_Network == 'Association1'",
           sliderInput("association_limit4",
@@ -1055,24 +1072,34 @@ fluidPage(
         conditionalPanel(
           condition = "input.Category_Network == 'Correspondence_MDS_Categories1'",
           
-          
-            selectInput("Dimension_reduction61", "Change into 2 dimension data",
-                        choices = c(MDS = "MDS61",
-                                    tSNE = "tSNE61",
-                                    UMAP = "UMAP61")),
+            selectInput("Graph_type2", "Graph type",
+                      choices = c(network = "network3",
+                                  scatter_plot = "scatter_plot3")),
             conditionalPanel(
-              condition = "input.Dimension_reduction61 == 'tSNE61'",
-              numericInput('perplexity_value61', 'perplexity of t-SNE', "1"),
-              #sliderInput("perplexity_value6",
-              #            "perplexity of t-SNE",
-              #            min = 1,  max = 100, value = 1, step = 1)
+              condition = "input.Graph_type2 == 'scatter_plot3'",
+              selectInput("Dimension_reduction61", "Change into 2 dimension data",
+                          choices = c(MDS = "MDS61",
+                                      tSNE = "tSNE61",
+                                      UMAP = "UMAP61")),
+              conditionalPanel(
+                condition = "input.Dimension_reduction61 == 'tSNE61'",
+                numericInput('perplexity_value61', 'perplexity of t-SNE', "1"),
+                #sliderInput("perplexity_value6",
+                #            "perplexity of t-SNE",
+                #            min = 1,  max = 100, value = 1, step = 1)
+              ),
+              
+              conditionalPanel(
+                condition = "input.Dimension_reduction61 == 'UMAP61'",
+                numericInput('n_neighbors61', 'n_neighbors of UMAP', "5"),
+              ),
             ),
-            
             conditionalPanel(
-              condition = "input.Dimension_reduction61 == 'UMAP61'",
-              numericInput('n_neighbors61', 'n_neighbors of UMAP', "5"),
+              condition = "input.Graph_type2 != 'scatter_plot3'",
+              sliderInput("correlation_limit2",
+                          "Use absolute squae value of correlation coefficient more than",
+                      min = 0,  max = 1, value = 0.9, step = 0.1)
             ),
-            
             p("This tool changes numerical variables into categorical.
                     For example, if '5 is the input, numerical variable is divided into 5 ranges.
                     And names of the ranges are used as categories."),
@@ -1395,8 +1422,9 @@ fluidPage(
             condition = "input.Method5 == 'Stratifeid_graph3'",
             
             numericInput('Lcol3', 'Column number for main variable', "1"),
-            numericInput('Ccol3', 'Column number for coloring (if "0" do not used colors)', "0"),
-            numericInput('Scol3', 'Column number for area separate (if "0" not separate)', "0"),
+            numericInput('Xcol3', 'Column number for time series variable (if "0", index is used)', "0"),
+            numericInput('Ccol3', 'Column number for coloring (if "0", colors are not used)', "0"),
+            numericInput('Scol3', 'Column number for area separate (if "0", separate is not used)', "0"),
             conditionalPanel(
               condition = "input.Ccol3 > 0",
               checkboxInput("NumericalToCategorcalSColor23", "If coloring varaiable is numerical, changing categorical varaiable", TRUE),
@@ -1428,11 +1456,12 @@ fluidPage(
       conditionalPanel(
         condition = "input.analysis == 'Basic_EDA1'",
         h3("Summary"),
-        dataTableOutput("text00"),
+        DTOutput("text00"),
+        #textOutput("text00"),
         h3("Head of data"),
-        dataTableOutput("text001"),
+        DTOutput("text001"),
         h3("Tail of data"),
-        dataTableOutput("text002")
+        DTOutput("text002")
       ),
       conditionalPanel(
         condition = "input.analysis == 'Heat_map1'",
@@ -1503,14 +1532,14 @@ fluidPage(
                 condition = "input.Scol == 0",
                 conditionalPanel(
                   condition = "input.Ccol == 0",
-                  h3("Check correlation"),
+                  h3("Correlation coefficient"),
                   verbatimTextOutput("text518"),
                   conditionalPanel(
                     condition = "input.Using_Prediction_Interval == 1",
                     conditionalPanel(
                       condition = "input.proportional1 == 'Proporional_distribution'",
                       
-                      h3("Check Y/X distribution"),
+                      h3("Y/X distribution"),
                       plotOutput("plot538"),
                       verbatimTextOutput("text538"),
                       
@@ -1529,12 +1558,22 @@ fluidPage(
                     plotlyOutput("plot519"),
                     verbatimTextOutput("text519"),
                     verbatimTextOutput("text520"),
+                    conditionalPanel(
+                      condition = "input.family_link2 == 'binomial_logit'",
+                      verbatimTextOutput("text547"),
+                      verbatimTextOutput("text548"),
+                      h3("Accuracy analysis"),
+                      verbatimTextOutput("text551"),
+                      verbatimTextOutput("text549"),
+                      verbatimTextOutput("text552"),
+                    ),
                   ),
                   conditionalPanel(
                     condition = "input.Check_difference_between_two_variablesl == 1",
-                    h3("Check difference between two variables"),
+                    h3("Difference between two variables"),
                     plotOutput("plot537"),
                     verbatimTextOutput("text537"),
+                    verbatimTextOutput("text550"),
                   ),
                 ),
               
@@ -1596,7 +1635,7 @@ fluidPage(
                 condition = "input.Xcol > 0",
                 conditionalPanel(
                   condition = "input.Scol == 0",
-                  h3("Check the diffence of center (mean)"),
+                  h3("Diffence of center (mean)"),
                   verbatimTextOutput("text517"),
                   conditionalPanel(
                     condition = "input.Using_hypothesis_testing2 == 1",
@@ -1604,7 +1643,7 @@ fluidPage(
                     verbatimTextOutput("text505"),
                     verbatimTextOutput("text506"),
                   ),
-                  h3("Check the diffence of variation (variance)"),
+                  h3("Diffence of variation (variance)"),
                   verbatimTextOutput("text521"),
                   conditionalPanel(
                     condition = "input.Using_hypothesis_testing2 == 1",
@@ -1617,7 +1656,7 @@ fluidPage(
                   condition = "input.Scol != 0",
                   conditionalPanel(
                     condition = "input.Scol2 == 0",
-                    h3("Check the diffence of center (mean)"),
+                    h3("Diffence of center (mean)"),
                     verbatimTextOutput("text522"),
                     conditionalPanel(
                       condition = "input.Using_hypothesis_testing2 == 1",
@@ -1631,7 +1670,7 @@ fluidPage(
                   ),
                   conditionalPanel(
                     condition = "input.Scol2 != 0",
-                    h3("Check the diffence of center (mean)"),
+                    h3("Diffence of center (mean)"),
                     verbatimTextOutput("text541"),
                     conditionalPanel(
                       condition = "input.Using_hypothesis_testing2 == 1",
@@ -1653,7 +1692,7 @@ fluidPage(
                 condition = "input.Scol != 0",
                 conditionalPanel(
                   condition = "input.Scol2 == 0",
-                  h3("Check the diffence of center (mean)"),
+                  h3("Diffence of center (mean)"),
                   verbatimTextOutput("text523"),
                   conditionalPanel(
                     condition = "input.Using_hypothesis_testing1 == 1",
@@ -1661,7 +1700,7 @@ fluidPage(
                     verbatimTextOutput("text501"),
                     verbatimTextOutput("text502"),
                   ),
-                  h3("Check the diffence of variation (variance)"),
+                  h3("Diffence of variation (variance)"),
                   verbatimTextOutput("text524"),
                   conditionalPanel(
                     condition = "input.Using_hypothesis_testing1 == 1",
@@ -1672,7 +1711,7 @@ fluidPage(
                 ),
                 conditionalPanel(
                   condition = "input.Scol2 != 0",
-                  h3("Check the diffence of center (mean)"),
+                  h3("Diffence of center (mean)"),
                   verbatimTextOutput("text525"),
                   conditionalPanel(
                     condition = "input.Using_hypothesis_testing1 == 1",
@@ -1697,13 +1736,18 @@ fluidPage(
             
             conditionalPanel(
               condition = "input.Gtype == 'bar'",
+              plotlyOutput("plot14b"),
               conditionalPanel(
                 condition = "input.Scol != 0",
                 conditionalPanel(
                   condition = "input.Scol2 == 0",
+                  h3("Cramer's V"),
+                  verbatimTextOutput("text5363"),
+                  
                   h3("Independence Test"),
                   p("Independence between two categorical varaiables"),
                   verbatimTextOutput("text5362"),
+                  a("Code  (Japanese)   ",href="http://data-science.tokyo/R-J/R-J2-09.html")
                 ),
                 h3("Log linear model"),
                 verbatimTextOutput("text536"),
@@ -1734,7 +1778,7 @@ fluidPage(
               ),
               conditionalPanel(
                 condition = "input.Graph_type1 != 'scatter_plot1'",
-                selectInput("network_library1", "Library of network",  choices = c("igraph", "networkD3")),
+                selectInput("network_library1", "Library of network",  choices = c("networkD3", "igraph")),
                 conditionalPanel(
                   condition = "input.network_library1 == 'igraph'",
                   plotOutput("plot06"),
@@ -1744,7 +1788,8 @@ fluidPage(
                   simpleNetworkOutput("plot06b"),
                 ),
               ),
-              dataTableOutput("Data_Output2"),
+              textOutput("text901"),
+              DTOutput("Data_Output2"),
               
               downloadButton("downloadData2", "Download analyzed data"),
               
@@ -1763,14 +1808,47 @@ fluidPage(
             
             conditionalPanel(
               condition = "input.Variable_Network == 'Directed_Correlation1'",
+              selectInput("network_library7", "Library of network",  choices = c("visNetwork", "igraph")),
               h3("Hybrid Directed Correlation Analysis (HDCA)"),
-              plotOutput("plot19"),
-              h3("Correlation - Partial correlation Analysis (CPCA)"),
-              plotOutput("plot191"),
-              h3("Directed Correlation - Partial correlation Analysis (DCPCA)"),
-              plotOutput("plot192"),
+              #plotOutput("plot19"),
               
-              #dataTableOutput("Data_Output2"),
+              conditionalPanel(
+                condition = "input.network_library7 == 'igraph'",
+                plotOutput("plot193a"),
+              ),
+              conditionalPanel(
+                condition = "input.network_library7 == 'visNetwork'",
+                visNetworkOutput("plot193b"),
+              ),
+              textOutput("text902"),
+              #verbatimTextOutput("Data_Output5"),
+              DTOutput("Data_Output5b"),
+              DTOutput("Data_Output5"),
+              #textOutput("Data_Output5"),
+              #DTOutput("Data_Output5"),
+              
+              h3("Correlation - Partial correlation Analysis (CPCA)"),
+              #plotOutput("plot191"),
+              conditionalPanel(
+                condition = "input.network_library7 == 'igraph'",
+                plotOutput("plot191a"),
+              ),
+              conditionalPanel(
+                condition = "input.network_library7 == 'visNetwork'",
+                visNetworkOutput("plot191b"),
+              ),
+              h3("Directed Correlation - Partial correlation Analysis (DCPCA)"),
+              #plotOutput("plot192"),
+              conditionalPanel(
+                condition = "input.network_library7 == 'igraph'",
+                plotOutput("plot192a"),
+              ),
+              conditionalPanel(
+                condition = "input.network_library7 == 'visNetwork'",
+                visNetworkOutput("plot192b"),
+              ),
+              
+              #DTOutput("Data_Output2"),
               
               #downloadButton("downloadData2", "Download analyzed data"),
               
@@ -1801,19 +1879,40 @@ fluidPage(
             
             conditionalPanel(
               condition = "input.Variable_Network == 'Directed_Information1'",
+              selectInput("network_library9", "Library of network",  choices = c("visNetwork", "igraph")),
               h3("Directed Information Analysis (DIA)"),
-              plotOutput("plot21"),
-              h3("Mutual Informationn Analysis (MIA)"),
-              plotOutput("plot211"),
               
-              #dataTableOutput("Data_Output2"),
+              #plotOutput("plot21"),
+              conditionalPanel(
+                condition = "input.network_library9 == 'igraph'",
+                plotOutput("plot212a"),
+              ),
+              conditionalPanel(
+                condition = "input.network_library9 == 'visNetwork'",
+                visNetworkOutput("plot212b"),
+              ),
+              textOutput("text903"),
+              DTOutput("Data_Output6b"),
+              DTOutput("Data_Output6"),
+              
+              #h3("Mutual Informationn Analysis (MIA)"),
+              #plotOutput("plot211"),
+              #conditionalPanel(
+              #  condition = "input.network_library8 == 'igraph'",
+              #  plotOutput("plot211a"),
+              #),
+              #conditionalPanel(
+              #  condition = "input.network_library8 == 'visNetwork'",
+              #  visNetworkOutput("plot211b"),
+              #),
+              #DTOutput("Data_Output2"),
               
               #downloadButton("downloadData2", "Download analyzed data"),
               
               h4("Algorithm"),
-              p("1. quantitative variables are changed into qualitatibe variables"),
-              p("2. mutual information analysis (MIA)."),
-              p("3. Direction is set using the difference of entropy (DIA)."),
+              p("1. Quantitative variables are changed into qualitatibe variables"),
+              p("2. Mutual information and conditional mutual information analysis."),
+              p("3. Direction is set using the difference of entropy."),
               a("About DIA (Japanese)   https://data-science.tokyo/ed/edj1-2-3-3-4-2.html",href="https://data-science.tokyo/ed/edj1-2-3-3-4-2.html"),br(),
               
               a("Code (Japanese)   https://data-science.tokyo/R-J/R-J1-29.html",href="https://data-science.tokyo/R-J/R-J1-29.html"),br(),
@@ -1829,7 +1928,7 @@ fluidPage(
               ),
               conditionalPanel(
                 condition = "input.Graph_type1 != 'scatter_plot1'",
-                selectInput("network_library2", "Library of network",  choices = c("igraph", "networkD3")),
+                selectInput("network_library2", "Library of network",  choices = c("networkD3", "igraph")),
                 conditionalPanel(
                   condition = "input.network_library2 == 'igraph'",
                   plotOutput("plot07"),
@@ -1839,7 +1938,8 @@ fluidPage(
                   simpleNetworkOutput("plot07b"),
                 ),
               ),
-              dataTableOutput("Data_Output3"),
+              textOutput("text905"),
+              DTOutput("Data_Output3"),
               downloadButton("downloadData3", "Download analyzed data"),
               h4("Algorithm"),
               p("1. All categorical variables are changed into dummy variables"),
@@ -1863,7 +1963,7 @@ fluidPage(
               ),
               conditionalPanel(
                 condition = "input.Graph_type1 != 'scatter_plot1'",
-                selectInput("network_library3", "Library of network",  choices = c("igraph", "networkD3")),
+                selectInput("network_library3", "Library of network",  choices = c("networkD3", "igraph")),
                 conditionalPanel(
                   condition = "input.network_library3 == 'igraph'",
                   plotOutput("plot09"),
@@ -1873,7 +1973,8 @@ fluidPage(
                   simpleNetworkOutput("plot09b"),
                 ),
               ),
-              dataTableOutput("Data_Output4"),
+              textOutput("text904"),
+              DTOutput("Data_Output4"),
               downloadButton("downloadData4", "Download analyzed data"),
               
               
@@ -1901,7 +2002,7 @@ fluidPage(
               #h3("LiNGAM --> Network graph"),
               h3("LiNGAM"),
               plotOutput("plot17"),
-              #dataTableOutput("Data_Output17"),
+              #DTOutput("Data_Output17"),
 
               verbatimTextOutput("Data_Output17"),
 
@@ -2157,7 +2258,7 @@ fluidPage(
               condition = "input.Variables_type == 'All_Varaiables1'",
               conditionalPanel(
                 condition = "input.One_class11 == 'Basic_test_All_Varaiables1'",
-                h3("Check differences between label'0' and label'1'"),
+                h3("Differences between label'0' and label'1'"),
               ),
               conditionalPanel(
                 condition = "input.One_class11 == 'Basic_test_All_Varaiables1'",
@@ -2179,7 +2280,7 @@ fluidPage(
                 condition = "input.One_class11 == 'PCA_MT_All_Varaiables1'",
                 plotlyOutput("plotPCAMT"),
                 h3("Factor loading (Correlation coefficient between variables and PCs)"),
-                dataTableOutput("Data_OutputPCAMT"),
+                DTOutput("Data_OutputPCAMT"),
                 a("About Principal Component MT (English)   ",href="http://data-science.tokyo/ed/edj1-2-2-4-3-2.html"),
                 a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-2-2-4-3-2.html"),br(),
               ),
@@ -2207,19 +2308,19 @@ fluidPage(
               condition = "input.Variables_type != 'All_Varaiables1'",
               conditionalPanel(
                 condition = "input.One_class12 == 'MT_Selected_Varaiables1'",
-                dataTableOutput("Data_OutputMTselected"),
+                DTOutput("Data_OutputMTselected"),
               ),
               conditionalPanel(
                 condition = "input.One_class12 == 'PCA_MT_Selected_Varaiables1'",
-                dataTableOutput("Data_OutputPCAMTselected"),
+                DTOutput("Data_OutputPCAMTselected"),
               ),
               conditionalPanel(
                 condition = "input.One_class12 == 'One_Class_SVM_Selected_Varaiables1'",
-                dataTableOutput("Data_OutputOneClassSVMselected"),
+                DTOutput("Data_OutputOneClassSVMselected"),
               ),
               conditionalPanel(
                 condition = "input.One_class12 == 'Minimum_Distance_Selected_Varaiables1'",
-                dataTableOutput("Data_OutputMDselected"),
+                DTOutput("Data_OutputMDselected"),
               ),
               
             ),
@@ -2268,7 +2369,7 @@ fluidPage(
                 condition = "input.network_library5 == 'networkD3'",
                 simpleNetworkOutput("plot203b"),
               ),
-              #plotOutput("plot203"),
+              
               p("Change from High dimension data into 2 dimension data."),
               p("Axis1 and axis2 do not have physical meaning"),
             ),
@@ -2307,7 +2408,8 @@ fluidPage(
               
               a("About NetworkMDS (English)   ",href="http://data-science.tokyo/ed-e/ede1-3-3-1-1-1.html"),
               a(" (Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-3-1-1-1.html"),br(),
-            )
+            ),
+            textOutput("text201"),
           ),
           
           conditionalPanel(
@@ -2408,11 +2510,32 @@ fluidPage(
       
       conditionalPanel(
         condition = "input.analysis == 'Similarity_of_Categories1'",
+        
+        conditionalPanel(
+          condition = "input.Category_Network =='One_Association1'",
+          #h3("Associations Rules for one variable"),
+          #p("Similarity among Categories"),
+          textOutput("text133"),
+          plotlyOutput("plot33a"),
+          plotlyOutput("plot33b"),
+          plotlyOutput("plot33c"),
+          plotlyOutput("plot33d"),
+          #plotOutput("plot33d"),
+          
+          h4("Algorithm"),
+          p("1. All numerical variables are changed into categorical variables"),
+          p("2. All categorical variables are changed into dummy variables"),
+          p("3. Association analysis for selected one variable."),
+          a("Code (Japanese)   ",href="http://data-science.tokyo/R-J/R-J1-34.html"),br(),
+          a("About association analysis for one variable(Japanese)   ",href="http://data-science.tokyo/ed/edj1-3-2-1-1.html")
+        ),
+        
+        
         conditionalPanel(
           condition = "input.Category_Network == 'Association1'",
-          h3("Associations Rules"),
-          p("Similarity among Categories"),
-          selectInput("network_library4", "Library of network",  choices = c("igraph", "visNetwork")),
+          #h3("Associations Rules"),
+          #p("Similarity among Categories"),
+          selectInput("network_library4", "Library of network",  choices = c("visNetwork","igraph")),
           #selectInput("network_library4", "Library of network",  choices = c("igraph","visNetwork")),
           #selectInput("network_library4", "Library of network",  choices = c( "visNetwork")),
           #selectInput("network_library4", "Library of network",  choices = c( "igraph")),
@@ -2427,7 +2550,7 @@ fluidPage(
             visNetworkOutput("plotap32b"),
           ),
           #plotOutput("plotap32"),
-          dataTableOutput("ap221"),
+          DTOutput("ap221"),
           downloadButton("downloadData221", "Download analyzed data"),
           
           h4("Sets of high support"),
@@ -2443,7 +2566,7 @@ fluidPage(
             h4("Graph of support is the unfirected network. But this graph is directed network because of bug"),
           ),
           #plotOutput("plotap31a"),
-          dataTableOutput("ap211"),
+          DTOutput("ap211"),
           downloadButton("downloadData211", "Download analyzed data"),
           
           h4("Sets of high lift"),
@@ -2457,7 +2580,7 @@ fluidPage(
             visNetworkOutput("plotap33b"),
           ),
           #plotOutput("plotap33"),
-          dataTableOutput("ap231"),
+          DTOutput("ap231"),
           downloadButton("downloadData231", "Download analyzed data"),
           
           
@@ -2475,9 +2598,29 @@ fluidPage(
         
         conditionalPanel(
           condition = "input.Category_Network == 'Correspondence_MDS_Categories1'",
-          h3("Correspondence and MDS Analysis for Categories"),
+          #h3("Correspondence and 2 dimension analysis for categories"),
           #verbatimTextOutput("text409"),
-          plotlyOutput("plot13"),
+          #plotlyOutput("plot13"),
+          conditionalPanel(
+            condition = "input.Graph_type2 == 'scatter_plot3'",
+            
+            plotlyOutput("plot13"),
+          ),
+          conditionalPanel(
+            condition = "input.Graph_type2 != 'scatter_plot3'",
+            selectInput("network_library8", "Library of network",  choices = c("networkD3","igraph")),
+            conditionalPanel(
+              condition = "input.network_library8 == 'igraph'",
+              plotOutput("plot13a"),
+            ),
+            conditionalPanel(
+              condition = "input.network_library8 == 'networkD3'",
+              simpleNetworkOutput("plot13b"),
+            ),
+          ),
+          
+          
+          
           h4("Contribution rate of eigenvalue"),
           textOutput("text131"),
           h4("No of dimensions used in the model"),
@@ -2683,7 +2826,7 @@ fluidPage(
           conditionalPanel(
             condition = "input.Method4 == 'Quasi_periodic'",
             h3("Quasi periodic analysis"),
-            dataTableOutput("text701"),
+            DTOutput("text701"),
             downloadButton("downloadData700", "Download type 1 data"),
             downloadButton("downloadData704", "Download type 2 data"),
             br(),
