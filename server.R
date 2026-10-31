@@ -373,7 +373,7 @@ shinyServer(function(input, output) {
                   lm <- lm(Data1[,input$Lcol] ~ Data1[,input$Xcol], data=Data1)
                   Data0 <- predict(lm, Data1, interval="prediction", level = input$Prediction_Interval_Probability)
                   Data2 <- cbind(Data, Data0)
-                } else {
+                } else if(input$proportional1 == "Proporional_distribution"){
                   M <- mean(Data1[,input$Lcol] / Data1[,input$Xcol])
                   n <- nrow(Data1)
                   
@@ -391,6 +391,21 @@ shinyServer(function(input, output) {
                   lwr<-Data1[,input$Xcol] * Lower
                   fit<-Data1[,input$Xcol] * M
                   Data2<-cbind(Data1,lwr,upr,fit)
+                } else {
+                  
+                  lm <- lm(Data1[,input$Lcol] ~ Data1[,input$Xcol], data=Data1)
+                  Data0 <- predict(lm, Data1, interval="prediction", level = input$Prediction_Interval_Probability)
+                  Data2 <- cbind(Data, Data0)
+                  
+                  
+                  library(MASS)
+                  gm <- step(glm(Data1[,input$Lcol] ~ Data1[,input$Xcol], data=Data1, family= binomial(link = "logit")))
+                  zval <- -qnorm((1-input$Prediction_Interval_Probability)/2, 0,1)
+                  pred <- predict(gm, Data1, type = "link", se.fit = TRUE)
+                  Data2 <- Data1
+                  Data2$fit <- plogis(pred$fit)
+                  Data2$lwr <- plogis(pred$fit - zval * pred$se.fit)
+                  Data2$upr <- plogis(pred$fit + zval * pred$se.fit)
                 }
                 
                 gplot <- ggplot(data = Data2, aes(x=Data1[,input$Xcol],y=Data1[,input$Lcol])) +geom_point()+geom_line(aes(y=lwr), color = "red")+geom_line(aes(y=upr), color = "red")+geom_line(aes(y= fit), color = "blue")+ labs(x=Xname,y=Lname)

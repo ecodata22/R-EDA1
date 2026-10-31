@@ -209,13 +209,14 @@ fluidPage(
                   conditionalPanel(
                     condition = "input.Ccol == 0 && input.Scol == 0",
                     
-                    checkboxInput("Using_Prediction_Interval", "Using prediction interval", FALSE),
+                    checkboxInput("Using_Prediction_Interval", "Using interval", FALSE),
                     
                     conditionalPanel(
                       condition = "input.Using_Prediction_Interval == 1",
                       selectInput("proportional1", "Regression type",
-                                  choices = c(General_regression = "General_regression",
-                                              Proporional_distribution = "Proporional_distribution"),
+                                  choices = c(General_regression_Prediction_interval = "General_regression",
+                                              Proporional_distribution_Prediction_interval = "Proporional_distribution",
+                                              Logistic_regression_Confidence_interval = "Logistic_regression"),
                                   selected = "General_regression"),
                       
                       sliderInput("Prediction_Interval_Probability",
